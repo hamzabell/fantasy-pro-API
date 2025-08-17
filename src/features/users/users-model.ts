@@ -26,7 +26,9 @@ export async function saveUserToDatabase(user: Parameters<typeof prisma.user.cre
 export async function retrieveUserFromDatabaseById(id: User["id"]) {
 	// Ensure the user ID is a valid string
 	const userId = String(id);
-	return await prisma.user.findUnique({ where: { id: userId } });
+	return await prisma.user.findUnique({
+ 			where: { id: userId },   
+	});
 }
 
 /**

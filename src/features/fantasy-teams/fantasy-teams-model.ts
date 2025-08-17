@@ -8,10 +8,10 @@ export type PartialTeamParameters = Parameters<typeof prisma.team.create>;
 /**
  * Saves a new Team to the database.
  *
- * @param team - Parameters of the Team that should be created.
+ * @param team - The data for the Team that should be created.
  * @returns The newly created Team.
  */
-export async function saveTeamToDatabase(team: PartialTeamParameters) {
+export async function saveTeamToDatabase(team: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>) {
 	return await prisma.team.create({ data: team });
 }
 

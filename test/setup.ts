@@ -16,6 +16,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   // Clear the entire database before each test
   console.log('Database cleared before test');
+  await prisma.team.deleteMany();
+  await prisma.user.deleteMany();
 });
 
 afterAll(async () => {

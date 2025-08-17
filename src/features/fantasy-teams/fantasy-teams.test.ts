@@ -5,7 +5,7 @@ import { createBody, createAuthHeaders } from '../../utils/testUtils.js';
 import {mockSupabaseAuthSuccess, mockUser} from '../../utils/supabaseMocks.js';
 import {supabase} from '../supabase/supabase-helpers.js';
 import {retrieveTeamFromDatabaseByUserId, saveTeamToDatabase} from './fantasy-teams-model.js';
-import {saveUserToDatabase, deleteAllUsersFromDatabase} from '../users/users-model.js';
+import {saveUserToDatabase, deleteAllUsersFromDatabase } from '../users/users-model.js';
 import {deleteAllTeamsFromDatabase} from './fantasy-teams-model.js';
 import {faker} from '@faker-js/faker';
 
@@ -29,11 +29,16 @@ const setupUserWithATeam = async () => {
 describe("Fantasy Teams", () => {
 	describe("POST /create-team", () => {
 	test("given that a user selects 11 players for his team and all 11 players costs are equal or under 100M pound: it should create a team for the user and map the players to the user", async () => {
+
 		const mockSupabase = mockSupabaseAuthSuccess();
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
-	
+
 		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];	
+		
+		const userTeam 	= await retrieveTeamFromDatabaseByUserId(mockUser.id);
+
+		expect(userTeam).toBeNull(); // Ensure no team exists before test
 
 		const res = await app.request('/api/fantasy-teams/create-team', {
 			...createAuthHeaders(), // Use createAuthHeaders instead of createHeaders
@@ -61,6 +66,10 @@ describe("Fantasy Teams", () => {
 		
 		expect(team).not.toBeNull();
 		expect(team.teamPlayers).toEqual(playerIds);
+		
+		// Cleanup after test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
 	})
 
 	test("given that a user selects 11 players for his team and the total cost of player is over 100M pounds: it should return an error stating that the total cost of players exceeds the budget", async () => {
@@ -76,6 +85,7 @@ describe("Fantasy Teams", () => {
 			}),
 			method: 'POST',
 		})
+
 		expect(res.status).toBe(400);
 		const actual = await res.json();
 		const expected = {
@@ -83,6 +93,10 @@ describe("Fantasy Teams", () => {
 		}
 
 		expect(actual).toEqual(expected);
+		
+		// Cleanup after test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
 	})
 
 	test("given the user selects less than 11 players: it should return an error stating that you must select exactly 11 players for your team", async () => {
@@ -108,6 +122,10 @@ describe("Fantasy Teams", () => {
 		}
 
 		expect(actual).toEqual(expected);
+		
+		// Cleanup after test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
 	})
 
 	test("given an unauthenticated user tries to create a team with 11 players: it should return an 401 http Error", async () => {
@@ -130,6 +148,10 @@ describe("Fantasy Teams", () => {
 		}
 
 		expect(actual).toEqual(expected);
+		
+		// Cleanup after test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
 	})
 
 	test("given the user selects duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
@@ -155,6 +177,10 @@ describe("Fantasy Teams", () => {
 		}
 
 		expect(actual).toEqual(expected);
+		
+		// Cleanup after test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
 	})
 
 	test("given the user already has a team: it should return an error stating that the user already has a team", async () => {
@@ -196,6 +222,10 @@ describe("Fantasy Teams", () => {
 		}
 
 		expect(actual).toEqual(expected);
+		
+		// Cleanup after test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
 	})
 	})
 
@@ -222,6 +252,10 @@ describe("Fantasy Teams", () => {
 			}
 
 			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
 		})
 
 		test("given that a user does not have a team: it should return an error stating that the user does not have a team", async () => {
@@ -241,6 +275,10 @@ describe("Fantasy Teams", () => {
 			}
 
 			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
 		})	
 	
 		test("given an unauthenticated user tries to get their team: it should return an 401 http Error", async () => {
@@ -256,6 +294,10 @@ describe("Fantasy Teams", () => {
 			}
 
 			expect(actual).toEqual(expected);
+			
+			// Cleanup after test (if any user/team was created by middleware)
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
 		})
 
 	})

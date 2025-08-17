@@ -1,13 +1,12 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { fetchTotalCostForPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
-import { CreateTeamSchema, ErrorResponseSchema, TeamResponseSchema } from './fantasy-teams-schemas.js';
+import { ErrorResponseSchema, TeamResponseSchema } from './fantasy-teams-schemas.js';
 import { saveTeamToDatabase, retrieveTeamFromDatabaseByUserId } from './fantasy-teams-model.js';
-import prisma from '../../prisma.js';
 import type { User } from '../../generated/prisma/index.js';
 
 const fantasyTeamsApp = new OpenAPIHono();
 
-// Define the route without automatic validation
+// Define the route for creating a team
 const createTeamRoute = createRoute({
 	method: 'post',
 	path: '/create-team',
@@ -69,12 +68,54 @@ const createTeamRoute = createRoute({
 	},
 });
 
+// Define the route for getting a user's team
+const getTeamRoute = createRoute({
+	method: 'get',
+	path: '/team',
+	security: [{ BearerAuth: [] }], // Add authentication requirement
+	responses: {
+		200: {
+			content: {
+				'application/json': {
+					schema: TeamResponseSchema,
+				},
+			},
+			description: 'Team retrieved successfully',
+		},
+		400: {
+			content: {
+				'application/json': {
+					schema: ErrorResponseSchema,
+				},
+			},
+			description: 'Invalid input',
+		},
+		401: {
+			content: {
+				'application/json': {
+					schema: ErrorResponseSchema,
+				},
+			},
+			description: 'Unauthorized',
+		},
+		500: {
+			content: {
+				'application/json': {
+					schema: ErrorResponseSchema,
+				},
+			},
+			description: 'Internal server error',
+		},
+	},
+});
+
 fantasyTeamsApp.openapi(createTeamRoute, async (c) => {
 	try {
 		// Get the authenticated user from context
 		const user = c.get('user') as User;
+
 		if (!user) {
-			return c.json({ error: 'Unauthorized' }, 401);
+			return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
 		}
 
 		// Parse and validate request body manually
@@ -135,6 +176,36 @@ fantasyTeamsApp.openapi(createTeamRoute, async (c) => {
 		}, 201);
 	} catch (error) {
 		console.error('Error creating team:', error);
+		return c.json({ error: 'Internal server error' }, 500);
+	}
+});
+
+fantasyTeamsApp.openapi(getTeamRoute, async (c) => {
+	try {
+		// Get the authenticated user from context
+		const user = c.get('user') as User;
+		if (!user) {
+			return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+		}
+
+		// Retrieve team from database
+		const team = await retrieveTeamFromDatabaseByUserId(user.id);
+		
+		// Check if user has a team
+		if (!team) {
+			return c.json({ error: 'User does not have a team.' }, 400);
+		}
+
+		// Return success response
+		return c.json({
+			message: 'Team retrieved successfully',
+			team: {
+				balance: team.teamValue, // The team value is what's returned as balance in the test
+				players: team.teamPlayers,
+			},
+		}, 200);
+	} catch (error) {
+		console.error('Error retrieving team:', error);
 		return c.json({ error: 'Internal server error' }, 500);
 	}
 });
