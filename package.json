@@ -1,0 +1,39 @@
+{
+  "name": "fantasypro-rest-api",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "NODE_ENV=test vitest",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio",
+    "create-test-user": "ts-node src/utils/create-test-user.ts",
+    "get-auth-token": "tsx src/utils/get-auth-token.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.17.0",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^1.0.2",
+    "@prisma/client": "^6.14.0",
+    "@supabase/supabase-js": "^2.52.0",
+    "@types/ramda": "^0.30.2",
+    "axios": "^1.11.0",
+    "hono": "^4.8.5",
+    "ramda": "^0.31.3",
+    "swagger-ui-express": "^5.0.1",
+    "vitest": "^3.2.4"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@types/express": "^5.0.3",
+    "@types/node": "^20.11.17",
+    "@types/swagger-ui-dist": "^3.30.6",
+    "dotenv": "^17.2.0",
+    "prisma": "^6.14.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}

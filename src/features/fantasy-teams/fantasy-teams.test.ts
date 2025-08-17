@@ -1,0 +1,185 @@
+import { describe, test, expect, vi } from 'vitest';
+import { fetchTotalCostForPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import app from '../../index.js'
+import { createBody, createAuthHeaders } from '../../utils/testUtils.js';
+import {mockSupabaseAuthSuccess, mockUser} from '../../utils/supabaseMocks.js';
+import {supabase} from '../supabase/supabase-helpers.js';
+import {retrieveTeamFromDatabaseByUserId, saveTeamToDatabase} from './fantasy-teams-model.js';
+import {saveUserToDatabase, deleteAllUsersFromDatabase} from '../users/users-model.js';
+import {deleteAllTeamsFromDatabase} from './fantasy-teams-model.js';
+import type {User} from '../../generated/prisma/index.js';
+
+
+vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
+
+describe("Fantasy Teams", () => {
+	test("given that a user selects 11 players for his team and all 11 players costs are equal or under 100M pound: it should create a team for the user and map the players to the user", async () => {
+		const mockSupabase = mockSupabaseAuthSuccess();
+		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+	
+		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];	
+
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createAuthHeaders(), // Use createAuthHeaders instead of createHeaders
+			...createBody({
+				players: playerIds
+				// No budget field needed as it's fixed at 100M
+			}),
+			method: 'POST',
+		})
+
+		expect(res.status).toBe(201);
+
+		const actual = await res.json();
+		const expected = {
+			message: 'Team created successfully',
+			team: {
+				balance: 20,
+				players: playerIds // Updated to match the actual response
+			}
+		}
+
+		expect(actual).toEqual(expected);
+
+		const team = await retrieveTeamFromDatabaseByUserId(mockUser.id) 
+		
+		expect(team).not.toBeNull();
+		expect(team.teamPlayers).toEqual(playerIds);
+	})
+
+	test("given that a user selects 11 players for his team and the total cost of player is over 100M pounds: it should return an error stating that the total cost of players exceeds the budget", async () => {
+		const mockSupabase = mockSupabaseAuthSuccess();
+		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120);
+
+		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createAuthHeaders(), // Use createAuthHeaders instead of createHeaders
+			...createBody({
+				players: playerIds
+			}),
+			method: 'POST',
+		})
+		expect(res.status).toBe(400);
+		const actual = await res.json();
+		const expected = {
+			error: 'Total cost exceeds budget. Total: 120M, Budget: 100M'
+		}
+
+		expect(actual).toEqual(expected);
+	})
+
+	test("given the user selects less than 11 players: it should return an error stating that you must select exactly 11 players for your team", async () => {
+		const mockSupabase = mockSupabaseAuthSuccess();
+		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+		const playerIds = [1, 2, 3, 4, 5]; // Less than 11 players
+
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createAuthHeaders(), // Use createAuthHeaders instead of createHeaders
+			...createBody({
+				players: playerIds
+			}),
+			method: 'POST',
+		})
+
+		expect(res.status).toBe(400);
+
+		const actual = await res.json();
+		const expected = {
+			error: 'You must select exactly 11 players for your team.'
+		}
+
+		expect(actual).toEqual(expected);
+	})
+
+	test("given an unauthenticated user tries to create a team with 11 players: it should return an 401 http Error", async () => {
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];	
+
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createBody({
+				players: playerIds
+			}),
+			method: 'POST',
+		})
+
+		expect(res.status).toBe(401);
+
+		const actual = await res.json();
+		const expected = {
+			error: 'Unauthorized: Missing or invalid Authorization header'
+		}
+
+		expect(actual).toEqual(expected);
+	})
+
+	test("given the user selects duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
+		const mockSupabase = mockSupabaseAuthSuccess();
+		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1]; // Player 1 is duplicated
+
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createAuthHeaders(),
+			...createBody({
+				players: playerIds
+			}),
+			method: 'POST',
+		})
+
+		expect(res.status).toBe(400);
+
+		const actual = await res.json();
+		const expected = {
+			error: 'Duplicate players are not allowed.'
+		}
+
+		expect(actual).toEqual(expected);
+	})
+
+	test("given the user already has a team: it should return an error stating that the user already has a team", async () => {
+		// Clean up database before test
+		await deleteAllTeamsFromDatabase();
+		await deleteAllUsersFromDatabase();
+		
+		// Create user and team in database
+		const user = await saveUserToDatabase({
+			id: mockUser.id,
+			email: mockUser.email,
+		});
+		
+		await saveTeamToDatabase({
+			userId: user.id,
+			teamValue: 80,
+			teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+		});
+
+		const mockSupabase = mockSupabaseAuthSuccess();
+		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+		const playerIds = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createAuthHeaders(),
+			...createBody({
+				players: playerIds
+			}),
+			method: 'POST',
+		})
+
+		expect(res.status).toBe(400);
+
+		const actual = await res.json();
+		const expected = {
+			error: 'User already has a team. Please update your existing team instead.'
+		}
+
+		expect(actual).toEqual(expected);
+	})
+})
