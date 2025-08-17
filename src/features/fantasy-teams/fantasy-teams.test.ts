@@ -7,12 +7,27 @@ import {supabase} from '../supabase/supabase-helpers.js';
 import {retrieveTeamFromDatabaseByUserId, saveTeamToDatabase} from './fantasy-teams-model.js';
 import {saveUserToDatabase, deleteAllUsersFromDatabase} from '../users/users-model.js';
 import {deleteAllTeamsFromDatabase} from './fantasy-teams-model.js';
-import type {User} from '../../generated/prisma/index.js';
+import {faker} from '@faker-js/faker';
 
 
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 
+const setupUserWithATeam = async () => {
+		const user = await saveUserToDatabase({
+			email: faker.internet.email()
+		});
+
+		const team = await saveTeamToDatabase({
+			userId: user.id,
+			teamValue: 80,
+			teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],	
+		})
+
+		return { user, team };
+}
+
 describe("Fantasy Teams", () => {
+	describe("POST /create-team", () => {
 	test("given that a user selects 11 players for his team and all 11 players costs are equal or under 100M pound: it should create a team for the user and map the players to the user", async () => {
 		const mockSupabase = mockSupabaseAuthSuccess();
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
@@ -181,5 +196,67 @@ describe("Fantasy Teams", () => {
 		}
 
 		expect(actual).toEqual(expected);
+	})
+	})
+
+	describe("GET /team", () => {
+		test("given that a user has a team: it should return the user's team", async () => {
+			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+
+			const res = await app.request('/api/fantasy-teams/team', {
+				...createAuthHeaders(),
+				method: 'GET'
+			}) 
+			
+			expect(res.status).toEqual(200);
+
+			const actual = await res.json();
+			const expected = {
+				message: 'Team retrieved successfully',
+				team: {
+					balance: teamValue,
+					players: teamPlayers	
+				}
+			}
+
+			expect(actual).toEqual(expected);
+		})
+
+		test("given that a user does not have a team: it should return an error stating that the user does not have a team", async () => {
+			const mockSupabase = mockSupabaseAuthSuccess();
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+
+			const res = await app.request('/api/fantasy-teams/team', {
+				...createAuthHeaders(),
+				method: 'GET'
+			})
+
+			expect(res.status).toEqual(400);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'User does not have a team.'
+			}
+
+			expect(actual).toEqual(expected);
+		})	
+	
+		test("given an unauthenticated user tries to get their team: it should return an 401 http Error", async () => {
+			const res = await app.request('/api/fantasy-teams/team', {
+				method: 'GET'
+			})
+
+			expect(res.status).toBe(401);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'Unauthorized: Missing or invalid Authorization header'
+			}
+
+			expect(actual).toEqual(expected);
+		})
+
 	})
 })

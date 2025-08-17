@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { validateUserAuth } from '../supabase/supabase-helpers.js';
+import type { Context } from 'hono';
 
 const app = new OpenAPIHono();
 
@@ -48,12 +48,18 @@ const getUserRoute = createRoute({
 });
 
 // Route handler for getting user details
-app.openapi(getUserRoute, async (c) => {
-  const dbUser = c.get('user');
+app.openapi(getUserRoute, async (c: Context) => {
+  const user = c.get('user');
+
+  if (!user) {
+    return c.json({
+      error: 'Unauthorized: Missing or invalid Authorization header',
+    }, 401);
+  }
 
   return c.json({
-    id: dbUser.id,
-    email: dbUser.email,
+    id: user.id,
+    email: user.email,
   });
 });
 

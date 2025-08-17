@@ -21,11 +21,11 @@ export const mockUser = {
 /**
  * Mock Supabase auth client to return successful user data
  */
-export const mockSupabaseAuthSuccess = () => {
+export const mockSupabaseAuthSuccess = (user = mockUser) => {
   const mockAuth = {
     getUser: vi.fn().mockResolvedValue({
       data: {
-        user: mockUser
+        user, 
       },
       error: null
     })
