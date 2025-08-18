@@ -301,4 +301,257 @@ describe("Fantasy Teams", () => {
 		})
 
 	})
+
+	describe("PUT /update-team", () => {
+		test("given that a user has a team of 11 players and changes one player and it is within the budget: it should update the team with the new player and return the updated team", async () => {
+			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+			const newPlayerId = 12; // New player to add
+			const updatedTeamPlayers = [...teamPlayers.slice(0, 10), newPlayerId]; // Replace one player
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: updatedTeamPlayers
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(200);
+
+			const actual = await res.json();
+			const expected = {
+				message: 'Team updated successfully',
+				team: {
+					balance: teamValue,
+					players: updatedTeamPlayers
+				}
+			}
+
+			expect(actual).toEqual(expected);
+			
+			const updatedTeam = await retrieveTeamFromDatabaseByUserId(user.id);
+			expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();	
+		})
+
+		test("given that a user has a team of 11 players and tries to change multiple players at once and it is within the budget: it should update the team with the new players and return the updated team", async () => {
+			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+			const newPlayerIds = [12, 13, 14]; // New players to add
+			const updatedTeamPlayers = [...teamPlayers.slice(0, 8), ...newPlayerIds]; // Replace three players
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: updatedTeamPlayers
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(200);
+
+			const actual = await res.json();
+			const expected = {
+				message: 'Team updated successfully',
+				team: {
+					balance: teamValue,
+					players: updatedTeamPlayers
+				}
+			}
+
+			expect(actual).toEqual(expected);
+			
+			const updatedTeam = await retrieveTeamFromDatabaseByUserId(user.id);
+			expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();	
+		})
+
+		test("given that a user has a team of 11 players and tries to change one player and it exceeds the budget: it should return an error stating that the total cost of players exceeds the budget", async () => {
+			const { user, team: { teamPlayers } } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120); // Simulate exceeding budget
+
+			const newPlayerId = 12; // New player to add
+			const updatedTeamPlayers = [...teamPlayers.slice(0, 10), newPlayerId]; // Replace one player
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: updatedTeamPlayers
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(400);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'Total cost exceeds budget. Total: 120M, Budget: 100M'
+			}
+
+			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();	
+		})
+
+		test("given an unauthenticated user tries to update a team: it should return a 401 http Error", async () => {
+			const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+			
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createBody({
+					players: playerIds
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toBe(401);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'Unauthorized: Missing or invalid Authorization header'
+			}
+
+			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
+		})
+
+		test("given that a user does not have a team: it should return an error stating that the user does not have a team", async () => {
+			const mockSupabase = mockSupabaseAuthSuccess();
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+			
+			const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: playerIds
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(400);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'User does not have a team.'
+			}
+
+			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
+		})
+
+		test("given that a user tries to update their team with less than 11 players: it should return an error stating that you must select exactly 11 players", async () => {
+			const { user } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+			const playerIds = [1, 2, 3, 4, 5]; // Less than 11 players
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: playerIds
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(400);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'You must select exactly 11 players for your team.'
+			}
+
+			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
+		})
+
+		test("given that a user tries to update their team with more than 11 players: it should return an error stating that you must select exactly 11 players", async () => {
+			const { user  } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+			const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; // More than 11 players
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: playerIds
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(400);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'You must select exactly 11 players for your team.'
+			}
+			
+
+			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
+		})
+
+		test("given that a user tries to update their team with duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
+			const { user  } = await setupUserWithATeam();
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+
+			const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1]; // Player 1 is duplicated
+
+			const res = await app.request('/api/fantasy-teams/update-team', {
+				...createAuthHeaders(),
+				...createBody({
+					players: playerIds
+				}),
+				method: 'PUT'
+			})
+
+			expect(res.status).toEqual(400);
+
+			const actual = await res.json();
+			const expected = {
+				error: 'Duplicate players are not allowed.'
+			}
+
+			expect(actual).toEqual(expected);
+			
+			// Cleanup after test
+			await deleteAllTeamsFromDatabase();
+			await deleteAllUsersFromDatabase();
+		})
+	})
 })
