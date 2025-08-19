@@ -246,7 +246,7 @@ describe("Fantasy Teams", () => {
 			const expected = {
 				message: 'Team retrieved successfully',
 				team: {
-					balance: teamValue,
+					balance: 100 - teamValue,
 					players: teamPlayers	
 				}
 			}
@@ -326,7 +326,7 @@ describe("Fantasy Teams", () => {
 			const expected = {
 				message: 'Team updated successfully',
 				team: {
-					balance: teamValue,
+					balance: 100 - teamValue,
 					players: updatedTeamPlayers
 				}
 			}
@@ -364,7 +364,7 @@ describe("Fantasy Teams", () => {
 			const expected = {
 				message: 'Team updated successfully',
 				team: {
-					balance: teamValue,
+					balance: 100 -  teamValue,
 					players: updatedTeamPlayers
 				}
 			}

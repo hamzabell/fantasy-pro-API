@@ -7,13 +7,13 @@ const fantasyLeaguesApp = new OpenAPIHono();
 // Define the schema for a fantasy league
 const FantasyLeagueSchema = z.object({
   id: z.string().optional(),
-  name: z.string(),
+  name: z.string().min(1, "Name cannot be empty"),
   stake: z.string(),
-  limit: z.number(),
+  limit: z.number().positive("Limit must be a positive number"),
   draftDate: z.date(), // Will be a date string
   leagueType: z.string(),
   leagueMode: z.string(),
-  winners: z.number(),
+  winners: z.number().positive("Winners must be a positive number"),
   allowPowerUps: z.boolean(),
   ownerId: z.string(),
   createdAt: z.string().optional(),
@@ -29,13 +29,13 @@ const createFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            name: z.string(),
+            name: z.string().min(1, "Name cannot be empty"),
             stake: z.string(),
-            limit: z.number(),
-            draftDate: z.date(), // Will be a date string
+            limit: z.number().positive("Limit must be a positive number"),
+            draftDate: z.string().transform((str) => new Date(str)), // Transform string to Date
             leagueType: z.string(),
             leagueMode: z.string(),
-            winners: z.number(),
+            winners: z.number().positive("Winners must be a positive number"),
             allowPowerUps: z.boolean(),
           }),
         },
@@ -54,6 +54,16 @@ const createFantasyLeagueRoute = createRoute({
       },
       description: 'Fantasy league created',
     },
+    400: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Validation error',
+    },
   },
   security: [{ BearerAuth: [] }], // Requires authentication
 });
@@ -66,7 +76,17 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-	const data = createPopulatedFantasyLeague(c.req.valid('json'))
+  const requestData = c.req.valid('json');
+  
+  // Validate head-to-head leagues
+  if (requestData.leagueMode === 'head-to-head' && requestData.limit > 2) {
+    return c.json({ error: 'Head-to-head leagues can have a maximum of 2 teams' }, 400);
+  }
+
+	const data = createPopulatedFantasyLeague({
+    ...requestData,
+    ownerId: user.id
+  })
   
   // Save the league to the database
   const league = await saveFantasyLeagueToDatabase(data)

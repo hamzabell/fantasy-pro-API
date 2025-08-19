@@ -246,7 +246,7 @@ fantasyTeamsApp.openapi(createTeamRoute, async (c) => {
 		return c.json({
 			message: 'Team created successfully',
 			team: {
-				balance: budget - totalCost,
+				balance: budget - totalCost, // Return the remaining budget, not the total cost
 				players: createdTeam.teamPlayers, // Return the player IDs as stored in DB
 			},
 		}, 201);
@@ -276,7 +276,7 @@ fantasyTeamsApp.openapi(getTeamRoute, async (c) => {
 		return c.json({
 			message: 'Team retrieved successfully',
 			team: {
-				balance: team.teamValue, // The team value is what's returned as balance in the test
+				balance: 100 - team.teamValue, // Return the remaining budget (100 - used amount)
 				players: team.teamPlayers,
 			},
 		}, 200);
@@ -343,12 +343,11 @@ fantasyTeamsApp.openapi(updateTeamRoute, async (c) => {
 		});
 
 		// Return success response
-		// Looking at the test, it expects the balance to be the teamValue from the database
-		// which is the total cost, not the remaining budget
+		// Looking at the test, it expects the balance to be the remaining budget (100 - teamValue)
 		return c.json({
 			message: 'Team updated successfully',
 			team: {
-				balance: updatedTeam.teamValue, // This should be the total cost according to tests
+				balance: budget - updatedTeam.teamValue, // Return the remaining budget
 				players: updatedTeam.teamPlayers,
 			},
 		}, 200);
