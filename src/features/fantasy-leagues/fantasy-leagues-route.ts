@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { saveFantasyLeagueToDatabase } from './fantasy-leagues-model.js';
-import type { Context } from 'hono';
+import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
 
 const fantasyLeaguesApp = new OpenAPIHono();
 
@@ -10,7 +10,7 @@ const FantasyLeagueSchema = z.object({
   name: z.string(),
   stake: z.string(),
   limit: z.number(),
-  draftDate: z.string(), // Will be a date string
+  draftDate: z.date(), // Will be a date string
   leagueType: z.string(),
   leagueMode: z.string(),
   winners: z.number(),
@@ -32,7 +32,7 @@ const createFantasyLeagueRoute = createRoute({
             name: z.string(),
             stake: z.string(),
             limit: z.number(),
-            draftDate: z.string(), // Will be a date string
+            draftDate: z.date(), // Will be a date string
             leagueType: z.string(),
             leagueMode: z.string(),
             winners: z.number(),
@@ -66,14 +66,10 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const body = c.req.valid('json');
+	const data = createPopulatedFantasyLeague(c.req.valid('json'))
   
   // Save the league to the database
-  const league = await saveFantasyLeagueToDatabase({
-    ...body,
-    ownerId: user.id,
-    draftDate: new Date(body.draftDate), // Convert to Date object
-  })
+  const league = await saveFantasyLeagueToDatabase(data)
 
   return c.json({
     message: 'Fantasy league created successfully',

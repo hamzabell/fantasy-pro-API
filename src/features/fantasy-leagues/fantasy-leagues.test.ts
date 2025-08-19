@@ -33,17 +33,6 @@ const setupUserWithTeam = async ({
 	}
 } 
 
-const cleanUpDatabase = async ({ user, team }: { user: User, team: Team }) => {
-	// Delete in reverse order of dependencies to avoid foreign key constraint violations
-	try {
-		await deleteTeamFromDatabaseById(team.id)
-	} catch (error) {
-		// Team might not exist, which is fine
-		console.log('Team does not exist, skipping deletion');
-	}
-	await deleteUserFromDatabaseById(user.id)
-}
-
 describe("Fantasy Leagues", () => {
 	describe("Create Fantasy League", () => {
 		test("given that an authenticated user creates a fantasy league and provides valid data: it should create the league", async () => {
@@ -59,6 +48,8 @@ describe("Fantasy Leagues", () => {
 					...league
 				})
 			});
+
+			console.log('Response:', await response.json());
 
 			expect(response.status).toBe(201);
 
@@ -81,6 +72,48 @@ describe("Fantasy Leagues", () => {
 			expect(createdLeague?.ownerId).toEqual(mockUser.user.id); // Because of our mock authentication
 			
 			await deleteFantasyLeagueFromDatabaseById(actual.league.id);
+	})
+
+	test("given that an authenticated user create an head-to-head fantasy league and provides valid data: it should allow a limit of 2 teams", async () => {
+		const mockSupabase = mockSupabaseAuthSuccess();
+
+		vi.spyOn(supabase.auth, 'getUser').mockResolvedValue(mockSupabase.auth.getUser());
+
+		const league = createPopulatedFantasyLeague({
+			leagueMode: 'head-to-head',
+			limit: 2,
+		});
+
+		const response = await app.request('/api/fantasy-leagues', {
+			method: 'POST',
+			...createAuthHeaders(),
+			...createBody({
+				...league
+			})
+		});
+
+		expect(response.status).toBe(201); 
+			
+		const actual = await response.json();
+
+		expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+	})
+
+	test("given an authenticated user tries to create an head-to-head fantasy league with more than 2 teams: it should throw a 400 error", async () => {
+		const mockSupabase = mockSupabaseAuthSuccess();
+		vi.spyOn(supabase.auth, 'getUser').mockResolvedValue(mockSupabase.auth.getUser());
+		const league = createPopulatedFantasyLeague({
+			leagueMode: 'head-to-head',
+			limit: 3
+		});
+		const response = await app.request('/api/fantasy-leagues', {
+			method: 'POST',
+			...createAuthHeaders(),
+			...createBody({
+				...league
+			})
+		});
+		expect(response.status).toBe(400);
 	})
 
 	test("given an unauthenticated user tries to create a fantasy league:it should throw a 401 error", async () => {
