@@ -4,7 +4,7 @@ import { describe, test, expect, vi  } from 'vitest';
 import {deleteUserFromDatabaseById, saveUserToDatabase} from '../users/users-model.js';
 import {deleteTeamFromDatabaseById, saveTeamToDatabase} from '../fantasy-teams/fantasy-teams-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
-import {createAuthHeaders, createBody} from '../../utils/testUtils.js';
+import {createAuthHeaders, createBody, mockUser} from '../../utils/testUtils.js';
 import type {Team, User} from '../../generated/prisma/index.js';
 import {deleteFantasyLeagueFromDatabaseById, retrieveFantasyLeagueFromDatabaseById} from './fantasy-leagues-model.js';
 import {mockSupabaseAuthSuccess} from '../../utils/supabaseMocks.js';
@@ -50,8 +50,6 @@ describe("Fantasy Leagues", () => {
 			const mockSupabase = mockSupabaseAuthSuccess();
 			vi.spyOn(supabase.auth, 'getUser').mockResolvedValue(mockSupabase.auth.getUser());
 
-			const { user, team } = await setupUserWithTeam();
-
 			const league = createPopulatedFantasyLeague(); 
 
 			const response = await app.request('/api/fantasy-leagues', {
@@ -65,33 +63,39 @@ describe("Fantasy Leagues", () => {
 			expect(response.status).toBe(201);
 
 			const actual = await response.json();
+			const expected = {
+				...league,
+				draftDate: `${league.draftDate.toISOString()}`
+			}
+
 			
 			// Verify the structure of the response
 			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
-			expect(actual).toHaveProperty('league');
-			expect(actual.league).toHaveProperty('id');
-			expect(actual.league).toHaveProperty('name', league.name);
-			expect(actual.league).toHaveProperty('stake', league.stake);
-			expect(actual.league).toHaveProperty('limit', league.limit);
-			expect(actual.league).toHaveProperty('draftDate');
-			expect(actual.league).toHaveProperty('leagueType', league.leagueType);
-			expect(actual.league).toHaveProperty('leagueMode', league.leagueMode);
-			expect(actual.league).toHaveProperty('winners', league.winners);
-			expect(actual.league).toHaveProperty('allowPowerUps', league.allowPowerUps);
-			expect(actual.league).toHaveProperty('ownerId');
-			expect(actual.league).toHaveProperty('createdAt');
-			expect(actual.league).toHaveProperty('updatedAt');
-			expect(actual.league).toHaveProperty('description', null);
+			expect(actual.league).toMatchObject(expected);
 
 			// Verify the league was actually saved to the database
 			const createdLeague = await retrieveFantasyLeagueFromDatabaseById(actual.league.id); 
 			
 			expect(createdLeague).toBeDefined();
-			expect(createdLeague?.name).toBe(league.name);
-			expect(createdLeague?.ownerId).toBe('test-user-id'); // Because of our mock authentication
+			expect(createdLeague?.name).toEqual(league.name);
+			expect(createdLeague?.ownerId).toEqual(mockUser.user.id); // Because of our mock authentication
 			
 			await deleteFantasyLeagueFromDatabaseById(actual.league.id);
-			await cleanUpDatabase({ user, team });
+	})
+
+	test("given an unauthenticated user tries to create a fantasy league:it should throw a 401 error", async () => {
+			const league = createPopulatedFantasyLeague(); 
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createBody({
+					...league
+				})
+			});
+
+			expect(response.status).toBe(401);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
 	})
 })
 })

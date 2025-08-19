@@ -89,6 +89,14 @@ export async function deleteUserFromDatabaseById(id: User["id"]) {
  * @returns The number of Users that were deleted.
  */
 export async function deleteAllUsersFromDatabase() {
+	// Delete in correct order to respect foreign key constraints
+	// Delete FantasyLeagueMembership first (junction table)
+	await prisma.fantasyLeagueMembership.deleteMany();
+	// Delete FantasyLeague before User since leagues reference users as owners
+	await prisma.fantasyLeague.deleteMany();
+	// Delete Team before User since teams reference users
+	await prisma.team.deleteMany();
+	// Now we can safely delete users
 	const result = await prisma.user.deleteMany();
 	return result.count;
 }

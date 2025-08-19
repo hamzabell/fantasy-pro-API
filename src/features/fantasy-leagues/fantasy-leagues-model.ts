@@ -156,6 +156,9 @@ export async function deleteFantasyLeagueFromDatabaseById(id: FantasyLeague["id"
  * @returns The number of FantasyLeagues that were deleted.
  */
 export async function deleteAllFantasyLeaguesFromDatabase() {
+	// Delete memberships first as they reference leagues
+	await prisma.fantasyLeagueMembership.deleteMany();
+	// Then delete leagues
 	const result = await prisma.fantasyLeague.deleteMany();
 	return result.count;
 }

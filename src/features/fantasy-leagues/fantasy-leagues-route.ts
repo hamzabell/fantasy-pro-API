@@ -73,7 +73,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
     ...body,
     ownerId: user.id,
     draftDate: new Date(body.draftDate), // Convert to Date object
-  });
+  })
 
   return c.json({
     message: 'Fantasy league created successfully',
