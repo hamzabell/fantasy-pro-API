@@ -5,16 +5,16 @@ import { createBody, createAuthHeaders } from '../../utils/testUtils.js';
 import {mockSupabaseAuthSuccess, mockUser} from '../../utils/supabaseMocks.js';
 import {supabase} from '../supabase/supabase-helpers.js';
 import {retrieveTeamFromDatabaseByUserId, saveTeamToDatabase} from './fantasy-teams-model.js';
-import {saveUserToDatabase, deleteAllUsersFromDatabase } from '../users/users-model.js';
-import {deleteAllTeamsFromDatabase} from './fantasy-teams-model.js';
-import {faker} from '@faker-js/faker';
+import {saveUserToDatabase, deleteAllUsersFromDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
 
 
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 
 const setupUserWithATeam = async () => {
+		// First create a user in the database with a unique ID and email
 		const user = await saveUserToDatabase({
-			email: faker.internet.email()
+			id: `user-${Date.now()}-${Math.random()}`,
+			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
 		});
 
 		const team = await saveTeamToDatabase({
@@ -29,14 +29,19 @@ const setupUserWithATeam = async () => {
 describe("Fantasy Teams", () => {
 	describe("POST /create-team", () => {
 	test("given that a user selects 11 players for his team and all 11 players costs are equal or under 100M pound: it should create a team for the user and map the players to the user", async () => {
-
-		const mockSupabase = mockSupabaseAuthSuccess();
+		// Create a unique user for this test
+		const user = await saveUserToDatabase({
+			id: `user-${Date.now()}-${Math.random()}`,
+			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
+		});
+		
+		const mockSupabase = mockSupabaseAuthSuccess(user);
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
 		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];	
 		
-		const userTeam 	= await retrieveTeamFromDatabaseByUserId(mockUser.id);
+				const userTeam 	= await retrieveTeamFromDatabaseByUserId(user.id);
 
 		expect(userTeam).toBeNull(); // Ensure no team exists before test
 
@@ -62,18 +67,23 @@ describe("Fantasy Teams", () => {
 
 		expect(actual).toEqual(expected);
 
-		const team = await retrieveTeamFromDatabaseByUserId(mockUser.id) 
-		
+		const team = await retrieveTeamFromDatabaseByUserId(user.id) 
+
 		expect(team).not.toBeNull();
 		expect(team.teamPlayers).toEqual(playerIds);
 		
 		// Cleanup after test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
-	})
+		await deleteUserFromDatabaseById(user.id);
+	});
 
 	test("given that a user selects 11 players for his team and the total cost of player is over 100M pounds: it should return an error stating that the total cost of players exceeds the budget", async () => {
-		const mockSupabase = mockSupabaseAuthSuccess();
+		// Create a unique user for this test
+		const user = await saveUserToDatabase({
+			id: `user-${Date.now()}-${Math.random()}`,
+			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
+		});
+		
+		const mockSupabase = mockSupabaseAuthSuccess(user);
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120);
 
@@ -94,9 +104,7 @@ describe("Fantasy Teams", () => {
 
 		expect(actual).toEqual(expected);
 		
-		// Cleanup after test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
+		await deleteUserFromDatabaseById(user.id);
 	})
 
 	test("given the user selects less than 11 players: it should return an error stating that you must select exactly 11 players for your team", async () => {
@@ -123,12 +131,16 @@ describe("Fantasy Teams", () => {
 
 		expect(actual).toEqual(expected);
 		
-		// Cleanup after test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
+		await deleteUserFromDatabaseById(mockUser.id);
 	})
 
 	test("given an unauthenticated user tries to create a team with 11 players: it should return an 401 http Error", async () => {
+		// Create a unique user for this test
+		const user = await saveUserToDatabase({
+			id: `user-${Date.now()}`,
+			email: `test-${Date.now()}@example.com`, // Unique email to avoid constraint violations
+		});
+		
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
 		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];	
@@ -149,13 +161,17 @@ describe("Fantasy Teams", () => {
 
 		expect(actual).toEqual(expected);
 		
-		// Cleanup after test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
+		await deleteUserFromDatabaseById(user.id);
 	})
 
 	test("given the user selects duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
-		const mockSupabase = mockSupabaseAuthSuccess();
+		// Create a unique user for this test
+		const user = await saveUserToDatabase({
+			id: `user-${Date.now()}-${Math.random()}`,
+			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
+		});
+		
+		const mockSupabase = mockSupabaseAuthSuccess(user);
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -178,20 +194,14 @@ describe("Fantasy Teams", () => {
 
 		expect(actual).toEqual(expected);
 		
-		// Cleanup after test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
+		await deleteUserFromDatabaseById(user.id);
 	})
 
-	test("given the user already has a team: it should return an error stating that the user already has a team", async () => {
-		// Clean up database before test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
-		
-		// Create user and team in database
+		test("given the user already has a team: it should return an error stating that the user already has a team", async () => {
+		// Create a unique user for this test
 		const user = await saveUserToDatabase({
-			id: mockUser.id,
-			email: mockUser.email,
+			id: `user-${Date.now()}`,
+			email: `test-${Date.now()}@example.com`, // Unique email to avoid constraint violations
 		});
 		
 		await saveTeamToDatabase({
@@ -200,16 +210,17 @@ describe("Fantasy Teams", () => {
 			teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
 		});
 
-		const mockSupabase = mockSupabaseAuthSuccess();
+		const mockSupabase = mockSupabaseAuthSuccess(user);
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
 		const playerIds = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 
 		const res = await app.request('/api/fantasy-teams/create-team', {
-			...createAuthHeaders(),
+			...createAuthHeaders(), // Use createAuthHeaders instead of createHeaders
 			...createBody({
 				players: playerIds
+				// No budget field needed as it's fixed at 100M
 			}),
 			method: 'POST',
 		})
@@ -223,10 +234,9 @@ describe("Fantasy Teams", () => {
 
 		expect(actual).toEqual(expected);
 		
-		// Cleanup after test
-		await deleteAllTeamsFromDatabase();
-		await deleteAllUsersFromDatabase();
-	})
+		// Clean up properly
+		await deleteUserFromDatabaseById(user.id);
+	});
 	})
 
 	describe("GET /team", () => {
@@ -253,13 +263,17 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
 			await deleteAllUsersFromDatabase();
 		})
 
 		test("given that a user does not have a team: it should return an error stating that the user does not have a team", async () => {
-			const mockSupabase = mockSupabaseAuthSuccess();
+			// Create a unique user for this test
+			const user = await saveUserToDatabase({
+				id: `user-${Date.now()}-${Math.random()}`,
+				email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
+			});
+			
+			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 
 			const res = await app.request('/api/fantasy-teams/team', {
@@ -276,9 +290,7 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
+			await deleteUserFromDatabaseById(user.id);
 		})	
 	
 		test("given an unauthenticated user tries to get their team: it should return an 401 http Error", async () => {
@@ -295,9 +307,6 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test (if any user/team was created by middleware)
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
 		})
 
 	})
@@ -323,6 +332,7 @@ describe("Fantasy Teams", () => {
 			expect(res.status).toEqual(200);
 
 			const actual = await res.json();
+
 			const expected = {
 				message: 'Team updated successfully',
 				team: {
@@ -334,11 +344,11 @@ describe("Fantasy Teams", () => {
 			expect(actual).toEqual(expected);
 			
 			const updatedTeam = await retrieveTeamFromDatabaseByUserId(user.id);
+
 			expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();	
+			// Clean up properly
+			await deleteUserFromDatabaseById(user.id);
 		})
 
 		test("given that a user has a team of 11 players and tries to change multiple players at once and it is within the budget: it should update the team with the new players and return the updated team", async () => {
@@ -374,9 +384,8 @@ describe("Fantasy Teams", () => {
 			const updatedTeam = await retrieveTeamFromDatabaseByUserId(user.id);
 			expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();	
+			// Clean up properly
+			await deleteUserFromDatabaseById(user.id);
 		})
 
 		test("given that a user has a team of 11 players and tries to change one player and it exceeds the budget: it should return an error stating that the total cost of players exceeds the budget", async () => {
@@ -405,9 +414,8 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();	
+			// Clean up properly
+			await deleteUserFromDatabaseById(user.id);
 		})
 
 		test("given an unauthenticated user tries to update a team: it should return a 401 http Error", async () => {
@@ -428,10 +436,6 @@ describe("Fantasy Teams", () => {
 			}
 
 			expect(actual).toEqual(expected);
-			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
 		})
 
 		test("given that a user does not have a team: it should return an error stating that the user does not have a team", async () => {
@@ -458,13 +462,10 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
 		})
 
 		test("given that a user tries to update their team with less than 11 players: it should return an error stating that you must select exactly 11 players", async () => {
-			const { user } = await setupUserWithATeam();
+			const { user  } = await setupUserWithATeam();
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
@@ -488,9 +489,8 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
+			// Clean up properly
+			await deleteUserFromDatabaseById(user.id);
 		})
 
 		test("given that a user tries to update their team with more than 11 players: it should return an error stating that you must select exactly 11 players", async () => {
@@ -519,9 +519,8 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
+			// Clean up properly
+			await deleteUserFromDatabaseById(user.id);
 		})
 
 		test("given that a user tries to update their team with duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
@@ -549,9 +548,8 @@ describe("Fantasy Teams", () => {
 
 			expect(actual).toEqual(expected);
 			
-			// Cleanup after test
-			await deleteAllTeamsFromDatabase();
-			await deleteAllUsersFromDatabase();
+			// Clean up properly
+			await deleteUserFromDatabaseById(user.id);
 		})
 	})
 })

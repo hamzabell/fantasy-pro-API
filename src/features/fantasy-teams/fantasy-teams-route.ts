@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { fetchTotalCostForPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { ErrorResponseSchema, TeamResponseSchema } from './fantasy-teams-schemas.js';
 import { saveTeamToDatabase, retrieveTeamFromDatabaseByUserId, updateTeamInDatabaseById } from './fantasy-teams-model.js';
-import { saveUserToDatabase } from '../users/users-model.js';
+import { saveUserToDatabase, retrieveUserFromDatabaseById } from '../users/users-model.js';
 import type { User } from '../../generated/prisma/index.js';
 import type { Team } from '../../generated/prisma/index.js';
 
@@ -223,14 +223,17 @@ fantasyTeamsApp.openapi(createTeamRoute, async (c) => {
 		// Ensure user exists in database
 		// In a real application, this would be handled by the auth middleware
 		// But for tests, we need to make sure the user exists
-		try {
-			await saveUserToDatabase({
-				id: user.id,
-				email: user.email,
-			});
-		} catch (error) {
-			// User might already exist, which is fine
-			console.log('User already exists in database');
+		let dbUser = await retrieveUserFromDatabaseById(user.id);
+		if (!dbUser) {
+			try {
+				dbUser = await saveUserToDatabase({
+					id: user.id,
+					email: user.email,
+				});
+			} catch (error) {
+				// User might already exist, which is fine
+				console.log('User already exists in database');
+			}
 		}
 
 		// Create team in database

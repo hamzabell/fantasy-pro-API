@@ -1,13 +1,32 @@
 import { describe, test, expect, vi } from 'vitest';
-import {createAuthHeaders, createHeaders, mockUser} from '../../utils/testUtils.js'
+import {createAuthHeaders, createHeaders } from '../../utils/testUtils.js'
 import { mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
 import { supabase } from '../supabase/supabase-helpers.js';
+import { saveUserToDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
+import { createMockUser } from '../../utils/supabaseMocks-factories.js';
 
 import  app from '../../index.js';	
+import {faker} from '@faker-js/faker';
+import {createPopulatedUser} from '../users/users-factories.js';
 
 describe("Authentication", () => {
 	test("given that a user is authenticated: it should return the user's details  ", async () => {
-		const mockSupabase = mockSupabaseAuthSuccess();
+		// Create a unique user for this test
+		const testUser = createMockUser({
+			email: faker.internet.email(),
+		});
+		
+		// First create a user in the database
+		const user = await saveUserToDatabase(
+			createPopulatedUser(
+				{
+			id: testUser.id,
+			email: testUser.email,
+		}
+			)
+		);
+		
+		const mockSupabase = mockSupabaseAuthSuccess(testUser);
 		vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
 
 		const res = await app.request('/api/auth/user', {
@@ -15,16 +34,18 @@ describe("Authentication", () => {
 			method: 'GET',
 		});
 
-
 		expect(res.status).toBe(200);
 
 		const actual = await res.json();
 		const expected = {
-			id: mockUser.user.id,
-			email: mockUser.user.email
+			id: user.id,
+			email: user.email
 		};
 
-		expect(actual).toEqual(expected);	
+		expect(actual).toEqual(expected);
+		
+		// Clean up
+		await deleteUserFromDatabaseById(user.id);
 	})
 
 	test("given an unauthenticated user: it should return a 401 unauthorized error", async () => {

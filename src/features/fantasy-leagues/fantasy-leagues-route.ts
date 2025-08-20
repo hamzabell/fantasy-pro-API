@@ -64,6 +64,16 @@ const createFantasyLeagueRoute = createRoute({
       },
       description: 'Validation error',
     },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Unauthorized',
+    },
   },
   security: [{ BearerAuth: [] }], // Requires authentication
 });
@@ -73,10 +83,15 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
   const user = c.get('user');
   
   if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
   const requestData = c.req.valid('json');
+  
+  // Validate draft date is in the future BEFORE other validations
+  if (requestData.draftDate <= new Date()) {
+    return c.json({ error: 'Draft date must be in the future' }, 400);
+  }
   
   // Validate head-to-head leagues
   if (requestData.leagueMode === 'head-to-head' && requestData.limit > 2) {

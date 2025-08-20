@@ -94,6 +94,5 @@ export async function deleteTeamFromDatabaseById(id: Team["id"]) {
  * @returns The number of Teams that were deleted.
  */
 export async function deleteAllTeamsFromDatabase() {
-	const result = await prisma.team.deleteMany();
-	return result.count;
+	return await prisma.team.deleteMany();
 }
