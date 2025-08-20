@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { saveFantasyLeagueToDatabase } from './fantasy-leagues-model.js';
+import { saveFantasyLeagueToDatabase, retrieveFantasyLeagueFromDatabaseById } from './fantasy-leagues-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
 
 const fantasyLeaguesApp = new OpenAPIHono();
@@ -76,6 +76,7 @@ const createFantasyLeagueRoute = createRoute({
     },
   },
   security: [{ BearerAuth: [] }], // Requires authentication
+  tags: ['Fantasy Leagues'],
 });
 
 fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
@@ -115,6 +116,80 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
       updatedAt: league.updatedAt.toISOString(),
     },
   }, 201);
+});
+
+// Get Fantasy League by ID route
+const getFantasyLeagueByIdRoute = createRoute({
+  method: 'get',
+  path: '/{id}',
+  request: {
+    params: z.object({
+      id: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            league: FantasyLeagueSchema,
+          }),
+        },
+      },
+      description: 'Fantasy league retrieved',
+    },
+    404: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Fantasy league not found',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Unauthorized',
+    },
+  },
+  security: [{ BearerAuth: [] }], // Requires authentication
+  tags: ['Fantasy Leagues'],
+});
+
+fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
+  // Get user from context (set by middleware)
+  const user = c.get('user');
+  
+  if (!user) {
+    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+  }
+
+  const { id } = c.req.valid('param');
+  
+  // Retrieve the league from the database
+  const league = await retrieveFantasyLeagueFromDatabaseById(id);
+
+  if (!league) {
+    return c.json({ error: 'Fantasy league not found' }, 404);
+  }
+
+  return c.json({
+    message: 'Leagued Retrieved Successfully',
+    league: {
+      ...league,
+      draftDate: league.draftDate.toISOString(), // Convert back to ISO string for response
+      createdAt: league.createdAt.toISOString(),
+      updatedAt: league.updatedAt.toISOString(),
+    },
+  }, 200);
 });
 
 export default fantasyLeaguesApp;

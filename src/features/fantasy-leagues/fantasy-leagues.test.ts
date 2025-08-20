@@ -3,11 +3,11 @@ import { describe, test, expect, vi  } from 'vitest';
 import {deleteUserFromDatabaseById, saveUserToDatabase } from '../users/users-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
 import {createAuthHeaders, createBody} from '../../utils/testUtils.js';
-import {mockUser} from '../../utils/supabaseMocks.js';
-import {deleteFantasyLeagueFromDatabaseById, retrieveFantasyLeagueFromDatabaseById} from './fantasy-leagues-model.js';
-import {mockSupabaseAuthSuccess} from '../../utils/supabaseMocks.js';
+import {deleteFantasyLeagueFromDatabaseById, retrieveFantasyLeagueFromDatabaseById, saveFantasyLeagueToDatabase} from './fantasy-leagues-model.js';
+import {mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
 import {supabase} from '../supabase/supabase-helpers.js';
 import {faker} from '@faker-js/faker';
+import {createPopulatedUser} from '../users/users-factories.js';
 
 
 
@@ -320,4 +320,90 @@ describe("Fantasy Leagues", () => {
 			await deleteUserFromDatabaseById(user.id);
 		});
 	});
+
+	describe('GET leagues', () => {
+		describe('GET leagues/:id', () => {
+			test('given an authenticated user tries to get a leagues details via its id: it should return the details of that league', async () => {
+				// setup
+				const user = createPopulatedUser();
+
+				const savedUser = await saveUserToDatabase(user);
+				const league = createPopulatedFantasyLeague({
+					ownerId: savedUser.id
+				})
+
+				const savedLeague = await saveFantasyLeagueToDatabase(league);		
+
+				// mock supabase Auth
+				const mockSupabase = mockSupabaseAuthSuccess(savedUser)
+				vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+				const response = await app.request(`/api/fantasy-leagues/${savedLeague.id}`, {
+					method: 'GET',
+					...createAuthHeaders()
+				});
+
+				expect(response.status).toBe(200);
+
+				const actual = await response.json();
+
+				const expected = {
+					message: "Leagued Retrieved Successfully",
+					league: {
+						...league,
+						id: savedLeague.id,
+						draftDate: savedLeague.draftDate.toISOString(),
+						createdAt: savedLeague.createdAt.toISOString(),
+						updatedAt: savedLeague.updatedAt.toISOString(),
+					}
+				}
+
+				expect(actual).toEqual(expected);
+
+				// clean up
+				await deleteFantasyLeagueFromDatabaseById(savedLeague.id)
+				await deleteUserFromDatabaseById(savedUser.id);
+			})
+
+			test('given an authenticated user tries to get a leagues details via its id that does not exist: it should return a 404 error', async () => {
+				// Create and save a user to the database
+				const user = createPopulatedUser();
+				const savedUser = await saveUserToDatabase(user);
+				
+				// mock supabase Auth
+				const mockSupabase = mockSupabaseAuthSuccess(savedUser)
+				vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+				const response = await app.request(`/api/fantasy-leagues/${faker.string.uuid()}`, {
+					method: 'GET',
+					...createAuthHeaders()
+				});
+
+				expect(response.status).toBe(404);
+				const actual = await response.json();
+				const expected = {
+					error: "Fantasy league not found"
+				}
+
+				expect(actual).toEqual(expected);
+				
+				// Clean up
+				await deleteUserFromDatabaseById(savedUser.id);
+			})
+
+			test('given an unauthenticated user tries to get a leagues details via its id: it should return a 401 error', async () => {
+				const response = await app.request(`/api/fantasy-leagues/${faker.string.uuid()}`, {
+					method: 'GET'
+				});
+
+				expect(response.status).toBe(401);
+				const actual = await response.json();
+				const expected = {
+					error: "Unauthorized: Missing or invalid Authorization header"
+				}
+
+				expect(actual).toEqual(expected);
+			})
+		} )
+	})
 });
