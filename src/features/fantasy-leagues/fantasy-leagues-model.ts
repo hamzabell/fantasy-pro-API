@@ -86,6 +86,39 @@ export async function retrieveFantasyLeagueMembershipsByLeagueId(leagueId: strin
 	return await prisma.fantasyLeagueMembership.findMany({ where: { leagueId } });
 }
 
+/**
+ * Counts the number of FantasyLeagueMembership records for a specific league.
+ *
+ * @param leagueId - The id of the FantasyLeague whose memberships to count.
+ * @returns The number of FantasyLeagueMemberships for the league.
+ */
+export async function countFantasyLeagueMembershipsByLeagueId(leagueId: string) {
+	return await prisma.fantasyLeagueMembership.count({ where: { leagueId } });
+}
+
+/**
+ * Retrieves all FantasyLeagueMembership records for a specific user.
+ *
+ * @param userId - The id of the User whose memberships to retrieve.
+ * @returns An array of FantasyLeagueMembership records with league details.
+ */
+export async function retrieveFantasyLeagueMembershipsByUserIdWithLeagueDetails(userId: string) {
+	return await prisma.fantasyLeagueMembership.findMany({ 
+		where: { userId },
+		include: { league: true }
+	});
+}
+
+/**
+ * Retrieves a User record from the database based on its id.
+ *
+ * @param id - The id of the User to get.
+ * @returns The User with a given id or null if it wasn't found.
+ */
+export async function retrieveUserFromDatabaseById(id: string) {
+	return await prisma.user.findUnique({ where: { id } });
+}
+
 // UPDATE
 
 /**

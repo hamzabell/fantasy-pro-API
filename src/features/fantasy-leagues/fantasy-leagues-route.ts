@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { saveFantasyLeagueToDatabase, retrieveFantasyLeagueFromDatabaseById } from './fantasy-leagues-model.js';
+import { saveFantasyLeagueToDatabase, retrieveFantasyLeagueFromDatabaseById, retrieveAllFantasyLeaguesFromDatabase, countFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById, retrieveFantasyLeagueMembershipsByUserId } from './fantasy-leagues-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
+import type {FantasyLeagueMembership} from '../../generated/prisma/index.js';
 
 const fantasyLeaguesApp = new OpenAPIHono();
 
@@ -116,6 +117,174 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
       updatedAt: league.updatedAt.toISOString(),
     },
   }, 201);
+});
+
+// Get all Fantasy Leagues route
+const getAllFantasyLeaguesRoute = createRoute({
+  method: 'get',
+  path: '/',
+  request: {
+    query: z.object({
+      stake: z.string().optional(),
+      isMember: z.string().optional().transform(val => val === 'true'),
+      sortBy: z.enum(['createdAt', 'teamsCount']).optional(),
+      sortOrder: z.enum(['asc', 'desc']).optional(),
+      search: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            leagues: z.array(FantasyLeagueSchema.extend({
+              owner: z.object({
+                id: z.string(),
+                email: z.string(),
+              }),
+              teamsCount: z.number(),
+              potentialWinnings: z.number(),
+              prizeDistribution: z.array(z.object({
+                position: z.number(),
+                percentage: z.number(),
+              })),
+            })),
+          }),
+        },
+      },
+      description: 'Fantasy leagues retrieved',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Unauthorized',
+    },
+  },
+  security: [{ BearerAuth: [] }], // Requires authentication
+  tags: ['Fantasy Leagues'],
+});
+
+fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
+  // Get user from context (set by middleware)
+  const user = c.get('user');
+  
+  if (!user) {
+    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+  }
+
+  const { stake, isMember, sortBy, sortOrder, search } = c.req.valid('query');
+  
+  // Retrieve all leagues from the database
+  let leagues = await retrieveAllFantasyLeaguesFromDatabase();
+  
+  // Filter to only public leagues
+  leagues = leagues.filter(league => league.leagueType === 'public');
+  
+  // Add owner details, teams count, and potential winnings
+  const leaguesWithDetails = [];
+  for (const league of leagues) {
+    try {
+      // Get actual teams count from membership table
+      const teamsCount = await countFantasyLeagueMembershipsByLeagueId(league.id);
+      
+      // Calculate potential winnings (entry stake * number of teams / winners)
+      const stakeValue = parseFloat(league.stake) || 0;
+      const potentialWinnings = teamsCount > 0 ? (stakeValue * teamsCount) / league.winners : 0;
+      
+      // Calculate prize distribution
+      let prizeDistribution = [];
+      if (league.winners === 1) {
+        prizeDistribution = [{ position: 1, percentage: 100 }];
+      } else if (league.winners === 2) {
+        prizeDistribution = [
+          { position: 1, percentage: 60 },
+          { position: 2, percentage: 40 }
+        ];
+      } else if (league.winners >= 3) {
+        prizeDistribution = [
+          { position: 1, percentage: 50 },
+          { position: 2, percentage: 30 },
+          { position: 3, percentage: 20 }
+        ];
+      }
+      
+      // Get owner details
+      const owner = await retrieveUserFromDatabaseById(league.ownerId);
+      
+      leaguesWithDetails.push({
+        ...league,
+        owner: owner ? { id: owner.id, email: owner.email } : { id: league.ownerId, email: 'unknown@example.com' },
+        teamsCount,
+        potentialWinnings,
+        prizeDistribution,
+        draftDate: league.draftDate.toISOString(),
+        createdAt: league.createdAt.toISOString(),
+        updatedAt: league.updatedAt.toISOString(),
+      });
+    } catch (error) {
+      console.error(`Error processing league ${league.id}:`, error);
+      // Skip this league if there's an error processing it
+    }
+  }
+  
+  // Filter by stake value if provided
+  let resultLeagues = [...leaguesWithDetails];
+  if (stake) {
+    const stakeValue = parseFloat(stake);
+    if (!isNaN(stakeValue)) {
+      resultLeagues = resultLeagues.filter(league => parseFloat(league.stake) === stakeValue);
+    }
+  }
+  
+  // Filter by membership if requested
+  if (isMember !== undefined) {
+    // Get user's league memberships
+    const userMemberships = await retrieveFantasyLeagueMembershipsByUserId(user.id);
+    const userLeagueIds = userMemberships.map((membership: FantasyLeagueMembership) => membership.leagueId);
+
+    if (isMember) {
+      resultLeagues = resultLeagues.filter(league => userLeagueIds.includes(league.id));
+    } else {
+      resultLeagues = resultLeagues.filter(league => !userLeagueIds.includes(league.id));
+    }
+  }
+  
+  // Search by name if provided
+  if (search) {
+    resultLeagues = resultLeagues.filter(league => 
+      league.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+  
+  // Sort if requested
+  if (sortBy) {
+    const order = sortOrder === 'desc' ? -1 : 1;
+    resultLeagues.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'createdAt':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'teamsCount':
+          comparison = a.teamsCount - b.teamsCount;
+          break;
+      }
+      
+      return order * comparison;
+    });
+  }
+
+  return c.json({
+    message: 'Leagues Retrieved Successfully',
+    leagues: resultLeagues,
+  }, 200);
 });
 
 // Get Fantasy League by ID route
