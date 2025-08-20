@@ -2,7 +2,7 @@ import app from '../../index.js'
 import { describe, test, expect, vi  } from 'vitest';
 import {deleteUserFromDatabaseById, saveUserToDatabase } from '../users/users-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
-import {createAuthHeaders, createBody} from '../../utils/testUtils.js';
+import {createAuthHeaders, createBody, createHeaders} from '../../utils/testUtils.js';
 import {deleteFantasyLeagueFromDatabaseById, retrieveFantasyLeagueFromDatabaseById, saveFantasyLeagueToDatabase} from './fantasy-leagues-model.js';
 import {mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
 import {supabase} from '../supabase/supabase-helpers.js';
@@ -372,13 +372,13 @@ describe("Fantasy Leagues", () => {
 			);
 			
 			// Check that we have the right number of leagues
-			expect(testLeagues).toHaveLength(2); // Only public leagues
+			expect(testLeagues).toHaveLength(3); // Public leagues + private league user owns
 			
 			// Check that private leagues are not included
 			const leagueIds = testLeagues.map((league: any) => league.id);
 			expect(leagueIds).toContain(savedLeague1.id);
 			expect(leagueIds).toContain(savedLeague2.id);
-			expect(leagueIds).not.toContain(savedPrivateLeague.id);
+			expect(leagueIds).toContain(savedPrivateLeague.id);
 
 			// Check league details for the leagues we created
 			const firstLeague = testLeagues.find((league: any) => league.id === savedLeague1.id);
@@ -740,7 +740,7 @@ describe("Fantasy Leagues", () => {
 				const actual = await response.json();
 
 				const expected = {
-					message: "Leagued Retrieved Successfully",
+					message: "League Retrieved Successfully",
 					league: {
 						...league,
 						id: savedLeague.id,
@@ -798,4 +798,275 @@ describe("Fantasy Leagues", () => {
 			})
 		} )
 	})
+
+	describe('Join Fantasy League', () => {
+		test('given an authenticated user tries to join a league via a valid code: it should allow the user to join the league', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10
+			});
+
+			const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join league
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: savedLeague.code
+				})
+			});
+
+			expect(response.status).toBe(200);
+
+			const actual = await response.json();
+			expect(actual).toHaveProperty('message', 'Successfully joined league');
+			expect(actual.membership).toHaveProperty('userId', user.id);
+			expect(actual.membership).toHaveProperty('leagueId', savedLeague.id);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user tries to join a league: it should validate that there is still enough space in the league', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Create a league with a limit of 1
+			const league = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 1
+			});
+
+			const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+			// Add another user as member to fill the league
+			const otherUser = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: otherUser.id,
+					leagueId: savedLeague.id
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join league
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: savedLeague.code
+				})
+			});
+
+			expect(response.status).toBe(409);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'League is full' });
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+			await deleteUserFromDatabaseById(otherUser.id);
+		});
+
+		test('given an authenticated user tries to join a private or public league: it should allow joining as long as there is space and the code is valid', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Test with private league
+			const privateLeague = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'private',
+				limit: 10
+			});
+
+			const savedPrivateLeague = await saveFantasyLeagueToDatabase(privateLeague);
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join private league
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: savedPrivateLeague.code
+				})
+			});
+
+			expect(response.status).toBe(200);
+
+			const actual = await response.json();
+			expect(actual).toHaveProperty('message', 'Successfully joined league');
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedPrivateLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an unauthenticated user tries to join a league: it should block the request', async () => {
+			// Request to join league without authentication
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createHeaders(), // No auth headers
+				...createBody({
+					code: faker.string.uuid()
+				})
+			});
+
+			expect(response.status).toBe(401);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+		});
+
+		test('given an authenticated user tries to join a non-existent league: it should return a 404 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join non-existent league
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: faker.string.uuid() // Non-existent league ID
+				})
+			});
+
+			expect(response.status).toBe(404);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Fantasy league not found' });
+
+			// Clean up
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an authenticated user tries to join a league they are already a member of: it should return a 409 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10
+			});
+
+			const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+			// Add user as member
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague.id
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join league again
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: savedLeague.code
+				})
+			});
+
+			expect(response.status).toBe(409);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'User is already a member of this league' });
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user tries to join a league with an empty code: it should return a 400 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join league with empty code
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: '' // Empty code
+				})
+			});
+
+			expect(response.status).toBe(400);
+
+			// Clean up
+			await deleteUserFromDatabaseById(user.id);
+		});
+	});
 });

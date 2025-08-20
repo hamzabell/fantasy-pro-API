@@ -11,6 +11,7 @@ export const createPopulatedFantasyLeague = ({
 	leagueMode = faker.helpers.arrayElement(['classic', 'head-to-head']) as FantasyLeague['leagueMode'],
 	winners = faker.number.int({ min: 1, max: 10 }),
 	allowPowerUps = faker.datatype.boolean(),
+	code = faker.string.alphanumeric(6).toUpperCase(),
 	ownerId = ''
 } ={} ) => ({
 	name,
@@ -22,5 +23,6 @@ export const createPopulatedFantasyLeague = ({
 	leagueMode,
 	winners,
 	allowPowerUps,
+	code,
 	ownerId
 })

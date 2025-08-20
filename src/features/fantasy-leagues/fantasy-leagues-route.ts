@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { saveFantasyLeagueToDatabase, retrieveFantasyLeagueFromDatabaseById, retrieveAllFantasyLeaguesFromDatabase, countFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById, retrieveFantasyLeagueMembershipsByUserId } from './fantasy-leagues-model.js';
+import { saveFantasyLeagueToDatabase, retrieveFantasyLeagueFromDatabaseById, retrieveAllFantasyLeaguesFromDatabase, countFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById, retrieveFantasyLeagueMembershipsByUserId, saveFantasyLeagueMembershipToDatabase, retrieveFantasyLeagueMembershipsByLeagueId, retrieveFantasyLeagueFromDatabaseByCode } from './fantasy-leagues-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
 import type {FantasyLeagueMembership} from '../../generated/prisma/index.js';
 
@@ -16,6 +16,7 @@ const FantasyLeagueSchema = z.object({
   leagueMode: z.string(),
   winners: z.number().positive("Winners must be a positive number"),
   allowPowerUps: z.boolean(),
+  code: z.string(),
   ownerId: z.string(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
@@ -38,6 +39,7 @@ const createFantasyLeagueRoute = createRoute({
             leagueMode: z.string(),
             winners: z.number().positive("Winners must be a positive number"),
             allowPowerUps: z.boolean(),
+            code: z.string().optional(), // Code is optional, will be auto-generated if not provided
           }),
         },
       },
@@ -100,8 +102,12 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
     return c.json({ error: 'Head-to-head leagues can have a maximum of 2 teams' }, 400);
   }
 
+  // Generate a code if not provided
+  const code = requestData.code || Math.random().toString(36).substring(2, 8).toUpperCase();
+
 	const data = createPopulatedFantasyLeague({
     ...requestData,
+    code,
     ownerId: user.id
   })
   
@@ -130,6 +136,7 @@ const getAllFantasyLeaguesRoute = createRoute({
       sortBy: z.enum(['createdAt', 'teamsCount']).optional(),
       sortOrder: z.enum(['asc', 'desc']).optional(),
       search: z.string().optional(),
+      leagueType: z.enum(['public', 'private']).optional(),
     }),
   },
   responses: {
@@ -178,13 +185,26 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
     return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
-  const { stake, isMember, sortBy, sortOrder, search } = c.req.valid('query');
+  const { stake, isMember, sortBy, sortOrder, search, leagueType } = c.req.valid('query');
   
   // Retrieve all leagues from the database
   let leagues = await retrieveAllFantasyLeaguesFromDatabase();
   
-  // Filter to only public leagues
-  leagues = leagues.filter(league => league.leagueType === 'public');
+  // Get user's league memberships
+  const userMemberships = await retrieveFantasyLeagueMembershipsByUserId(user.id);
+  const userLeagueIds = userMemberships.map((membership: FantasyLeagueMembership) => membership.leagueId);
+  const userOwnedLeagueIds = leagues.filter(league => league.ownerId === user.id).map(league => league.id);
+  
+  // Filter leagues:
+  // 1. Public leagues are always visible
+  // 2. Private leagues are only visible if the user is a member or owner
+  leagues = leagues.filter(league => {
+    if (league.leagueType === 'public') {
+      return true;
+    }
+    // For private leagues, only show if user is member or owner
+    return userLeagueIds.includes(league.id) || userOwnedLeagueIds.includes(league.id);
+  });
   
   // Add owner details, teams count, and potential winnings
   const leaguesWithDetails = [];
@@ -244,15 +264,16 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
   
   // Filter by membership if requested
   if (isMember !== undefined) {
-    // Get user's league memberships
-    const userMemberships = await retrieveFantasyLeagueMembershipsByUserId(user.id);
-    const userLeagueIds = userMemberships.map((membership: FantasyLeagueMembership) => membership.leagueId);
-
     if (isMember) {
       resultLeagues = resultLeagues.filter(league => userLeagueIds.includes(league.id));
     } else {
       resultLeagues = resultLeagues.filter(league => !userLeagueIds.includes(league.id));
     }
+  }
+  
+  // Filter by league type if requested
+  if (leagueType) {
+    resultLeagues = resultLeagues.filter(league => league.leagueType === leagueType);
   }
   
   // Search by name if provided
@@ -350,13 +371,149 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
     return c.json({ error: 'Fantasy league not found' }, 404);
   }
 
+  // Check if user can access this league (owners and members can always access, public leagues are accessible to all)
+  if (league.leagueType === 'private') {
+    const isOwner = league.ownerId === user.id;
+    const memberships = await retrieveFantasyLeagueMembershipsByLeagueId(league.id);
+    const isMember = memberships.some((membership: FantasyLeagueMembership) => membership.userId === user.id);
+    
+    if (!isOwner && !isMember) {
+      return c.json({ error: 'Access denied: This is a private league' }, 403);
+    }
+  }
+
   return c.json({
-    message: 'Leagued Retrieved Successfully',
+    message: 'League Retrieved Successfully',
     league: {
       ...league,
       draftDate: league.draftDate.toISOString(), // Convert back to ISO string for response
       createdAt: league.createdAt.toISOString(),
       updatedAt: league.updatedAt.toISOString(),
+    },
+  }, 200);
+});
+
+// Join Fantasy League route
+const joinFantasyLeagueRoute = createRoute({
+  method: 'post',
+  path: '/join',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            code: z.string().min(1, "Code cannot be empty"),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            membership: z.object({
+              id: z.string(),
+              userId: z.string(),
+              leagueId: z.string(),
+              createdAt: z.string(),
+              updatedAt: z.string(),
+            }),
+          }),
+        },
+      },
+      description: 'Successfully joined league',
+    },
+    400: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Validation error',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Unauthorized',
+    },
+    404: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'League not found',
+    },
+    409: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: 'Already a member or league is full',
+    },
+  },
+  security: [{ BearerAuth: [] }], // Requires authentication
+  tags: ['Fantasy Leagues'],
+});
+
+fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
+  // Get user from context (set by middleware)
+  const user = c.get('user');
+  
+  if (!user) {
+    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+  }
+
+  const { code } = c.req.valid('json');
+  
+  // Retrieve the league from the database using the code
+  const league = await retrieveFantasyLeagueFromDatabaseByCode(code);
+
+  if (!league) {
+    return c.json({ error: 'Fantasy league not found' }, 404);
+  }
+
+  // Check if user is already a member
+  const existingMemberships = await retrieveFantasyLeagueMembershipsByLeagueId(league.id);
+  const isAlreadyMember = existingMemberships.some(membership => membership.userId === user.id);
+  
+  if (isAlreadyMember) {
+    return c.json({ error: 'User is already a member of this league' }, 409);
+  }
+
+  // Check if league is full
+  const teamsCount = existingMemberships.length;
+  if (teamsCount >= league.limit) {
+    return c.json({ error: 'League is full' }, 409);
+  }
+
+  // Create membership
+  const membership = await saveFantasyLeagueMembershipToDatabase({
+    userId: user.id,
+    leagueId: league.id,
+  });
+
+  return c.json({
+    message: 'Successfully joined league',
+    membership: {
+      ...membership,
+      createdAt: membership.createdAt.toISOString(),
+      updatedAt: membership.updatedAt.toISOString(),
     },
   }, 200);
 });

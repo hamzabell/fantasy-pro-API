@@ -97,19 +97,6 @@ export async function countFantasyLeagueMembershipsByLeagueId(leagueId: string) 
 }
 
 /**
- * Retrieves all FantasyLeagueMembership records for a specific user.
- *
- * @param userId - The id of the User whose memberships to retrieve.
- * @returns An array of FantasyLeagueMembership records with league details.
- */
-export async function retrieveFantasyLeagueMembershipsByUserIdWithLeagueDetails(userId: string) {
-	return await prisma.fantasyLeagueMembership.findMany({ 
-		where: { userId },
-		include: { league: true }
-	});
-}
-
-/**
  * Retrieves a User record from the database based on its id.
  *
  * @param id - The id of the User to get.
@@ -117,6 +104,16 @@ export async function retrieveFantasyLeagueMembershipsByUserIdWithLeagueDetails(
  */
 export async function retrieveUserFromDatabaseById(id: string) {
 	return await prisma.user.findUnique({ where: { id } });
+}
+
+/**
+ * Retrieves a FantasyLeague record from the database based on its code.
+ *
+ * @param code - The code of the FantasyLeague to get.
+ * @returns The FantasyLeague with a given code or null if it wasn't found.
+ */
+export async function retrieveFantasyLeagueFromDatabaseByCode(code: string) {
+	return await prisma.fantasyLeague.findUnique({ where: { code } });
 }
 
 // UPDATE

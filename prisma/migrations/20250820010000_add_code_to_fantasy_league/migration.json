@@ -1,0 +1,22 @@
+{
+  "steps": [
+    {
+      "tag": "CreateField",
+      "model": "FantasyLeague",
+      "field": "code",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "FantasyLeague",
+          "field": "code"
+        },
+        "directive": "unique"
+      }
+    }
+  ]
+}
