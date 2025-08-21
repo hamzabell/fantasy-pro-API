@@ -9,6 +9,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
     "get-auth-token": "tsx src/utils/get-auth-token.ts"
   },

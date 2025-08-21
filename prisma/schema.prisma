@@ -34,7 +34,6 @@ model FantasyLeague {
   name        String
   stake       String
   limit       Int
-  draftDate   DateTime
   leagueType  String
   leagueMode  String
   winners     Int
@@ -44,6 +43,8 @@ model FantasyLeague {
   ownerId     String
   owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members     FantasyLeagueMembership[]
+  gameweekId  Int
+  gameweek    Gameweek    @relation(fields: [gameweekId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -52,10 +53,18 @@ model FantasyLeagueMembership {
   id        String     @id @default(cuid())
   userId    String
   leagueId  String
+  teamName  String?
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   league    FantasyLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
   @@unique([userId, leagueId])
+}
+
+model Gameweek {
+  id        Int         @id
+  deadline  DateTime
+  isActive  Boolean     @default(false)
+  leagues   FantasyLeague[]
 }

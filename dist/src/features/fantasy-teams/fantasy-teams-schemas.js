@@ -1,17 +1,13 @@
 import { z } from '@hono/zod-openapi';
 export const CreateTeamSchema = z.object({
     players: z.array(z.number()).length(11, { message: 'Must select 11 players.' }),
-    budget: z.number(),
+    // Budget is fixed at 100M for all users, not part of the request
 });
 export const TeamResponseSchema = z.object({
     message: z.string().openapi({ example: 'Team created successfully' }),
     team: z.object({
-        id: z.number().openapi({ example: 1 }),
-        players: z.array(z.object({
-            id: z.number().openapi({ example: 1 }),
-            cost: z.number().openapi({ example: 10 }),
-        })),
         balance: z.number().openapi({ example: 90 }),
+        players: z.array(z.number()).openapi({ example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }), // Updated to match actual response
     }),
 });
 export const ErrorResponseSchema = z.object({

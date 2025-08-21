@@ -1,5 +1,6 @@
 import type { FantasyLeague, FantasyLeagueMembership } from "../../generated/prisma/index.js";
 import prisma from "../../prisma.js";
+import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 
 export type PartialFantasyLeagueParameters = Parameters<typeof prisma.fantasyLeague.create>;
 

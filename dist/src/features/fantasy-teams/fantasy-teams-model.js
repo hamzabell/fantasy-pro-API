@@ -12,7 +12,7 @@ import prisma from "../../prisma.js";
 /**
  * Saves a new Team to the database.
  *
- * @param team - Parameters of the Team that should be created.
+ * @param team - The data for the Team that should be created.
  * @returns The newly created Team.
  */
 export function saveTeamToDatabase(team) {
@@ -30,6 +30,19 @@ export function saveTeamToDatabase(team) {
 export function retrieveTeamFromDatabaseById(id) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield prisma.team.findUnique({ where: { id } });
+    });
+}
+/**
+ * Retrieves a Team record from the database based on its user id.
+ *
+ * @param id - The id of the User to get the Team for.
+ * @returns The Team with a given id or null if it wasn't found.
+ */
+export function retrieveTeamFromDatabaseByUserId(userId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.team.findUnique({ where: {
+                userId
+            } });
     });
 }
 /**
@@ -67,5 +80,15 @@ export function updateTeamInDatabaseById(_a) {
 export function deleteTeamFromDatabaseById(id) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield prisma.team.delete({ where: { id } });
+    });
+}
+/**
+ * Removes all Teams from the database.
+ *
+ * @returns The number of Teams that were deleted.
+ */
+export function deleteAllTeamsFromDatabase() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.team.deleteMany();
     });
 }

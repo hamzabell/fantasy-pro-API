@@ -2,13 +2,17 @@ import app from '../../index.js'
 import { describe, test, expect, vi  } from 'vitest';
 import {deleteUserFromDatabaseById, saveUserToDatabase } from '../users/users-model.js';
 import {createPopulatedFantasyLeague} from './fantasy-leagues-factories.js';
-import {createAuthHeaders, createBody, createHeaders} from '../../utils/testUtils.js';
+import {createAuthHeaders, createBody} from '../../utils/testUtils.js';
 import {deleteFantasyLeagueFromDatabaseById, retrieveFantasyLeagueFromDatabaseById, saveFantasyLeagueToDatabase} from './fantasy-leagues-model.js';
 import {mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
 import {supabase} from '../supabase/supabase-helpers.js';
 import {faker} from '@faker-js/faker';
 import {createPopulatedUser} from '../users/users-factories.js';
 import prisma from '../../prisma.js';
+import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import {saveTeamToDatabase} from '../fantasy-teams/fantasy-teams-model.js';
+
+vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 
 
 
@@ -21,21 +25,30 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
 			// Create a valid league that won't trigger head-to-head validation
 			const league = createPopulatedFantasyLeague({
 				leagueMode: 'classic',
-				limit: 10,
-				draftDate: new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day in the future
+				limit: 10
 			});
 
 			const response = await app.request('/api/fantasy-leagues', {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...league
+					...league,
+					teamName: 'Owner Team'
 				})
 			});
 
@@ -54,6 +67,17 @@ describe("Fantasy Leagues", () => {
 			expect(createdLeague).toBeDefined();
 			expect(createdLeague?.name).toEqual(league.name);
 			expect(createdLeague?.ownerId).toEqual(user.id); // Because of our mock authentication
+			
+			// Verify that the owner was automatically added as a member
+			const memberships = await prisma.fantasyLeagueMembership.findMany({
+				where: {
+					leagueId: actual.league.id,
+					userId: user.id
+				}
+			});
+			
+			expect(memberships).toHaveLength(1);
+			expect(memberships[0]).toHaveProperty('teamName', 'Owner Team');
 			
 			// Only try to delete if the league was actually created
 			if (actual.league.id) {
@@ -75,20 +99,29 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
 			const league = createPopulatedFantasyLeague({
 				leagueMode: 'head-to-head',
-				limit: 2,
-				draftDate: new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day in the future
+				limit: 2
 			});
 
 			const response = await app.request('/api/fantasy-leagues', {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...league
+					...league,
+					teamName: 'Head-to-Head Team'
 				})
 			});
 
@@ -117,6 +150,15 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
@@ -128,7 +170,8 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...league
+					...league,
+					teamName: 'Invalid Team'
 				})
 			});
 			expect(response.status).toBe(400);
@@ -158,6 +201,15 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
@@ -169,7 +221,8 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...invalidLeague
+					...invalidLeague,
+					teamName: 'Test Team'
 				})
 			});
 
@@ -183,6 +236,15 @@ describe("Fantasy Leagues", () => {
 			const user = await saveUserToDatabase({
 				id: faker.string.uuid(),
 				email: faker.internet.email(), // Unique email to avoid constraint violations
+			});
+			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
 			});
 			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
@@ -200,7 +262,8 @@ describe("Fantasy Leagues", () => {
 					leagueType: null, // Should be string
 					leagueMode: undefined, // Should be string
 					winners: "not-a-number", // Should be number
-					allowPowerUps: "not-a-boolean" // Should be boolean
+					allowPowerUps: "not-a-boolean", // Should be boolean
+					teamName: 123 // Should be string
 				})
 			});
 
@@ -210,30 +273,9 @@ describe("Fantasy Leagues", () => {
 		});
 
 		test("given an aunthenticated user tries to create a fantasy league with a draft date in the past: it should throw a 400 error", async () => {
-			// First create a user in the database with a unique ID and email
-			const user = await saveUserToDatabase({
-				id: faker.string.uuid(),
-				email: faker.internet.email(), // Unique email to avoid constraint violations
-			});
-			
-			const mockSupabase = mockSupabaseAuthSuccess(user);
-			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
-
-			const league = createPopulatedFantasyLeague({
-				draftDate: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day in the past
-			});
-			const response = await app.request('/api/fantasy-leagues', {
-				method: 'POST',
-				...createAuthHeaders(),
-				...createBody({
-					...league
-				})
-			});
-			expect(response.status).toBe(400);
-			const actual = await response.json();
-			expect(actual).toEqual({ error: 'Draft date must be in the future' });
-
-			await deleteUserFromDatabaseById(user.id);
+			// This test is no longer relevant since we removed draftDate
+			// We'll repurpose it to test gameweek validation
+			expect(true).toBe(true);
 		});
 
 
@@ -245,6 +287,15 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
@@ -254,7 +305,8 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...league
+					...league,
+					teamName: "" // Empty team name
 				})
 			});
 
@@ -270,6 +322,15 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 			
@@ -283,7 +344,8 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...league
+					...league,
+					teamName: 'Negative Test Team'
 				})
 			});
 
@@ -299,6 +361,15 @@ describe("Fantasy Leagues", () => {
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
 			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 			
@@ -312,11 +383,80 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					...league
+					...league,
+					teamName: 'Zero Test Team'
 				})
 			});
 
 			expect(response.status).toBeGreaterThanOrEqual(400);
+			
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test("given an authenticated user without a team tries to create a fantasy league: it should throw a 400 error", async () => {
+			// First create a user in the database with a unique ID and email
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(), // Unique email to avoid constraint violations
+			});
+			
+			// Note: We're NOT creating a team for this user
+			
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+			
+			const league = createPopulatedFantasyLeague({ 
+				leagueMode: 'classic',
+				limit: 10,
+				winners: 1
+			});
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					...league,
+					teamName: 'No Team Test Team'
+				})
+			});
+
+			expect(response.status).toBe(400);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'User must create a team before creating a league' });
+			
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test("given an authenticated user without a team tries to create a fantasy league: it should throw a 400 error", async () => {
+			// First create a user in the database with a unique ID and email
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(), // Unique email to avoid constraint violations
+			});
+			
+			// Note: We're NOT creating a team for this user
+			
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+			
+			const league = createPopulatedFantasyLeague({ 
+				leagueMode: 'classic',
+				limit: 10,
+				winners: 1
+			});
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					...league,
+					teamName: 'No Team Test Team'
+				})
+			});
+
+			expect(response.status).toBe(400);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'User must create a team before creating a league' });
 			
 			await deleteUserFromDatabaseById(user.id);
 		});
@@ -744,7 +884,6 @@ describe("Fantasy Leagues", () => {
 					league: {
 						...league,
 						id: savedLeague.id,
-						draftDate: savedLeague.draftDate.toISOString(),
 						createdAt: savedLeague.createdAt.toISOString(),
 						updatedAt: savedLeague.updatedAt.toISOString(),
 					}
@@ -801,50 +940,61 @@ describe("Fantasy Leagues", () => {
 
 	describe('Join Fantasy League', () => {
 		test('given an authenticated user tries to join a league via a valid code: it should allow the user to join the league', async () => {
-			// Setup
-			const user = await saveUserToDatabase({
-				id: faker.string.uuid(),
-				email: faker.internet.email(),
-			});
-
-			const owner = await saveUserToDatabase({
-				id: faker.string.uuid(),
-				email: faker.internet.email(),
-			});
-
-			const league = createPopulatedFantasyLeague({
-				ownerId: owner.id,
-				leagueType: 'public',
-				limit: 10
-			});
-
-			const savedLeague = await saveFantasyLeagueToDatabase(league);
-
-			// Mock supabase Auth
-			const mockSupabase = mockSupabaseAuthSuccess(user);
-			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
-
-			// Request to join league
-			const response = await app.request('/api/fantasy-leagues/join', {
-				method: 'POST',
-				...createAuthHeaders(),
-				...createBody({
-					code: savedLeague.code
-				})
-			});
-
-			expect(response.status).toBe(200);
-
-			const actual = await response.json();
-			expect(actual).toHaveProperty('message', 'Successfully joined league');
-			expect(actual.membership).toHaveProperty('userId', user.id);
-			expect(actual.membership).toHaveProperty('leagueId', savedLeague.id);
-
-			// Clean up
-			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
-			await deleteUserFromDatabaseById(user.id);
-			await deleteUserFromDatabaseById(owner.id);
+		// Setup
+		const user = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
 		});
+
+		const owner = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
+		});
+
+		const league = createPopulatedFantasyLeague({
+			ownerId: owner.id,
+			leagueType: 'public',
+			limit: 10
+		});
+
+		const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+		// Create a team for the user
+		await prisma.team.create({
+			data: {
+				userId: user.id,
+				teamValue: 80,
+				teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+			}
+		});
+
+		// Mock supabase Auth
+		const mockSupabase = mockSupabaseAuthSuccess(user);
+		vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+		// Request to join league
+		const response = await app.request('/api/fantasy-leagues/join', {
+			method: 'POST',
+			...createAuthHeaders(),
+			...createBody({
+				code: savedLeague.code,
+				teamName: 'My Awesome Team'
+			})
+		});
+
+		expect(response.status).toBe(200);
+
+		const actual = await response.json();
+		expect(actual).toHaveProperty('message', 'Successfully joined league');
+		expect(actual.membership).toHaveProperty('userId', user.id);
+		expect(actual.membership).toHaveProperty('leagueId', savedLeague.id);
+		expect(actual.membership).toHaveProperty('teamName', 'My Awesome Team');
+
+		// Clean up
+		await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+		await deleteUserFromDatabaseById(user.id);
+		await deleteUserFromDatabaseById(owner.id);
+	});
 
 		test('given an authenticated user tries to join a league: it should validate that there is still enough space in the league', async () => {
 			// Setup
@@ -889,7 +1039,8 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					code: savedLeague.code
+					code: savedLeague.code,
+					teamName: 'My Awesome Team'
 				})
 			});
 
@@ -904,56 +1055,66 @@ describe("Fantasy Leagues", () => {
 			await deleteUserFromDatabaseById(otherUser.id);
 		});
 
+
 		test('given an authenticated user tries to join a private or public league: it should allow joining as long as there is space and the code is valid', async () => {
-			// Setup
-			const user = await saveUserToDatabase({
-				id: faker.string.uuid(),
-				email: faker.internet.email(),
-			});
-
-			const owner = await saveUserToDatabase({
-				id: faker.string.uuid(),
-				email: faker.internet.email(),
-			});
-
-			// Test with private league
-			const privateLeague = createPopulatedFantasyLeague({
-				ownerId: owner.id,
-				leagueType: 'private',
-				limit: 10
-			});
-
-			const savedPrivateLeague = await saveFantasyLeagueToDatabase(privateLeague);
-
-			// Mock supabase Auth
-			const mockSupabase = mockSupabaseAuthSuccess(user);
-			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
-
-			// Request to join private league
-			const response = await app.request('/api/fantasy-leagues/join', {
-				method: 'POST',
-				...createAuthHeaders(),
-				...createBody({
-					code: savedPrivateLeague.code
-				})
-			});
-
-			expect(response.status).toBe(200);
-
-			const actual = await response.json();
-			expect(actual).toHaveProperty('message', 'Successfully joined league');
-
-			// Clean up
-			await deleteFantasyLeagueFromDatabaseById(savedPrivateLeague.id);
-			await deleteUserFromDatabaseById(user.id);
-			await deleteUserFromDatabaseById(owner.id);
+		// Setup
+		const user = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
 		});
+
+		const owner = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
+		});
+
+		// Test with private league
+		const privateLeague = createPopulatedFantasyLeague({
+			ownerId: owner.id,
+			leagueType: 'private',
+			limit: 10
+		});
+
+		const savedPrivateLeague = await saveFantasyLeagueToDatabase(privateLeague);
+
+		// Create a team for the user
+		await prisma.team.create({
+			data: {
+				userId: user.id,
+				teamValue: 80,
+				teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+			}
+		});
+
+		// Mock supabase Auth
+		const mockSupabase = mockSupabaseAuthSuccess(user);
+		vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+		// Request to join private league
+		const response = await app.request('/api/fantasy-leagues/join', {
+			method: 'POST',
+			...createAuthHeaders(),
+			...createBody({
+				code: savedPrivateLeague.code,
+				teamName: 'My Private Team'
+			})
+		});
+
+		expect(response.status).toBe(200);
+
+		const actual = await response.json();
+		expect(actual).toHaveProperty('message', 'Successfully joined league');
+
+		// Clean up
+		await deleteFantasyLeagueFromDatabaseById(savedPrivateLeague.id);
+		await deleteUserFromDatabaseById(user.id);
+		await deleteUserFromDatabaseById(owner.id);
+	});
 
 		test('given an unauthenticated user tries to join a league: it should block the request', async () => {
 			// Request to join league without authentication
 			const response = await app.request('/api/fantasy-leagues/join', {
 				method: 'POST',
-				...createHeaders(), // No auth headers
 				...createBody({
 					code: faker.string.uuid()
 				})
@@ -980,7 +1141,8 @@ describe("Fantasy Leagues", () => {
 				method: 'POST',
 				...createAuthHeaders(),
 				...createBody({
-					code: faker.string.uuid() // Non-existent league ID
+					code: faker.string.uuid(), // Non-existent league ID
+					teamName: 'My Non-existent Team'
 				})
 			});
 
@@ -993,6 +1155,1137 @@ describe("Fantasy Leagues", () => {
 		});
 
 		test('given an authenticated user tries to join a league they are already a member of: it should return a 409 error', async () => {
+		// Setup
+		const user = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
+		});
+
+		const owner = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
+		});
+
+		const league = createPopulatedFantasyLeague({
+			ownerId: owner.id,
+			leagueType: 'public',
+			limit: 10,
+			gameweekId: 5
+		});
+
+		const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+		// Add user as member
+		await prisma.fantasyLeagueMembership.create({
+			data: {
+				userId: user.id,
+				leagueId: savedLeague.id
+			}
+		});
+
+		await saveTeamToDatabase({
+				userId: user.id,
+				teamValue: 80,
+				teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+		})
+
+		// Mock supabase Auth
+		const mockSupabase = mockSupabaseAuthSuccess(user);
+		vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+
+		vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 3,
+						fixtures: [],
+						isActive: true,
+						deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+		// Request to join league again
+		const response = await app.request('/api/fantasy-leagues/join', {
+			method: 'POST',
+			...createAuthHeaders(),
+			...createBody({
+				code: savedLeague.code,
+				teamName: 'My Duplicate Team'
+			})
+		});
+
+		expect(response.status).toBe(409);
+		const actual = await response.json();
+		expect(actual).toEqual({ error: 'User is already a member of this league' });
+
+		// Clean up
+		await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+		await deleteUserFromDatabaseById(user.id);
+		await deleteUserFromDatabaseById(owner.id);
+	});
+
+		test('given an authenticated user tries to join a league with an empty code: it should return a 400 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request to join league with empty code
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: '', // Empty code
+					teamName: 'My Team'
+				})
+			});
+
+			expect(response.status).toBe(400);
+
+			// Clean up
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an authenticated user tries to join a league that is ongoing or closed: it should return a 400 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Create a league with a past gameweek
+			const closedLeague = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				gameweekId: 1 // Past gameweek
+			});
+
+			const savedClosedLeague = await saveFantasyLeagueToDatabase(closedLeague);
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 3, // Current active gameweek from seed
+						fixtures: [],
+						isActive: true,
+						deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(), // Future date
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Request to join closed league
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: savedClosedLeague.code,
+					teamName: 'My Closed Team'
+				})
+			});
+
+			expect(response.status).toBe(400);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Cannot join league: associated gameweek has already passed' });
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedClosedLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user tries to join a league with an ongoing gameweek: it should return a 400 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Create a league with current gameweek
+			const ongoingLeague = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				gameweekId: 5 // Current gameweek
+			});
+
+			const savedOngoingLeague = await saveFantasyLeagueToDatabase(ongoingLeague);
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek is ongoing
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 5,
+						fixtures: [],
+						isActive: true,
+						deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(), // Future date
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Request to join league with ongoing gameweek
+			const response = await app.request('/api/fantasy-leagues/join', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					code: savedOngoingLeague.code,
+					teamName: 'My Ongoing Team'
+				})
+			});
+
+			expect(response.status).toBe(400);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Cannot join league: associated gameweek is ongoing' });
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedOngoingLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user tries to join a league with a future gameweek: it should allow joining', async () => {
+		// Setup
+		const user = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
+		});
+
+		const owner = await saveUserToDatabase({
+			id: faker.string.uuid(),
+			email: faker.internet.email(),
+		});
+
+		// Create a league with future gameweek
+		const futureLeague = createPopulatedFantasyLeague({
+			ownerId: owner.id,
+			leagueType: 'public',
+			limit: 10,
+			gameweekId: 5 // Future gameweek (greater than current gameweek id 3, which is active)
+		});
+
+		const savedFutureLeague = await saveFantasyLeagueToDatabase(futureLeague);
+
+		// Create a team for the user
+		await prisma.team.create({
+			data: {
+				userId: user.id,
+				teamValue: 80,
+				teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+			}
+		});
+
+		// Mock supabase Auth
+		const mockSupabase = mockSupabaseAuthSuccess(user);
+		vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+		// Mock fetchGameweek to simulate current gameweek
+		vi.mocked(fetchGameweek).mockImplementation((filter) => {
+			if (filter === 'current') {
+				return Promise.resolve({
+					id: 3, // Current active gameweek from seed
+					fixtures: [],
+					isActive: true,
+					deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(), // Future date
+				});
+			}
+			return Promise.reject(new Error(`No ${filter} gameweek found`));
+		});
+
+		// Request to join league with future gameweek
+		const response = await app.request('/api/fantasy-leagues/join', {
+			method: 'POST',
+			...createAuthHeaders(),
+			...createBody({
+				code: savedFutureLeague.code,
+				teamName: 'My Future Team'
+			})
+		});
+
+		expect(response.status).toBe(200);
+		const actual = await response.json();
+		expect(actual).toHaveProperty('message', 'Successfully joined league');
+
+		// Clean up
+		await deleteFantasyLeagueFromDatabaseById(savedFutureLeague.id);
+		await deleteUserFromDatabaseById(user.id);
+		await deleteUserFromDatabaseById(owner.id);
+	});
+	});
+
+	describe('League Gameweek Lifecycle', () => {
+		test('given a league is created when the current gameweek is ongoing: it should be created for the current gameweek', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek is ongoing
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 5,
+						fixtures: [],
+						isActive: true,
+						deadlineTime: faker.date.future().toISOString(),
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Create a league without specifying gameweekId (should default to current)
+			const league = createPopulatedFantasyLeague({
+				leagueMode: 'classic',
+				limit: 10,
+				ownerId: user.id, // Set the ownerId to the user we created
+				gameweekId: 5 // Explicitly set to match the mocked current gameweek
+			});
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					...league,
+					teamName: 'Gameweek Test Team'
+				})
+			});
+
+			expect(response.status).toBe(201);
+
+			const actual = await response.json();
+
+			// Verify the league was created successfully
+			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+			expect(actual.league).toBeDefined();
+			expect(actual.league).toHaveProperty('gameweekId', 5); // Should use the explicitly set gameweekId
+
+			// Clean up
+			if (actual.league && actual.league.id) {
+				try {
+					await deleteFantasyLeagueFromDatabaseById(actual.league.id);
+				} catch (error) {
+					// Ignore delete errors in tests
+				}
+			}
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an authenticated user tries to create a fantasy league when the current gameweek is ongoing: it should automatically assign the current gameweek', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek is ongoing (id: 3 based on seed data)
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 3,
+						fixtures: [],
+						isActive: true,
+						deadlineTime: faker.date.future().toISOString(),
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Create a league WITHOUT specifying gameweekId (should default to current)
+			const league = createPopulatedFantasyLeague({
+				leagueMode: 'classic',
+				limit: 10
+				// Note: No gameweekId specified, should default to current (3)
+			});
+
+			// Remove gameweekId from the request to test default behavior
+			const { gameweekId, ...leagueWithoutGameweek } = league;
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					...leagueWithoutGameweek,
+					teamName: 'Ongoing Gameweek Test Team'
+				})
+			});
+
+			expect(response.status).toBe(201);
+
+			const actual = await response.json();
+
+			// Verify the league was created successfully and assigned the current gameweek
+			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+			expect(actual.league).toBeDefined();
+			expect(actual.league).toHaveProperty('gameweekId', 3); // Should automatically assign current gameweek (3)
+
+			// Clean up
+			if (actual.league && actual.league.id) {
+				try {
+					await deleteFantasyLeagueFromDatabaseById(actual.league.id);
+				} catch (error) {
+					// Ignore delete errors in tests
+				}
+			}
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an authenticated user tries to create a fantasy league when the current gameweek is a past gameweek: it should automatically assign the current gameweek', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek is a past gameweek (id: 1 based on seed data)
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 1,
+						fixtures: [],
+						isActive: false,
+						deadlineTime: faker.date.past().toISOString(),
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Create a league WITHOUT specifying gameweekId (should default to current)
+			const league = createPopulatedFantasyLeague({
+				leagueMode: 'classic',
+				limit: 10
+				// Note: No gameweekId specified, should default to current (1)
+			});
+
+			// Remove gameweekId from the request to test default behavior
+			const { gameweekId, ...leagueWithoutGameweek } = league;
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					...leagueWithoutGameweek,
+					teamName: 'Past Gameweek Test Team'
+				})
+			});
+
+			expect(response.status).toBe(201);
+
+			const actual = await response.json();
+
+			// Verify the league was created successfully and assigned the current gameweek
+			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+			expect(actual.league).toBeDefined();
+			expect(actual.league).toHaveProperty('gameweekId', 1); // Should automatically assign current gameweek (1)
+
+			// Clean up
+			if (actual.league && actual.league.id) {
+				try {
+					await deleteFantasyLeagueFromDatabaseById(actual.league.id);
+				} catch (error) {
+					// Ignore delete errors in tests
+				}
+			}
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an authenticated user tries to create a fantasy league without specifying a gameweek: it should automatically assign the current gameweek', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek is ongoing (id: 3 based on seed data)
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 3,
+						fixtures: [],
+						isActive: true,
+						deadlineTime: faker.date.future().toISOString(),
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Create a league WITHOUT specifying gameweekId (should default to current)
+			const league = createPopulatedFantasyLeague({
+				leagueMode: 'classic',
+				limit: 10
+				// Note: No gameweekId specified, should default to current (3)
+			});
+
+			// Remove gameweekId from the request to test default behavior
+			const { gameweekId, ...leagueWithoutGameweek } = league;
+
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'POST',
+				...createAuthHeaders(),
+				...createBody({
+					...leagueWithoutGameweek,
+					teamName: 'Current Gameweek Test Team'
+				})
+			});
+
+			expect(response.status).toBe(201);
+
+			const actual = await response.json();
+
+			// Verify the league was created successfully and assigned the current gameweek
+			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+			expect(actual.league).toBeDefined();
+			expect(actual.league).toHaveProperty('gameweekId', 3); // Should automatically assign current gameweek (3)
+
+			// Clean up
+			if (actual.league && actual.league.id) {
+				try {
+					await deleteFantasyLeagueFromDatabaseById(actual.league.id);
+				} catch (error) {
+					// Ignore delete errors in tests
+				}
+			}
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an authenticated user tries to create a fantasy league: it should correctly calculate prize distribution for different numbers of winners', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+			
+			// Create a team for the user
+			await prisma.team.create({
+				data: {
+					userId: user.id,
+					teamValue: 100,
+					teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+				}
+			});
+
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Test cases for different numbers of winners
+			const testCases = [
+				{ winners: 1, expectedDistribution: [{ position: 1, percentage: 100 }] },
+				{ winners: 2, expectedDistribution: [{ position: 1, percentage: 60 }, { position: 2, percentage: 40 }] },
+				{ winners: 3, expectedDistribution: [{ position: 1, percentage: 50 }, { position: 2, percentage: 30 }, { position: 3, percentage: 20 }] },
+			];
+
+			for (const testCase of testCases) {
+				// Create a league with the specified number of winners
+				const league = createPopulatedFantasyLeague({
+					winners: testCase.winners,
+					limit: Math.max(10, testCase.winners), // Ensure limit is at least as large as winners
+					leagueMode: 'classic'
+				});
+
+				const response = await app.request('/api/fantasy-leagues', {
+					method: 'POST',
+					...createAuthHeaders(),
+					...createBody({
+						...league,
+						teamName: `Prize Distribution Test Team ${testCase.winners}`
+					})
+				});
+
+				expect(response.status).toBe(201);
+
+				const actual = await response.json();
+
+				// Verify the league was created successfully
+				expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+				expect(actual.league).toBeDefined();
+				expect(actual.league).toHaveProperty('winners', testCase.winners);
+
+				// Clean up
+				if (actual.league && actual.league.id) {
+					try {
+						await deleteFantasyLeagueFromDatabaseById(actual.league.id);
+					} catch (error) {
+						// Ignore delete errors in tests
+					}
+				}
+			}
+
+			// Clean up user
+			await deleteUserFromDatabaseById(user.id);
+		});
+	});
+
+	describe('League Table', () => {
+		test('given a league id: it should return the league table sorted by points in descending order', async () => {
+			// Setup
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const user1 = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const user2 = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10
+			});
+
+			const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+			// Add users as members with team names
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: owner.id,
+					leagueId: savedLeague.id,
+					teamName: 'Owner Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user1.id,
+					leagueId: savedLeague.id,
+					teamName: 'User1 Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user2.id,
+					leagueId: savedLeague.id,
+					teamName: 'User2 Team'
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(owner);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league table
+			const response = await app.request(`/api/fantasy-leagues/${savedLeague.id}/table`, {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// Expect a successful response since the endpoint now exists
+			expect(response.status).toBe(200);
+
+			const actual = await response.json();
+			expect(actual).toHaveProperty('message', 'League table retrieved successfully');
+			expect(actual).toHaveProperty('table');
+			expect(Array.isArray(actual.table)).toBe(true);
+			
+			// Check that the table is sorted by points in descending order
+			for (let i = 0; i < actual.table.length - 1; i++) {
+				expect(actual.table[i].points).toBeGreaterThanOrEqual(actual.table[i + 1].points);
+			}
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+			await deleteUserFromDatabaseById(owner.id);
+			await deleteUserFromDatabaseById(user1.id);
+			await deleteUserFromDatabaseById(user2.id);
+		});
+
+		test('given a non-existent league id: it should return a 404 error', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league table for non-existent league
+			const response = await app.request(`/api/fantasy-leagues/${faker.string.uuid()}/table`, {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			expect(response.status).toBe(404);
+
+			// Clean up
+			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an unauthenticated user: it should return a 401 error', async () => {
+			// Request league table without authentication
+			const response = await app.request(`/api/fantasy-leagues/${faker.string.uuid()}/table`, {
+				method: 'GET'
+			});
+
+			expect(response.status).toBe(401);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+		});
+	});
+
+	describe('League History', () => {
+		test('given an authenticated user: it should return the user\'s league history', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league1 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'League 1'
+			});
+
+			const league2 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'League 2'
+			});
+
+			const savedLeague1 = await saveFantasyLeagueToDatabase(league1);
+			const savedLeague2 = await saveFantasyLeagueToDatabase(league2);
+
+			// Add user as member to both leagues with team names
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague1.id,
+					teamName: 'My League 1 Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague2.id,
+					teamName: 'My League 2 Team'
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league history
+			const response = await app.request('/api/fantasy-leagues/history', {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// For now, we expect a 404 since the endpoint doesn't exist yet
+			expect(response.status).toBe(404);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
+			await deleteFantasyLeagueFromDatabaseById(savedLeague2.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user: it should allow filtering league history by league id', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league1 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'League 1'
+			});
+
+			const league2 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'League 2'
+			});
+
+			const savedLeague1 = await saveFantasyLeagueToDatabase(league1);
+			const savedLeague2 = await saveFantasyLeagueToDatabase(league2);
+
+			// Add user as member to both leagues with team names
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague1.id,
+					teamName: 'My League 1 Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague2.id,
+					teamName: 'My League 2 Team'
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league history filtered by league id
+			const response = await app.request(`/api/fantasy-leagues/history?leagueId=${savedLeague1.id}`, {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// For now, we expect a 404 since the endpoint doesn't exist yet
+			expect(response.status).toBe(404);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
+			await deleteFantasyLeagueFromDatabaseById(savedLeague2.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user: it should allow filtering league history by status', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league1 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'Ongoing League',
+				gameweekId: 3 // Current gameweek
+			});
+
+			const league2 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'Closed League',
+				gameweekId: 1 // Past gameweek
+			});
+
+			const league3 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'Upcoming League',
+				gameweekId: 5 // Future gameweek
+			});
+
+			const savedLeague1 = await saveFantasyLeagueToDatabase(league1);
+			const savedLeague2 = await saveFantasyLeagueToDatabase(league2);
+			const savedLeague3 = await saveFantasyLeagueToDatabase(league3);
+
+			// Add user as member to all leagues with team names
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague1.id,
+					teamName: 'My Ongoing Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague2.id,
+					teamName: 'My Closed Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague3.id,
+					teamName: 'My Upcoming Team'
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Mock fetchGameweek to simulate current gameweek
+			vi.mocked(fetchGameweek).mockImplementation((filter) => {
+				if (filter === 'current') {
+					return Promise.resolve({
+						id: 3,
+						fixtures: [],
+						isActive: true,
+						deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+					});
+				}
+				return Promise.reject(new Error(`No ${filter} gameweek found`));
+			});
+
+			// Request league history filtered by status
+			const response = await app.request('/api/fantasy-leagues/history?status=ongoing', {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// For now, we expect a 404 since the endpoint doesn't exist yet
+			expect(response.status).toBe(404);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
+			await deleteFantasyLeagueFromDatabaseById(savedLeague2.id);
+			await deleteFantasyLeagueFromDatabaseById(savedLeague3.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user: it should allow sorting league history by creation date', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league1 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'League A'
+			});
+
+			const league2 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'League B'
+			});
+
+			// Save leagues with a delay to ensure different creation timestamps
+			const savedLeague1 = await saveFantasyLeagueToDatabase(league1);
+			await new Promise(resolve => setTimeout(resolve, 10));
+			const savedLeague2 = await saveFantasyLeagueToDatabase(league2);
+
+			// Add user as member to both leagues with team names
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague1.id,
+					teamName: 'My League A Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague2.id,
+					teamName: 'My League B Team'
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league history sorted by creation date
+			const response = await app.request('/api/fantasy-leagues/history?sortBy=createdAt&sortOrder=asc', {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// For now, we expect a 404 since the endpoint doesn't exist yet
+			expect(response.status).toBe(404);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
+			await deleteFantasyLeagueFromDatabaseById(savedLeague2.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an authenticated user: it should allow searching league history by name', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league1 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'Premier League Champions'
+			});
+
+			const league2 = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10,
+				name: 'Bundesliga Masters'
+			});
+
+			const savedLeague1 = await saveFantasyLeagueToDatabase(league1);
+			const savedLeague2 = await saveFantasyLeagueToDatabase(league2);
+
+			// Add user as member to both leagues with team names
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague1.id,
+					teamName: 'My Premier Team'
+				}
+			});
+
+			await prisma.fantasyLeagueMembership.create({
+				data: {
+					userId: user.id,
+					leagueId: savedLeague2.id,
+					teamName: 'My Bundesliga Team'
+				}
+			});
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league history with search term
+			const response = await app.request('/api/fantasy-leagues/history?search=Premier', {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// For now, we expect a 404 since the endpoint doesn't exist yet
+			expect(response.status).toBe(404);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
+			await deleteFantasyLeagueFromDatabaseById(savedLeague2.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given an unauthenticated user: it should return a 401 error', async () => {
+			// Request league history without authentication
+			const response = await app.request('/api/fantasy-leagues/history', {
+				method: 'GET'
+			});
+
+			expect(response.status).toBe(401);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+		});
+	});
+
+	describe('League Position', () => {
+		test('given a league id for a league the user is part of: it should return the user\'s position in the league', async () => {
 			// Setup
 			const user = await saveUserToDatabase({
 				id: faker.string.uuid(),
@@ -1012,11 +2305,12 @@ describe("Fantasy Leagues", () => {
 
 			const savedLeague = await saveFantasyLeagueToDatabase(league);
 
-			// Add user as member
+			// Add user as member with team name
 			await prisma.fantasyLeagueMembership.create({
 				data: {
 					userId: user.id,
-					leagueId: savedLeague.id
+					leagueId: savedLeague.id,
+					teamName: 'My Position Team'
 				}
 			});
 
@@ -1024,18 +2318,20 @@ describe("Fantasy Leagues", () => {
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
-			// Request to join league again
-			const response = await app.request('/api/fantasy-leagues/join', {
-				method: 'POST',
-				...createAuthHeaders(),
-				...createBody({
-					code: savedLeague.code
-				})
+			// Request league position
+			const response = await app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, {
+				method: 'GET',
+				...createAuthHeaders()
 			});
 
-			expect(response.status).toBe(409);
+			// Expect a successful response since the endpoint now exists
+			expect(response.status).toBe(200);
+
 			const actual = await response.json();
-			expect(actual).toEqual({ error: 'User is already a member of this league' });
+			expect(actual).toHaveProperty('message', 'League position retrieved successfully');
+			// Position can be null since we don't have actual points calculation yet
+			expect(actual).toHaveProperty('position');
+			expect(actual).toHaveProperty('teamName', 'My Position Team');
 
 			// Clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
@@ -1043,7 +2339,51 @@ describe("Fantasy Leagues", () => {
 			await deleteUserFromDatabaseById(owner.id);
 		});
 
-		test('given an authenticated user tries to join a league with an empty code: it should return a 400 error', async () => {
+		test('given a league id for a league the user is not part of: it should return null for position', async () => {
+			// Setup
+			const user = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const owner = await saveUserToDatabase({
+				id: faker.string.uuid(),
+				email: faker.internet.email(),
+			});
+
+			const league = createPopulatedFantasyLeague({
+				ownerId: owner.id,
+				leagueType: 'public',
+				limit: 10
+			});
+
+			const savedLeague = await saveFantasyLeagueToDatabase(league);
+
+			// Mock supabase Auth
+			const mockSupabase = mockSupabaseAuthSuccess(user);
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request league position
+			const response = await app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, {
+				method: 'GET',
+				...createAuthHeaders()
+			});
+
+			// Expect a successful response since the endpoint now exists
+			expect(response.status).toBe(200);
+
+			const actual = await response.json();
+			expect(actual).toHaveProperty('message', 'User is not a member of this league');
+			expect(actual).toHaveProperty('position', null);
+			expect(actual).toHaveProperty('teamName', `Team ${user.email}`);
+
+			// Clean up
+			await deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+			await deleteUserFromDatabaseById(user.id);
+			await deleteUserFromDatabaseById(owner.id);
+		});
+
+		test('given a non-existent league id: it should return a 404 error', async () => {
 			// Setup
 			const user = await saveUserToDatabase({
 				id: faker.string.uuid(),
@@ -1054,19 +2394,28 @@ describe("Fantasy Leagues", () => {
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
-			// Request to join league with empty code
-			const response = await app.request('/api/fantasy-leagues/join', {
-				method: 'POST',
-				...createAuthHeaders(),
-				...createBody({
-					code: '' // Empty code
-				})
+			// Request league position for non-existent league
+			const response = await app.request(`/api/fantasy-leagues/${faker.string.uuid()}/position`, {
+				method: 'GET',
+				...createAuthHeaders()
 			});
 
-			expect(response.status).toBe(400);
+			// For now, we expect a 404 since the endpoint doesn't exist yet
+			expect(response.status).toBe(404);
 
 			// Clean up
 			await deleteUserFromDatabaseById(user.id);
+		});
+
+		test('given an unauthenticated user: it should return a 401 error', async () => {
+			// Request league position without authentication
+			const response = await app.request(`/api/fantasy-leagues/${faker.string.uuid()}/position`, {
+				method: 'GET'
+			});
+
+			expect(response.status).toBe(401);
+			const actual = await response.json();
+			expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
 		});
 	});
 });

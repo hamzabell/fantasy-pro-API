@@ -12,13 +12,6 @@ import { fetchPlayerById, fetchPlayers, fetchTeamById, fetchTeams } from './fant
 import { getPlayerByIdRoute, getPlayersRoute, getPositionsRoute, getTeamByIdRoute, getTeamsRoute, } from './fantasy-premier-league-docs.js';
 // Initialize the Hono app with OpenAPI support
 const app = new OpenAPIHono();
-// Define security scheme for bearer authentication
-app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
-    type: 'http',
-    scheme: 'bearer',
-    bearerFormat: 'JWT',
-    description: 'Bearer token for authentication',
-});
 // --- Route Handlers ---
 app.openapi(getPlayersRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const { offset, limit, position, cost, teamId } = c.req.valid('query');

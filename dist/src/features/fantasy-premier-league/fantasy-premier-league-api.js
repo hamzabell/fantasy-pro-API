@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { map, find, propEq, pipeWith, andThen } from 'ramda';
+import { map, find, propEq, } from 'ramda';
 import { fetchJson } from '../../utils/api.js';
-import { createPlayerMapper, createTeamMapper } from './fantasy-premier-league-utils.js';
+import { createPlayerMapper, createTeamMapper } from './fantasy-premier-league-factories.js';
 const API_ENDPOINTS = {
     BOOTSTRAP: '/bootstrap-static/',
     PLAYER_SUMMARY: (playerId) => `/element-summary/${playerId}/`,

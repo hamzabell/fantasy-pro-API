@@ -22,12 +22,16 @@ app.openAPIRegistry.registerComponent('securitySchemes', 'BearerAuth', {
     scheme: 'bearer',
     bearerFormat: 'JWT',
 });
-// app.use('/api/*', validateUserAuth)
+app.use('/api/*', validateUserAuth);
 app.route('/api/fantasy-premier-league', fantasyPremierLeagueApp);
 app.get('/swagger', swaggerUI({ url: '/doc' }));
 import fantasyTeamsApp from './features/fantasy-teams/fantasy-teams-route.js';
+import authenticationApp from './features/authentication/authentication-route.js';
+import fantasyLeaguesApp from './features/fantasy-leagues/fantasy-leagues-route.js';
 // Add other routes here
 app.route('/api/fantasy-teams', fantasyTeamsApp);
+app.route('/api/auth', authenticationApp);
+app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.get('/', (c) => c.text('Welcome to the API!'));
 // Serve the combined app only if not in test environment
 if (process.env.NODE_ENV !== 'test') {

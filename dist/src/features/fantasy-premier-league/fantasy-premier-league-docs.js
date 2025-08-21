@@ -20,7 +20,7 @@ export const getPlayersRoute = createRoute({
             description: 'Retrieve all players with pagination and filtering',
         },
     },
-    security: [{ bearerAuth: [] }],
+    security: [{ BearerAuth: [] }],
     tags: ['Fantasy Premier League'],
 });
 export const getTeamsRoute = createRoute({
@@ -42,6 +42,7 @@ export const getTeamsRoute = createRoute({
             description: 'Retrieve all teams with pagination and metadata',
         },
     },
+    security: [{ BearerAuth: [] }],
     tags: ['Fantasy Premier League'],
 });
 export const getPlayerByIdRoute = createRoute({
@@ -68,6 +69,7 @@ export const getPlayerByIdRoute = createRoute({
             description: 'Player not found',
         },
     },
+    security: [{ BearerAuth: [] }],
     tags: ['Fantasy Premier League'],
 });
 export const getTeamByIdRoute = createRoute({
@@ -94,6 +96,7 @@ export const getTeamByIdRoute = createRoute({
             description: 'Team not found',
         },
     },
+    security: [{ BearerAuth: [] }],
     tags: ['Fantasy Premier League'],
 });
 export const getPositionsRoute = createRoute({
@@ -109,5 +112,6 @@ export const getPositionsRoute = createRoute({
             description: 'Retrieve all available positions',
         },
     },
+    security: [{ BearerAuth: [] }],
     tags: ['Fantasy Premier League'],
 });

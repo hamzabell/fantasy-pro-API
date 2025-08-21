@@ -100,6 +100,12 @@ export const fetchPlayerPointsByGameweek = async (playerId: number, gameweekId: 
 	return gameweek?.total_points ?? 0;
 };
 
+export const fetchPlayerGoalsByGameweek = async (playerId: number, gameweekId: number): Promise<number> => {
+	const data = await fetchJson<PlayerSummary>(API_ENDPOINTS.PLAYER_SUMMARY(playerId));
+	const gameweek = data.history.find((h) => h.round === gameweekId);
+	return gameweek?.goals_scored ?? 0;
+};
+
 export const fetchPlayerGameweekDetails = async (
 	playerId: number,
 	gameweekId: number,

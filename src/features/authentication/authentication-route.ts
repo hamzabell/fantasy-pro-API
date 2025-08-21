@@ -60,7 +60,7 @@ app.openapi(getUserRoute, async (c: Context) => {
   return c.json({
     id: user.id,
     email: user.email,
-  });
+  }, 200);
 });
 
 export default app;

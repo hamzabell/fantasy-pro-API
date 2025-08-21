@@ -9,8 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
+import prisma from '../../prisma.js';
 // Initialize Supabase client
-const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_ANON_KEY || '');
+export const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_ANON_KEY || '');
+import { retrieveUserFromDatabaseById, saveUserToDatabase } from '../users/users-model.js';
+import { createPopulatedUser } from '../users/users-factories.js';
 export function validateUserAuth(c, next) {
     return __awaiter(this, void 0, void 0, function* () {
         const authHeader = c.req.header('Authorization');
@@ -21,12 +24,19 @@ export function validateUserAuth(c, next) {
         // Validate the token with Supabase
         const { data: user, error } = yield supabase.auth.getUser(token);
         if (error || !user) {
-            return c.json({ error: 'Unauthorized: Invalid or expired token' }, 401);
+            return c.json({ error: 'Unauthorized: Invalid token' }, 401);
         }
-        // Attach the user to the context for downstream handlers
-        c.set('user', user);
-        // Call the next middleware or handler
-        yield next();
+        const userData = yield retrieveUserFromDatabaseById(user.user.id);
+        if (!userData) {
+            const createdUser = yield saveUserToDatabase(createPopulatedUser({
+                id: user.user.id,
+                email: user.user.email
+            }));
+            c.set('user', createdUser);
+            return yield next();
+        }
+        c.set('user', userData);
+        return yield next();
     });
 }
 export function createTestUser() {
