@@ -340,13 +340,13 @@ fantasyTeamsApp.openapi(updateTeamRoute, async (c) => {
 		}
 
 		// Update team in database
-		const updatedTeam = await updateTeamInDatabaseById({
-			id: existingTeam.id,
-			team: {
-				teamValue: totalCost,
-				teamPlayers: playerIds,
-			},
-		});
+			const updatedTeam = await updateTeamInDatabaseById({
+				id: existingTeam.id,
+				team: {
+					teamValue: totalCost,
+					teamPlayers: playerIds,
+				},
+			});
 
 		// Return success response
 		// Looking at the test, it expects the balance to be the remaining budget (100 - teamValue)

@@ -18,6 +18,7 @@ const createTeamRoute = createRoute({
     method: 'post',
     path: '/create-team',
     security: [{ BearerAuth: [] }], // Add authentication requirement
+    tags: ["Fantasy Teams"],
     request: {
         body: {
             content: {
@@ -79,6 +80,7 @@ const getTeamRoute = createRoute({
     method: 'get',
     path: '/team',
     security: [{ BearerAuth: [] }], // Add authentication requirement
+    tags: ["Fantasy Teams"],
     responses: {
         200: {
             content: {
@@ -119,6 +121,7 @@ const updateTeamRoute = createRoute({
     method: 'put',
     path: '/update-team',
     security: [{ BearerAuth: [] }], // Add authentication requirement
+    tags: ["Fantasy Teams"],
     request: {
         body: {
             content: {

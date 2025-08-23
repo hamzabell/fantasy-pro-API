@@ -96,6 +96,12 @@ export const fetchPlayerPointsByGameweek = (playerId, gameweekId) => __awaiter(v
     const gameweek = data.history.find((h) => h.round === gameweekId);
     return (_a = gameweek === null || gameweek === void 0 ? void 0 : gameweek.total_points) !== null && _a !== void 0 ? _a : 0;
 });
+export const fetchPlayerGoalsByGameweek = (playerId, gameweekId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const data = yield fetchJson(API_ENDPOINTS.PLAYER_SUMMARY(playerId));
+    const gameweek = data.history.find((h) => h.round === gameweekId);
+    return (_a = gameweek === null || gameweek === void 0 ? void 0 : gameweek.goals_scored) !== null && _a !== void 0 ? _a : 0;
+});
 export const fetchPlayerGameweekDetails = (playerId, gameweekId) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const bootstrapData = yield getBootstrapData();

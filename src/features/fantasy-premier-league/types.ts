@@ -59,6 +59,7 @@ export interface PlayerSummary {
 		round: number;
 		total_points: number;
 		kickoff_time: string;
+		goals_scored: number;
 	}>;
 }
 

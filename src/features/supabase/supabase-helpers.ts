@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import prisma from '../../prisma.js';
 
 // Initialize Supabase client
 export const supabase = createClient(
@@ -16,7 +15,6 @@ export const supabase = createClient(
  */
 import type { Context } from 'hono';
 import {retrieveUserFromDatabaseById, saveUserToDatabase} from '../users/users-model.js';
-import type {User} from '../../generated/prisma/index.js';
 import {createPopulatedUser} from '../users/users-factories.js';
 
 export async function validateUserAuth(c: Context, next: Function) {

@@ -7,6 +7,7 @@ import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
 import { calculateUserTeamStats } from './player-stats-utils.js';
+import { retrieveUserPowerUpsByUserId, updateUserPowerUpInDatabaseById, saveFantasyLeagueMembershipPowerUpToDatabase } from '../power-ups/power-ups-model.js';
 
 const fantasyLeaguesApp = new OpenAPIHono();
 
@@ -67,7 +68,7 @@ const createFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -77,7 +78,7 @@ const createFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -93,14 +94,14 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
   const user = c.get('user');
   
   if (!user) {
-    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+    return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
   const requestData = c.req.valid('json');
   
   // Validate head-to-head leagues
   if (requestData.leagueMode === 'head-to-head' && requestData.limit > 2) {
-    return c.json({ error: 'Head-to-head leagues can have a maximum of 2 teams' }, 400);
+    return c.json({ message: 'Head-to-head leagues can have a maximum of 2 teams' }, 400);
   }
 
   // Check if user has created a team
@@ -122,7 +123,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
       const currentGameweek = await fetchGameweek('current');
       gameweekId = currentGameweek.id;
     } catch (error) {
-      return c.json({ error: 'Unable to determine current gameweek' }, 500);
+      return c.json({ message: 'Unable to determine current gameweek' }, 500);
     }
   }
 
@@ -194,7 +195,7 @@ const getAllFantasyLeaguesRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -346,7 +347,7 @@ const getFantasyLeagueByIdRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -356,7 +357,7 @@ const getFantasyLeagueByIdRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -391,7 +392,7 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
     const isMember = memberships.some((membership: FantasyLeagueMembership) => membership.userId === user.id);
     
     if (!isOwner && !isMember) {
-      return c.json({ error: 'Access denied: This is a private league' }, 403);
+      return c.json({ message: 'Access denied: This is a private league' }, 403);
     }
   }
 
@@ -416,6 +417,7 @@ const joinFantasyLeagueRoute = createRoute({
           schema: z.object({
             code: z.string().min(1, "Code cannot be empty"),
             teamName: z.string().min(1, "Team name cannot be empty"),
+            powerUpIds: z.array(z.string()).optional(), // Optional power-ups to use when joining
           }),
         },
       },
@@ -444,7 +446,7 @@ const joinFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -454,7 +456,7 @@ const joinFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -464,7 +466,7 @@ const joinFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -474,7 +476,7 @@ const joinFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -490,10 +492,10 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
   const user = c.get('user');
   
   if (!user) {
-    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+    return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
-  const { code, teamName } = c.req.valid('json');
+  const { code, teamName, powerUpIds } = c.req.valid('json');
   
   // Retrieve the league from the database using the code
   const league = await retrieveFantasyLeagueFromDatabaseByCode(code);
@@ -545,7 +547,32 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
   // Check if user has created a team
   const userTeam = await retrieveTeamFromDatabaseByUserId(user.id);
   if (!userTeam) {
-    return c.json({ error: 'User must create a team before joining a league' }, 400);
+    return c.json({ message: 'User must create a team before joining a league' }, 400);
+  }
+
+  // Handle power-ups if provided
+  if (powerUpIds && powerUpIds.length > 0) {
+    // Verify that the league allows power-ups
+    if (!league.allowPowerUps) {
+      return c.json({ message: 'This league does not allow power-ups' }, 400);
+    }
+    
+    // Verify that the user owns these power-ups and they haven't been burnt
+    const userPowerUps = await retrieveUserPowerUpsByUserId(user.id);
+    const validPowerUpIds = new Set(userPowerUps.map(up => up.powerUpId));
+    
+    // Check if all requested power-ups are owned by the user
+    for (const powerUpId of powerUpIds) {
+      if (!validPowerUpIds.has(powerUpId)) {
+        return c.json({ message: `User does not own power-up with id: ${powerUpId}` }, 400);
+      }
+      
+      // Check if the power-up is already burnt
+      const userPowerUp = userPowerUps.find(up => up.powerUpId === powerUpId);
+      if (userPowerUp && userPowerUp.isBurnt) {
+        return c.json({ message: `Power-up with id: ${powerUpId} has already been used` }, 400);
+      }
+    }
   }
 
   // Create membership with team name
@@ -554,6 +581,28 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
     leagueId: league.id,
     teamName, // Required team name
   });
+
+  // If power-ups were provided, burn them and associate them with the membership
+  if (powerUpIds && powerUpIds.length > 0) {
+    // Burn the power-ups (mark them as used)
+    for (const powerUpId of powerUpIds) {
+      const userPowerUp = (await retrieveUserPowerUpsByUserId(user.id)).find(up => up.powerUpId === powerUpId);
+      if (userPowerUp) {
+        await updateUserPowerUpInDatabaseById({
+          id: userPowerUp.id,
+          userPowerUp: {
+            isBurnt: true
+          }
+        });
+        
+        // Associate the power-up with the membership
+        await saveFantasyLeagueMembershipPowerUpToDatabase({
+          fantasyLeagueMembershipId: membership.id,
+          powerUpId: powerUpId
+        });
+      }
+    }
+  }
 
   return c.json({
     message: 'Successfully joined league',
@@ -597,7 +646,7 @@ const getLeagueTableRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -607,7 +656,7 @@ const getLeagueTableRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -623,7 +672,7 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
   const user = c.get('user');
   
   if (!user) {
-    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+    return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
   const { id } = c.req.valid('param');
@@ -632,7 +681,7 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
   const league = await retrieveFantasyLeagueFromDatabaseById(id);
 
   if (!league) {
-    return c.json({ error: 'Fantasy league not found' }, 404);
+    return c.json({ message: 'Fantasy league not found' }, 404);
   }
 
   // Check if user can access this league (owners and members can always access, public leagues are accessible to all)
@@ -642,7 +691,7 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
     const isMember = memberships.some((membership: FantasyLeagueMembership) => membership.userId === user.id);
     
     if (!isOwner && !isMember) {
-      return c.json({ error: 'Access denied: This is a private league' }, 403);
+      return c.json({ message: 'Access denied: This is a private league' }, 403);
     }
   }
 
@@ -723,7 +772,7 @@ const getLeagueHistoryRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -739,7 +788,7 @@ fantasyLeaguesApp.openapi(getLeagueHistoryRoute, async (c) => {
   const user = c.get('user');
   
   if (!user) {
-    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+    return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
   const { leagueId, status, sortBy, sortOrder, search } = c.req.valid('query');
@@ -888,7 +937,7 @@ const getLeaguePositionRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -898,7 +947,7 @@ const getLeaguePositionRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
+            message: z.string(),
           }),
         },
       },
@@ -914,7 +963,7 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
   const user = c.get('user');
   
   if (!user) {
-    return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
+    return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
   }
 
   const { id } = c.req.valid('param');
@@ -923,7 +972,7 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
   const league = await retrieveFantasyLeagueFromDatabaseById(id);
 
   if (!league) {
-    return c.json({ error: 'Fantasy league not found' }, 404);
+    return c.json({ message: 'Fantasy league not found' }, 404);
   }
 
   // Check if user is a member of this league

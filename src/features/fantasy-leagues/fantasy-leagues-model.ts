@@ -136,7 +136,7 @@ export async function updateFantasyLeagueInDatabaseById({
 	/**
 	 * The values of the FantasyLeague you want to change.
 	 */
-	league: Partial<Omit<Parameters<typeof prisma.fantasyLeague.update>, "id">>;
+	league: Partial<FantasyLeague>;
 }) {
 	return await prisma.fantasyLeague.update({
 		where: { id },
@@ -161,7 +161,7 @@ export async function updateFantasyLeagueMembershipInDatabaseById({
 	/**
 	 * The values of the FantasyLeagueMembership you want to change.
 	 */
-	membership: Partial<Omit<Parameters<typeof prisma.fantasyLeagueMembership.update>, "id">>;
+	membership: Partial<FantasyLeagueMembership>;
 }) {
 	return await prisma.fantasyLeagueMembership.update({
 		where: { id },

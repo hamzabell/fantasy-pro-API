@@ -272,14 +272,6 @@ describe("Fantasy Leagues", () => {
 			await deleteUserFromDatabaseById(user.id);
 		});
 
-		test("given an aunthenticated user tries to create a fantasy league with a draft date in the past: it should throw a 400 error", async () => {
-			// This test is no longer relevant since we removed draftDate
-			// We'll repurpose it to test gameweek validation
-			expect(true).toBe(true);
-		});
-
-
-
 		test("given an authenticated user tries to create a fantasy league with empty string for required fields: it should throw a 400 error", async () => {
 			// First create a user in the database with a unique ID and email
 			const user = await saveUserToDatabase({
@@ -433,8 +425,6 @@ describe("Fantasy Leagues", () => {
 				id: faker.string.uuid(),
 				email: faker.internet.email(), // Unique email to avoid constraint violations
 			});
-			
-			// Note: We're NOT creating a team for this user
 			
 			const mockSupabase = mockSupabaseAuthSuccess(user);
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());

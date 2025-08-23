@@ -11,5 +11,5 @@ export const TeamResponseSchema = z.object({
     }),
 });
 export const ErrorResponseSchema = z.object({
-    message: z.string().openapi({ example: 'Invalid players selection. Must select 11 players.' }),
+    error: z.string().openapi({ example: 'Invalid players selection. Must select 11 players.' }),
 });

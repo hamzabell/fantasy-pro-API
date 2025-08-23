@@ -17,6 +17,9 @@ model User {
   team      Team?
   leagues   FantasyLeagueMembership[]
   ownedLeagues FantasyLeague[]
+  powerUps  UserPowerUp[]
+  // Relationship to AdminOtpSecret (one-to-one or one-to-zero)
+  adminOtpSecret AdminOtpSecret?
 }
 
 model Team {
@@ -24,6 +27,7 @@ model Team {
   userId      String      @unique
   teamValue   Int         @default(0)
   teamPlayers Int[]
+  captainId   Int?        // ID of the captain player
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -54,6 +58,7 @@ model FantasyLeagueMembership {
   userId    String
   leagueId  String
   teamName  String?
+  powerUps  FantasyLeagueMembershipPowerUp[]
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   league    FantasyLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
@@ -67,4 +72,68 @@ model Gameweek {
   deadline  DateTime
   isActive  Boolean     @default(false)
   leagues   FantasyLeague[]
+}
+
+model PowerUp {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  price       String      // Price in MATIC (Polygon)
+  tokenId     String      // NFT token ID on Polygon
+  contractAddress String?  // Contract address on Polygon (optional until launched)
+  metadataUri String      // URI to metadata
+  imageUrl    String?
+  isActive    Boolean     @default(true)
+  isFeatured  Boolean     @default(false)
+  categoryId  String?
+  category    PowerUpCategory? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userPowerUps UserPowerUp[]
+  fantasyLeagueMembershipPowerUps FantasyLeagueMembershipPowerUp[]
+}
+
+model PowerUpCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String
+  powerUps    PowerUp[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model UserPowerUp {
+  id          String      @id @default(cuid())
+  userId      String
+  powerUpId   String
+  tokenId     String      // NFT token ID on Polygon
+  amount      Int         @default(1)
+  isBurnt     Boolean     @default(false)  // Whether the power-up has been used/burnt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  powerUp     PowerUp     @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, powerUpId])
+}
+
+model FantasyLeagueMembershipPowerUp {
+  id                      String      @id @default(cuid())
+  fantasyLeagueMembershipId String
+  powerUpId               String
+  isBurnt                 Boolean     @default(false)  // Whether the power-up has been used/burnt in this league
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+  fantasyLeagueMembership FantasyLeagueMembership @relation(fields: [fantasyLeagueMembershipId], references: [id], onDelete: Cascade)
+  powerUp                 PowerUp     @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
+
+  @@unique([fantasyLeagueMembershipId, powerUpId])
+}
+
+// Model to store TOTP secrets for admin users
+model AdminOtpSecret {
+  userId   String   @id
+  secret   String   // The TOTP secret. Consider encrypting this in a real application.
+  issuer   String?  // Optional: The issuer name (e.g., 'FantasyPro')
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

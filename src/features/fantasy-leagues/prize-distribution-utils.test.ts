@@ -5,7 +5,7 @@ describe('Prize Distribution Utils', () => {
   describe('calculatePrizeDistribution', () => {
     test('given 1 winner: it should return 100% to the winner', () => {
       const winners = 1;
-      const expected = [{ position: 1, percentage: 100 }];
+      const expected: { position: number; percentage: number }[] = [{ position: 1, percentage: 100 }];
       const actual = calculatePrizeDistribution(winners);
       
       expect(actual).toEqual(expected);
@@ -13,7 +13,7 @@ describe('Prize Distribution Utils', () => {
 
     test('given 2 winners: it should return 60/40 split', () => {
       const winners = 2;
-      const expected = [
+      const expected: { position: number; percentage: number }[] = [
         { position: 1, percentage: 60 },
         { position: 2, percentage: 40 }
       ];
@@ -30,17 +30,18 @@ describe('Prize Distribution Utils', () => {
       expect(actual).toHaveLength(3);
       
       // Check that all positions are accounted for
-      expect(actual[0]).toEqual({ position: 1, percentage: expect.any(Number) });
-      expect(actual[1]).toEqual({ position: 2, percentage: expect.any(Number) });
-      expect(actual[2]).toEqual({ position: 3, percentage: expect.any(Number) });
+      for (let i = 0; i < 3; i++) {
+        expect(actual[i]).toEqual({ position: i + 1, percentage: expect.any(Number) });
+      }
       
       // Check that percentages sum to 100
       const totalPercentage = actual.reduce((sum, entry) => sum + entry.percentage, 0);
       expect(totalPercentage).toBe(100);
       
       // Check that percentages are in descending order
-      expect(actual[0].percentage).toBeGreaterThanOrEqual(actual[1].percentage);
-      expect(actual[1].percentage).toBeGreaterThanOrEqual(actual[2].percentage);
+      for (let i = 0; i < actual.length - 1; i++) {
+        expect(actual[i].percentage).toBeGreaterThanOrEqual(actual[i + 1].percentage);
+      }
     });
 
     test('given 5 winners: it should return a fair distribution that sums to 100%', () => {
@@ -51,11 +52,9 @@ describe('Prize Distribution Utils', () => {
       expect(actual).toHaveLength(5);
       
       // Check that all positions are accounted for
-      expect(actual[0]).toEqual({ position: 1, percentage: expect.any(Number) });
-      expect(actual[1]).toEqual({ position: 2, percentage: expect.any(Number) });
-      expect(actual[2]).toEqual({ position: 3, percentage: expect.any(Number) });
-      expect(actual[3]).toEqual({ position: 4, percentage: expect.any(Number) });
-      expect(actual[4]).toEqual({ position: 5, percentage: expect.any(Number) });
+      for (let i = 0; i < 5; i++) {
+        expect(actual[i]).toEqual({ position: i + 1, percentage: expect.any(Number) });
+      }
       
       // Check that percentages sum to 100
       const totalPercentage = actual.reduce((sum, entry) => sum + entry.percentage, 0);

@@ -68,7 +68,7 @@ export async function updateTeamInDatabaseById({
 	/**
 	 * The values of the Team you want to change.
 	 */
-	team: Partial<Omit<Parameters<typeof prisma.team.update>, "id">>;
+	team: Partial<Team>;
 }) {
 	return await prisma.team.update({
 		where: { id },
