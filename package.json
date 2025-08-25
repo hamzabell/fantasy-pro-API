@@ -3,8 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "tsc && npm run prisma:generate && mkdir -p dist/src/generated && cp -r src/generated/prisma dist/src/generated/",
+    "start": "node dist/src/index.js",
     "test": "NODE_ENV=test vitest",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
