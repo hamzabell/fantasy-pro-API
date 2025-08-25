@@ -9,7 +9,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:seed": "tsx prisma/seed.ts && tsx prisma/seed-powerups.ts && tsx prisma/seed-powerup-categories.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
     "get-auth-token": "tsx src/utils/get-auth-token.ts",
     "generate-admin-credentials": "tsx scripts/generate-admin-totp-credentials.ts"

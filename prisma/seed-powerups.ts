@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/prisma/index.js';
 
 const prisma = new PrismaClient();
 
@@ -37,9 +37,10 @@ async function main() {
     throw new Error('Failed to seed power-up categories');
   }
 
-  // Define sample power-ups with their categories
+  // Define sample power-ups with their categories and IDs
   const powerUps = [
     {
+      id: '1',
       name: 'Triple Captain',
       description: "Captain's points are tripled instead of doubled.",
       price: '15',
@@ -50,6 +51,7 @@ async function main() {
       categoryId: rareCategory.id,
     },
     {
+      id: '2',
       name: 'Defensive Wall',
       description: 'All defenders get +2 extra points for a clean sheet.',
       price: '8',
@@ -60,6 +62,7 @@ async function main() {
       categoryId: commonCategory.id,
     },
     {
+      id: '3',
       name: 'Momentum Boost',
       description:
         'If the team scores above a set threshold (e.g., 80 points), they get +10 bonus points.',
@@ -71,6 +74,7 @@ async function main() {
       categoryId: rareCategory.id,
     },
     {
+      id: '4',
       name: 'Point Multiplier',
       description:
         'Apply a 1.5x multiplier to the entire team\'s points for a single Gameweek.',
@@ -82,6 +86,7 @@ async function main() {
       categoryId: legendaryCategory.id,
     },
     {
+      id: '5',
       name: 'Double Points',
       description: 'Double your points for one gameweek.',
       price: '10',
@@ -92,6 +97,7 @@ async function main() {
       categoryId: commonCategory.id,
     },
     {
+      id: '6',
       name: 'Bench Boost',
       description: 'Use your bench players.',
       price: '8',
@@ -106,9 +112,10 @@ async function main() {
   // Seed power-ups
   for (const powerUp of powerUps) {
     await prisma.powerUp.upsert({
-      where: { name: powerUp.name },
+      where: { id: powerUp.id },
       update: {},
       create: {
+        id: powerUp.id,
         name: powerUp.name,
         description: powerUp.description,
         price: powerUp.price,
