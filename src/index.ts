@@ -19,6 +19,7 @@ app.doc('/doc', {
 	},
 	servers: [
 		{ url: 'http://localhost:3000', description: 'Local Server' },
+		{ url: 'https://fantasy-pro-api.onrender.com', description: 'Production Server' },
 	],
 });
 
