@@ -10,7 +10,7 @@ import {
 	POLYGON_CONTRACT_ADDRESSES,
 	POLYGON_NETWORK_CONFIG,
 	POLYGON_MUMBAI_CONFIG
-} from './polygon-utils';
+} from './polygon-utils.js';
 
 describe('Polygon Utilities', () => {
 	describe('maticToWei', () => {

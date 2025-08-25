@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import prisma from '../../prisma.js';
 // Initialize Supabase client
 export const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_ANON_KEY || '');
 import { retrieveUserFromDatabaseById, saveUserToDatabase } from '../users/users-model.js';

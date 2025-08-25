@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { saveFantasyLeagueToDatabase, retrieveFantasyLeagueFromDatabaseById, retrieveAllFantasyLeaguesFromDatabase, countFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById, retrieveFantasyLeagueMembershipsByUserId, saveFantasyLeagueMembershipToDatabase, retrieveFantasyLeagueMembershipsByLeagueId, retrieveFantasyLeagueFromDatabaseByCode } from './fantasy-leagues-model.js';
 import { createPopulatedFantasyLeague } from './fantasy-leagues-factories.js';
-import { fetchGameweek, fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchGameweek, } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
@@ -93,6 +93,7 @@ const createFantasyLeagueRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');
@@ -191,6 +192,7 @@ const getAllFantasyLeaguesRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');
@@ -327,6 +329,7 @@ const getFantasyLeagueByIdRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');
@@ -433,6 +436,7 @@ const joinFantasyLeagueRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');
@@ -587,6 +591,7 @@ const getLeagueTableRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(getLeagueTableRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');
@@ -688,6 +693,7 @@ const getLeagueHistoryRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(getLeagueHistoryRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');
@@ -841,6 +847,7 @@ const getLeaguePositionRoute = createRoute({
     security: [{ BearerAuth: [] }], // Requires authentication
     tags: ['Fantasy Leagues'],
 });
+// @ts-ignore
 fantasyLeaguesApp.openapi(getLeaguePositionRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     // Get user from context (set by middleware)
     const user = c.get('user');

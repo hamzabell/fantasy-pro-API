@@ -246,7 +246,7 @@ fantasyTeamsApp.openapi(createTeamRoute, async (c) => {
 			teamPlayers: playerIds,
 		};
 
-		const createdTeam = await saveTeamToDatabase(teamData);
+		const createdTeam = await saveTeamToDatabase(teamData as Team);
 
 		// Return success response
 		return c.json({

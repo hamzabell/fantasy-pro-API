@@ -13,7 +13,7 @@ import { createAuthHeaders, createBody } from '../../utils/testUtils.js';
 import { mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
 import { supabase } from '../supabase/supabase-helpers.js';
 import { faker } from '@faker-js/faker';
-import prisma from '../../prisma.js';
+import {createMockUser} from '../../utils/supabaseMocks-factories.js';
 
 describe('Power-Ups Routes', () => {
 	describe('GET /api/power-ups', () => {
@@ -67,7 +67,7 @@ describe('Power-Ups Routes', () => {
 	await savePowerUpToDatabase(powerUpData3); // Save but don't use in assertions
 	
 	// Mock authentication
-	const mockSupabase = mockSupabaseAuthSuccess(user);
+	const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 	vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 	
 	const res = await app.request('/api/power-ups', {
@@ -145,7 +145,7 @@ describe('Power-Ups Routes', () => {
 			await savePowerUpToDatabase(powerUpData2);
 			
 			// Mock authentication
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 			
 			const res = await app.request('/api/power-ups/featured', {
@@ -224,7 +224,7 @@ describe('Power-Ups Routes', () => {
 			});
 			
 			// Mock authentication
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 			
 			const res = await app.request('/api/power-ups/my-power-ups', {

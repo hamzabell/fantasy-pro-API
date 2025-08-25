@@ -31,6 +31,7 @@ import { createPopulatedUser } from '../users/users-factories.js';
 import prisma from '../../prisma.js';
 import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { saveTeamToDatabase } from '../fantasy-teams/fantasy-teams-model.js';
+import { createMockUser } from '../../utils/supabaseMocks-factories.js';
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 describe("Fantasy Leagues", () => {
     describe("Create Fantasy League", () => {
@@ -48,7 +49,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Create a valid league that won't trigger head-to-head validation
             const league = createPopulatedFantasyLeague({
@@ -102,7 +103,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({
                 leagueMode: 'head-to-head',
@@ -137,7 +138,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({
                 leagueMode: 'head-to-head',
@@ -168,7 +169,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Missing name field
             const league = createPopulatedFantasyLeague();
@@ -191,7 +192,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Invalid data types
             const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
@@ -208,11 +209,6 @@ describe("Fantasy Leagues", () => {
             expect(response.status).toBe(400);
             yield deleteUserFromDatabaseById(user.id);
         }));
-        test("given an aunthenticated user tries to create a fantasy league with a draft date in the past: it should throw a 400 error", () => __awaiter(void 0, void 0, void 0, function* () {
-            // This test is no longer relevant since we removed draftDate
-            // We'll repurpose it to test gameweek validation
-            expect(true).toBe(true);
-        }));
         test("given an authenticated user tries to create a fantasy league with empty string for required fields: it should throw a 400 error", () => __awaiter(void 0, void 0, void 0, function* () {
             // First create a user in the database with a unique ID and email
             const user = yield saveUserToDatabase({
@@ -227,7 +223,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({ name: "" });
             const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: "" // Empty team name
@@ -249,7 +245,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({
                 leagueMode: 'classic',
@@ -274,7 +270,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({
                 leagueMode: 'classic',
@@ -292,7 +288,7 @@ describe("Fantasy Leagues", () => {
                 email: faker.internet.email(), // Unique email to avoid constraint violations
             });
             // Note: We're NOT creating a team for this user
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({
                 leagueMode: 'classic',
@@ -311,8 +307,7 @@ describe("Fantasy Leagues", () => {
                 id: faker.string.uuid(),
                 email: faker.internet.email(), // Unique email to avoid constraint violations
             });
-            // Note: We're NOT creating a team for this user
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({
                 leagueMode: 'classic',
@@ -353,7 +348,8 @@ describe("Fantasy Leagues", () => {
             const savedLeague2 = yield saveFantasyLeagueToDatabase(league2);
             const savedPrivateLeague = yield saveFantasyLeagueToDatabase(privateLeague);
             // mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
+            ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const response = yield app.request('/api/fantasy-leagues', Object.assign({ method: 'GET' }, createAuthHeaders()));
             expect(response.status).toBe(200);
@@ -409,7 +405,8 @@ describe("Fantasy Leagues", () => {
             const savedLeague1 = yield saveFantasyLeagueToDatabase(league1);
             const savedLeague2 = yield saveFantasyLeagueToDatabase(league2);
             // mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
+            ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with stake filter
             const response = yield app.request('/api/fantasy-leagues?stake=100', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -447,7 +444,8 @@ describe("Fantasy Leagues", () => {
             yield new Promise(resolve => setTimeout(resolve, 10));
             const savedLeague2 = yield saveFantasyLeagueToDatabase(league2);
             // mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
+            ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with sortBy and sortOrder ascending
             const responseAsc = yield app.request('/api/fantasy-leagues?sortBy=createdAt&sortOrder=asc', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -499,7 +497,8 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
+            ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with isMember=true filter
             const response = yield app.request('/api/fantasy-leagues?isMember=true', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -540,7 +539,8 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
+            ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with isMember=false filter
             const response = yield app.request('/api/fantasy-leagues?isMember=false', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -574,7 +574,8 @@ describe("Fantasy Leagues", () => {
             const savedLeague1 = yield saveFantasyLeagueToDatabase(league1);
             const savedLeague2 = yield saveFantasyLeagueToDatabase(league2);
             // mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
+            ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with search term
             const response = yield app.request('/api/fantasy-leagues?search=Premier', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -612,7 +613,7 @@ describe("Fantasy Leagues", () => {
                 });
                 const savedLeague = yield saveFantasyLeagueToDatabase(league);
                 // mock supabase Auth
-                const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+                const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
                 vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
                 const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}`, Object.assign({ method: 'GET' }, createAuthHeaders()));
                 expect(response.status).toBe(200);
@@ -631,7 +632,7 @@ describe("Fantasy Leagues", () => {
                 const user = createPopulatedUser();
                 const savedUser = yield saveUserToDatabase(user);
                 // mock supabase Auth
-                const mockSupabase = mockSupabaseAuthSuccess(savedUser);
+                const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
                 vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
                 const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}`, Object.assign({ method: 'GET' }, createAuthHeaders()));
                 expect(response.status).toBe(404);
@@ -682,7 +683,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join league
             const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
@@ -729,7 +730,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join league
             const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
@@ -771,7 +772,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join private league
             const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
@@ -802,7 +803,7 @@ describe("Fantasy Leagues", () => {
                 email: faker.internet.email(),
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join non-existent league
             const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
@@ -845,7 +846,7 @@ describe("Fantasy Leagues", () => {
                 teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
                 if (filter === 'current') {
@@ -878,7 +879,7 @@ describe("Fantasy Leagues", () => {
                 email: faker.internet.email(),
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join league with empty code
             const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
@@ -908,7 +909,7 @@ describe("Fantasy Leagues", () => {
             });
             const savedClosedLeague = yield saveFantasyLeagueToDatabase(closedLeague);
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -954,7 +955,7 @@ describe("Fantasy Leagues", () => {
             });
             const savedOngoingLeague = yield saveFantasyLeagueToDatabase(ongoingLeague);
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek is ongoing
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1008,7 +1009,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1051,7 +1052,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek is ongoing
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1104,7 +1105,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek is ongoing (id: 3 based on seed data)
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1158,7 +1159,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek is a past gameweek (id: 1 based on seed data)
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1212,7 +1213,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek is ongoing (id: 3 based on seed data)
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1266,7 +1267,7 @@ describe("Fantasy Leagues", () => {
                     teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 }
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Test cases for different numbers of winners
             const testCases = [
@@ -1346,7 +1347,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(owner);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(owner));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league table
             const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/table`, Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1373,7 +1374,7 @@ describe("Fantasy Leagues", () => {
                 email: faker.internet.email(),
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league table for non-existent league
             const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}/table`, Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1432,7 +1433,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history
             const response = yield app.request('/api/fantasy-leagues/history', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1484,7 +1485,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history filtered by league id
             const response = yield app.request(`/api/fantasy-leagues/history?leagueId=${savedLeague1.id}`, Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1553,7 +1554,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Mock fetchGameweek to simulate current gameweek
             vi.mocked(fetchGameweek).mockImplementation((filter) => {
@@ -1620,7 +1621,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history sorted by creation date
             const response = yield app.request('/api/fantasy-leagues/history?sortBy=createdAt&sortOrder=asc', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1672,7 +1673,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history with search term
             const response = yield app.request('/api/fantasy-leagues/history?search=Premier', Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1720,7 +1721,7 @@ describe("Fantasy Leagues", () => {
                 }
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league position
             const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1753,7 +1754,7 @@ describe("Fantasy Leagues", () => {
             });
             const savedLeague = yield saveFantasyLeagueToDatabase(league);
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league position
             const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, Object.assign({ method: 'GET' }, createAuthHeaders()));
@@ -1775,7 +1776,7 @@ describe("Fantasy Leagues", () => {
                 email: faker.internet.email(),
             });
             // Mock supabase Auth
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league position for non-existent league
             const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}/position`, Object.assign({ method: 'GET' }, createAuthHeaders()));

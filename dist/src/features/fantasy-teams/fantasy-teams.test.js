@@ -15,6 +15,7 @@ import { mockSupabaseAuthSuccess, mockUser } from '../../utils/supabaseMocks.js'
 import { supabase } from '../supabase/supabase-helpers.js';
 import { retrieveTeamFromDatabaseByUserId, saveTeamToDatabase } from './fantasy-teams-model.js';
 import { saveUserToDatabase, deleteAllUsersFromDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
+import { createMockUser } from '../../utils/supabaseMocks-factories.js';
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 const setupUserWithATeam = () => __awaiter(void 0, void 0, void 0, function* () {
     // First create a user in the database with a unique ID and email
@@ -37,7 +38,7 @@ describe("Fantasy Teams", () => {
                 id: `user-${Date.now()}-${Math.random()}`,
                 email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -59,7 +60,7 @@ describe("Fantasy Teams", () => {
             expect(actual).toEqual(expected);
             const team = yield retrieveTeamFromDatabaseByUserId(user.id);
             expect(team).not.toBeNull();
-            expect(team.teamPlayers).toEqual(playerIds);
+            expect(team === null || team === void 0 ? void 0 : team.teamPlayers).toEqual(playerIds);
             // Cleanup after test
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -69,7 +70,7 @@ describe("Fantasy Teams", () => {
                 id: `user-${Date.now()}-${Math.random()}`,
                 email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120);
             const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -125,7 +126,7 @@ describe("Fantasy Teams", () => {
                 id: `user-${Date.now()}-${Math.random()}`,
                 email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1]; // Player 1 is duplicated
@@ -151,7 +152,7 @@ describe("Fantasy Teams", () => {
                 teamValue: 80,
                 teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const playerIds = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
@@ -172,7 +173,7 @@ describe("Fantasy Teams", () => {
     describe("GET /team", () => {
         test("given that a user has a team: it should return the user's team", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user, team: { teamValue, teamPlayers } } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             const res = yield app.request('/api/fantasy-teams/team', Object.assign(Object.assign({}, createAuthHeaders()), { method: 'GET' }));
             expect(res.status).toEqual(200);
@@ -193,7 +194,7 @@ describe("Fantasy Teams", () => {
                 id: `user-${Date.now()}-${Math.random()}`,
                 email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
             });
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             const res = yield app.request('/api/fantasy-teams/team', Object.assign(Object.assign({}, createAuthHeaders()), { method: 'GET' }));
             expect(res.status).toEqual(400);
@@ -219,7 +220,7 @@ describe("Fantasy Teams", () => {
     describe("PUT /update-team", () => {
         test("given that a user has a team of 11 players and changes one player and it is within the budget: it should update the team with the new player and return the updated team", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user, team: { teamValue, teamPlayers } } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const newPlayerId = 12; // New player to add
@@ -238,13 +239,13 @@ describe("Fantasy Teams", () => {
             };
             expect(actual).toEqual(expected);
             const updatedTeam = yield retrieveTeamFromDatabaseByUserId(user.id);
-            expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
+            expect(updatedTeam === null || updatedTeam === void 0 ? void 0 : updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
             // Clean up properly
             yield deleteUserFromDatabaseById(user.id);
         }));
         test("given that a user has a team of 11 players and tries to change multiple players at once and it is within the budget: it should update the team with the new players and return the updated team", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user, team: { teamValue, teamPlayers } } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const newPlayerIds = [12, 13, 14]; // New players to add
@@ -263,13 +264,13 @@ describe("Fantasy Teams", () => {
             };
             expect(actual).toEqual(expected);
             const updatedTeam = yield retrieveTeamFromDatabaseByUserId(user.id);
-            expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
+            expect(updatedTeam === null || updatedTeam === void 0 ? void 0 : updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
             // Clean up properly
             yield deleteUserFromDatabaseById(user.id);
         }));
         test("given that a user has a team of 11 players and tries to change one player and it exceeds the budget: it should return an error stating that the total cost of players exceeds the budget", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user, team: { teamPlayers } } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120); // Simulate exceeding budget
             const newPlayerId = 12; // New player to add
@@ -315,7 +316,7 @@ describe("Fantasy Teams", () => {
         }));
         test("given that a user tries to update their team with less than 11 players: it should return an error stating that you must select exactly 11 players", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const playerIds = [1, 2, 3, 4, 5]; // Less than 11 players
@@ -333,7 +334,7 @@ describe("Fantasy Teams", () => {
         }));
         test("given that a user tries to update their team with more than 11 players: it should return an error stating that you must select exactly 11 players", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; // More than 11 players
@@ -351,7 +352,7 @@ describe("Fantasy Teams", () => {
         }));
         test("given that a user tries to update their team with duplicate players: it should return an error stating that duplicate players are not allowed", () => __awaiter(void 0, void 0, void 0, function* () {
             const { user } = yield setupUserWithATeam();
-            const mockSupabase = mockSupabaseAuthSuccess(user);
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
             vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
             const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1]; // Player 1 is duplicated

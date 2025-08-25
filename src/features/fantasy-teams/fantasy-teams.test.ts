@@ -6,6 +6,8 @@ import {mockSupabaseAuthSuccess, mockUser} from '../../utils/supabaseMocks.js';
 import {supabase} from '../supabase/supabase-helpers.js';
 import {retrieveTeamFromDatabaseByUserId, saveTeamToDatabase} from './fantasy-teams-model.js';
 import {saveUserToDatabase, deleteAllUsersFromDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
+import type {Team} from '../../generated/prisma/index.js';
+import {createMockUser} from '../../utils/supabaseMocks-factories.js';
 
 
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
@@ -21,7 +23,7 @@ const setupUserWithATeam = async () => {
 			userId: user.id,
 			teamValue: 80,
 			teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],	
-		})
+		} as Team)
 
 		return { user, team };
 }
@@ -35,7 +37,7 @@ describe("Fantasy Teams", () => {
 			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
 		});
 		
-		const mockSupabase = mockSupabaseAuthSuccess(user);
+		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -70,7 +72,7 @@ describe("Fantasy Teams", () => {
 		const team = await retrieveTeamFromDatabaseByUserId(user.id) 
 
 		expect(team).not.toBeNull();
-		expect(team.teamPlayers).toEqual(playerIds);
+		expect(team?.teamPlayers).toEqual(playerIds);
 		
 		// Cleanup after test
 		await deleteUserFromDatabaseById(user.id);
@@ -83,7 +85,7 @@ describe("Fantasy Teams", () => {
 			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
 		});
 		
-		const mockSupabase = mockSupabaseAuthSuccess(user);
+		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120);
 
@@ -171,7 +173,7 @@ describe("Fantasy Teams", () => {
 			email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
 		});
 		
-		const mockSupabase = mockSupabaseAuthSuccess(user);
+		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -208,9 +210,9 @@ describe("Fantasy Teams", () => {
 			userId: user.id,
 			teamValue: 80,
 			teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-		});
+		} as Team);
 
-		const mockSupabase = mockSupabaseAuthSuccess(user);
+		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -242,7 +244,7 @@ describe("Fantasy Teams", () => {
 	describe("GET /team", () => {
 		test("given that a user has a team: it should return the user's team", async () => {
 			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 
 			const res = await app.request('/api/fantasy-teams/team', {
@@ -273,7 +275,7 @@ describe("Fantasy Teams", () => {
 				email: `test-${Date.now()}-${Math.random()}@example.com`, // Unique email to avoid constraint violations
 			});
 			
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 
 			const res = await app.request('/api/fantasy-teams/team', {
@@ -314,7 +316,7 @@ describe("Fantasy Teams", () => {
 	describe("PUT /update-team", () => {
 		test("given that a user has a team of 11 players and changes one player and it is within the budget: it should update the team with the new player and return the updated team", async () => {
 			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -345,7 +347,7 @@ describe("Fantasy Teams", () => {
 			
 			const updatedTeam = await retrieveTeamFromDatabaseByUserId(user.id);
 
-			expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
+			expect(updatedTeam?.teamPlayers).toEqual(updatedTeamPlayers);
 			
 			// Clean up properly
 			await deleteUserFromDatabaseById(user.id);
@@ -353,7 +355,7 @@ describe("Fantasy Teams", () => {
 
 		test("given that a user has a team of 11 players and tries to change multiple players at once and it is within the budget: it should update the team with the new players and return the updated team", async () => {
 			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -382,7 +384,7 @@ describe("Fantasy Teams", () => {
 			expect(actual).toEqual(expected);
 			
 			const updatedTeam = await retrieveTeamFromDatabaseByUserId(user.id);
-			expect(updatedTeam.teamPlayers).toEqual(updatedTeamPlayers);
+			expect(updatedTeam?.teamPlayers).toEqual(updatedTeamPlayers);
 			
 			// Clean up properly
 			await deleteUserFromDatabaseById(user.id);
@@ -390,7 +392,7 @@ describe("Fantasy Teams", () => {
 
 		test("given that a user has a team of 11 players and tries to change one player and it exceeds the budget: it should return an error stating that the total cost of players exceeds the budget", async () => {
 			const { user, team: { teamPlayers } } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120); // Simulate exceeding budget
 
@@ -466,7 +468,7 @@ describe("Fantasy Teams", () => {
 
 		test("given that a user tries to update their team with less than 11 players: it should return an error stating that you must select exactly 11 players", async () => {
 			const { user  } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -495,7 +497,7 @@ describe("Fantasy Teams", () => {
 
 		test("given that a user tries to update their team with more than 11 players: it should return an error stating that you must select exactly 11 players", async () => {
 			const { user  } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 
@@ -525,7 +527,7 @@ describe("Fantasy Teams", () => {
 
 		test("given that a user tries to update their team with duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
 			const { user  } = await setupUserWithATeam();
-			const mockSupabase = mockSupabaseAuthSuccess(user);
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
 

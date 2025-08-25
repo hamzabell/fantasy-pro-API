@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { validateAdminAuth } from '../admin-otp/admin-auth-middleware.js'; // Import admin auth middleware
 import {savePowerUpToDatabase} from '../power-ups/power-ups-model.js';
+import type {PowerUp} from '../../generated/prisma/index.js';
 
 // Create a separate app instance for admin routes
 const adminPowerUpsApp = new OpenAPIHono();
@@ -111,7 +112,7 @@ adminPowerUpsApp.openapi(createPowerUpRoute, async (c) => {
 		...requestData,
 		isActive: true,
 		isFeatured: requestData.isFeatured || false,
-	});
+	} as PowerUp);
 	
 	// Include category information in the response if available
 	const powerUpResponse = {

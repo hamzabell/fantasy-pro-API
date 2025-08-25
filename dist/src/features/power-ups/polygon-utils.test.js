@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { maticToWei, weiToMatic, isValidPolygonAddress, getPolygonScanUrl, getPolygonAddressUrl, getPolygonTokenUrl, formatTransactionDate, POLYGON_CONTRACT_ADDRESSES, POLYGON_NETWORK_CONFIG, POLYGON_MUMBAI_CONFIG } from './polygon-utils';
+import { maticToWei, weiToMatic, isValidPolygonAddress, getPolygonScanUrl, getPolygonAddressUrl, getPolygonTokenUrl, formatTransactionDate, POLYGON_CONTRACT_ADDRESSES, POLYGON_NETWORK_CONFIG, POLYGON_MUMBAI_CONFIG } from './polygon-utils.js';
 describe('Polygon Utilities', () => {
     describe('maticToWei', () => {
         it('should convert MATIC to wei correctly', () => {

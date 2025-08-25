@@ -1,11 +1,4 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { 
-	retrieveAllPowerUpsFromDatabase, 
-	retrieveFeaturedPowerUpsFromDatabase,
-	retrieveUserPowerUpsByUserId,
-	retrieveFantasyLeagueMembershipPowerUpsByMembershipId,
-	retrieveFantasyLeagueMembershipPowerUpsByLeagueIdAndUserId,
-} from './power-ups-model.js';
 import prisma from '../../prisma.js';
 
 const powerUpsApp = new OpenAPIHono();

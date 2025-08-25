@@ -90,7 +90,7 @@ describe('Prize Distribution Utils', () => {
 
     test('given 0 winners: it should return an empty array', () => {
       const winners = 0;
-      const expected = [];
+      const expected: { position: number; percentage: number }[] = [];
       const actual = calculatePrizeDistribution(winners);
       
       expect(actual).toEqual(expected);
@@ -98,7 +98,7 @@ describe('Prize Distribution Utils', () => {
 
     test('given negative winners: it should return an empty array', () => {
       const winners = -1;
-      const expected = [];
+      const expected: { position: number; percentage: number }[] = [];
       const actual = calculatePrizeDistribution(winners);
       
       expect(actual).toEqual(expected);

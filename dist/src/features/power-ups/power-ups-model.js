@@ -242,3 +242,23 @@ export function deleteAllPowerUpsFromDatabase() {
         return yield prisma.powerUp.deleteMany();
     });
 }
+/**
+ * Removes all UserPowerUps from the database.
+ *
+ * @returns The number of UserPowerUps that were deleted.
+ */
+export function deleteAllUserPowerUpsFromDatabase() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.userPowerUp.deleteMany();
+    });
+}
+/**
+ * Removes all FantasyLeagueMembershipPowerUps from the database.
+ *
+ * @returns The number of FantasyLeagueMembershipPowerUps that were deleted.
+ */
+export function deleteAllFantasyLeagueMembershipPowerUpsFromDatabase() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.fantasyLeagueMembershipPowerUp.deleteMany();
+    });
+}
