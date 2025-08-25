@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import fantasyPremierLeagueApp from './features/fantasy-premier-league/fantasy-premier-league-route.js';
@@ -70,7 +71,7 @@ app.get('/', (c) => c.text('Welcome to the API!'));
 if (process.env.NODE_ENV !== 'test') {
 	serve({
 		fetch: app.fetch,
-		port: 3000,
+		port: process.env.PORT || 3000,
 	}, (info) => {
 		console.log(`API is running on http://localhost:${info.port}`);
 		console.log(`OpenAPI documentation is available at http://localhost:${info.port}/doc`);
