@@ -72,7 +72,7 @@ app.get('/', (c) => c.text('Welcome to the API!'));
 if (process.env.NODE_ENV !== 'test') {
 	serve({
 		fetch: app.fetch,
-		port: process.env.PORT || 3000,
+		port: Number(process.env.PORT) || 3000,
 	}, (info) => {
 		console.log(`API is running on http://localhost:${info.port}`);
 		console.log(`OpenAPI documentation is available at http://localhost:${info.port}/doc`);
