@@ -2,7 +2,7 @@ import { map, find, propEq, } from 'ramda';
 
 import { fetchJson } from '../../utils/api.js';
 import { createPlayerMapper, createTeamMapper } from './fantasy-premier-league-factories.js';
-import type { ApiFixture, BootstrapData, Fixture, Gameweek, Player, PlayerSummary, Team } from './types.js';
+import type { ApiFixture, BootstrapData, Fixture, Gameweek, Player, PlayerDetails, PlayerSummary, Team } from './types.js';
 
 const API_ENDPOINTS = {
 	BOOTSTRAP: '/bootstrap-static/',
@@ -41,6 +41,25 @@ export const fetchPlayerById = async (playerId: number): Promise<Player> => {
 	const element = find(propEq(playerId, 'id'), players);
 	if (!element) throw new Error(`Player with ID ${playerId} not found`);
 	return playerMapper(element);
+};
+
+export const fetchPlayersByIds = async (playerIds: number[]): Promise<Player[]> => {
+	// Validate that we have at most 11 player IDs
+	if (playerIds.length > 11) {
+		throw new Error('Cannot fetch more than 11 players at a time');
+	}
+
+	const playerMapper = createPlayerMapper(await getElementTypesFromBootstrap());
+	const players = await getPlayersFromBootstrap();
+	
+	// Find all players by their IDs
+	const foundPlayers = playerIds.map(playerId => {
+		const element = find(propEq(playerId, 'id'), players);
+		if (!element) throw new Error(`Player with ID ${playerId} not found`);
+		return playerMapper(element);
+	});
+
+	return foundPlayers;
 };
 
 export const fetchTeamById = async (teamId: number): Promise<Team> => {
@@ -146,4 +165,57 @@ export const fetchTotalCostForPlayers = async (playerIds: number[]): Promise<num
 	const players = await fetchPlayers();
 	const selectedPlayers = players.filter((player) => playerIds.includes(player.id));
 	return selectedPlayers.reduce((total, player) => total + player.cost, 0);
+};
+
+export const fetchFutureGameweeks = async (): Promise<Gameweek[]> => {
+	const bootstrapData = await getBootstrapData();
+	const currentGameweek = bootstrapData.events.find(event => event.is_current);
+	
+	if (!currentGameweek) {
+		throw new Error('No current gameweek found');
+	}
+	
+	// Return all gameweeks that are:
+	// 1. After the current gameweek OR
+	// 2. The current gameweek if it's not active (not finished and not ongoing)
+	const futureGameweeks = bootstrapData.events.filter(event => {
+		if (event.id > currentGameweek.id) {
+			return true; // Future gameweeks
+		}
+		if (event.id === currentGameweek.id && !event.is_current) {
+			return true; // Current gameweek that hasn't started
+		}
+		return false;
+	});
+	
+	const gameweeksWithFixtures = await Promise.all(
+		futureGameweeks.map(async (gameweek) => {
+			try {
+				const fixturesData = await fetchJson<ApiFixture[]>(API_ENDPOINTS.FIXTURES(gameweek.id));
+				const fixtures: Fixture[] = fixturesData.map((fixture) => ({
+					id: fixture.id,
+					homeTeamId: fixture.team_h,
+					awayTeamId: fixture.team_a,
+					kickoffTime: fixture.kickoff_time,
+				}));
+				
+				return {
+					id: gameweek.id,
+					fixtures,
+					isActive: !gameweek.finished,
+					deadlineTime: gameweek.deadline_time,
+				};
+			} catch (error) {
+				// If we can't fetch fixtures, still return the gameweek with empty fixtures
+				return {
+					id: gameweek.id,
+					fixtures: [],
+					isActive: !gameweek.finished,
+					deadlineTime: gameweek.deadline_time,
+				};
+			}
+		})
+	);
+	
+	return gameweeksWithFixtures;
 };

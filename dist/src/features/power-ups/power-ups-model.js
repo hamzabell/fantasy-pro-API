@@ -21,14 +21,14 @@ export function savePowerUpToDatabase(powerUp) {
     });
 }
 /**
- * Saves a new UserPowerUp to the database.
+ * Saves a new PowerUpUsage to the database.
  *
- * @param userPowerUp - The data for the UserPowerUp that should be created.
- * @returns The newly created UserPowerUp.
+ * @param powerUpUsage - The data for the PowerUpUsage that should be created.
+ * @returns The newly created PowerUpUsage.
  */
-export function saveUserPowerUpToDatabase(userPowerUp) {
+export function savePowerUpUsageToDatabase(powerUpUsage) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.userPowerUp.create({ data: userPowerUp });
+        return yield prisma.powerUpUsage.create({ data: powerUpUsage });
     });
 }
 /**
@@ -62,35 +62,43 @@ export function retrievePowerUpFromDatabaseById(id) {
 export function retrieveAllPowerUpsFromDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
         return yield prisma.powerUp.findMany({
-            where: { isActive: true },
+            include: { category: true },
             orderBy: { createdAt: 'desc' }
         });
     });
 }
 /**
- * Retrieves a UserPowerUp record from the database based on its id.
+ * Retrieves a PowerUpUsage record from the database based on its id.
  *
- * @param id - The id of the UserPowerUp to get.
- * @returns The UserPowerUp with a given id or null if it wasn't found.
+ * @param id - The id of the PowerUpUsage to get.
+ * @returns The PowerUpUsage with a given id or null if it wasn't found.
  */
-export function retrieveUserPowerUpFromDatabaseById(id) {
+export function retrievePowerUpUsageFromDatabaseById(id) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.userPowerUp.findUnique({ where: { id } });
+        return yield prisma.powerUpUsage.findUnique({ where: { id } });
     });
 }
 /**
- * Retrieves all UserPowerUp records for a specific user.
+ * Retrieves a PowerUpUsage record from the database based on transaction ID.
  *
- * @param userId - The id of the User whose power-ups to retrieve.
- * @returns An array of UserPowerUps for the user.
+ * @param transactionId - The transaction ID to get.
+ * @returns The PowerUpUsage with a given transaction ID or null if it wasn't found.
  */
-export function retrieveUserPowerUpsByUserId(userId) {
+export function retrievePowerUpUsageByTransactionId(transactionId) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.userPowerUp.findMany({
-            where: {
-                userId,
-                isBurnt: false
-            },
+        return yield prisma.powerUpUsage.findUnique({ where: { transactionId } });
+    });
+}
+/**
+ * Retrieves all PowerUpUsage records for a specific user.
+ *
+ * @param userId - The id of the User whose power-up usages to retrieve.
+ * @returns An array of PowerUpUsages for the user.
+ */
+export function retrievePowerUpUsagesByUserId(userId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.powerUpUsage.findMany({
+            where: { userId },
             include: {
                 powerUp: true
             }
@@ -105,7 +113,16 @@ export function retrieveUserPowerUpsByUserId(userId) {
  */
 export function retrieveFantasyLeagueMembershipPowerUpFromDatabaseById(id) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.fantasyLeagueMembershipPowerUp.findUnique({ where: { id } });
+        return yield prisma.fantasyLeagueMembershipPowerUp.findUnique({
+            where: { id },
+            include: {
+                powerUpUsage: {
+                    include: {
+                        powerUp: true
+                    }
+                }
+            }
+        });
     });
 }
 /**
@@ -118,11 +135,14 @@ export function retrieveFantasyLeagueMembershipPowerUpsByMembershipId(membership
     return __awaiter(this, void 0, void 0, function* () {
         return yield prisma.fantasyLeagueMembershipPowerUp.findMany({
             where: {
-                fantasyLeagueMembershipId: membershipId,
-                isBurnt: false
+                fantasyLeagueMembershipId: membershipId
             },
             include: {
-                powerUp: true
+                powerUpUsage: {
+                    include: {
+                        powerUp: true
+                    }
+                }
             }
         });
     });
@@ -152,11 +172,14 @@ export function retrieveFantasyLeagueMembershipPowerUpsByLeagueIdAndUserId(leagu
         // Then retrieve the power-ups for that membership
         return yield prisma.fantasyLeagueMembershipPowerUp.findMany({
             where: {
-                fantasyLeagueMembershipId: membership.id,
-                isBurnt: false
+                fantasyLeagueMembershipId: membership.id
             },
             include: {
-                powerUp: true
+                powerUpUsage: {
+                    include: {
+                        powerUp: true
+                    }
+                }
             }
         });
     });
@@ -169,10 +192,7 @@ export function retrieveFantasyLeagueMembershipPowerUpsByLeagueIdAndUserId(leagu
 export function retrieveFeaturedPowerUpsFromDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
         return yield prisma.powerUp.findMany({
-            where: {
-                isActive: true,
-                isFeatured: true
-            },
+            include: { category: true },
             orderBy: { createdAt: 'desc' }
         });
     });
@@ -193,16 +213,16 @@ export function updatePowerUpInDatabaseById(_a) {
     });
 }
 /**
- * Updates a UserPowerUp in the database.
+ * Updates a PowerUpUsage in the database.
  *
- * @param options - An object with the UserPowerUp's id and the new values.
- * @returns The updated UserPowerUp.
+ * @param options - An object with the PowerUpUsage's id and the new values.
+ * @returns The updated PowerUpUsage.
  */
-export function updateUserPowerUpInDatabaseById(_a) {
-    return __awaiter(this, arguments, void 0, function* ({ id, userPowerUp, }) {
-        return yield prisma.userPowerUp.update({
+export function updatePowerUpUsageInDatabaseById(_a) {
+    return __awaiter(this, arguments, void 0, function* ({ id, powerUpUsage, }) {
+        return yield prisma.powerUpUsage.update({
             where: { id },
-            data: userPowerUp,
+            data: powerUpUsage,
         });
     });
 }
@@ -243,13 +263,13 @@ export function deleteAllPowerUpsFromDatabase() {
     });
 }
 /**
- * Removes all UserPowerUps from the database.
+ * Removes all PowerUpUsages from the database.
  *
- * @returns The number of UserPowerUps that were deleted.
+ * @returns The number of PowerUpUsages that were deleted.
  */
-export function deleteAllUserPowerUpsFromDatabase() {
+export function deleteAllPowerUpUsagesFromDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.userPowerUp.deleteMany();
+        return yield prisma.powerUpUsage.deleteMany();
     });
 }
 /**

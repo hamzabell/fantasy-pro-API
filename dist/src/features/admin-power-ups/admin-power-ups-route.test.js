@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import app from '../../index.js';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { saveUserToDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
-import { deleteAllPowerUpsFromDatabase, deleteAllFantasyLeagueMembershipPowerUpsFromDatabase, deleteAllUserPowerUpsFromDatabase } from '../power-ups/power-ups-model.js';
+import { deleteAllPowerUpsFromDatabase, deleteAllFantasyLeagueMembershipPowerUpsFromDatabase, deleteAllPowerUpUsagesFromDatabase } from '../power-ups/power-ups-model.js';
 import { createPopulatedPowerUp } from '../power-ups/power-ups-factories.js';
 import { createAuthHeaders, createBody } from '../../utils/testUtils.js';
 import { faker } from '@faker-js/faker';
@@ -39,7 +39,7 @@ describe('Admin Power-Ups Routes', () => {
         yield deleteUserFromDatabaseById(adminUser.id);
         // Clean up any power-ups created during tests
         yield deleteAllFantasyLeagueMembershipPowerUpsFromDatabase();
-        yield deleteAllUserPowerUpsFromDatabase();
+        yield deleteAllPowerUpUsagesFromDatabase();
         yield deleteAllPowerUpsFromDatabase();
     }));
     describe.skip('POST /api/admin/power-ups', () => {
@@ -74,8 +74,7 @@ describe('Admin Power-Ups Routes', () => {
             expect(createdPowerUp).toBeDefined();
             expect(createdPowerUp === null || createdPowerUp === void 0 ? void 0 : createdPowerUp.name).toBe('Bench Boost');
             expect(createdPowerUp === null || createdPowerUp === void 0 ? void 0 : createdPowerUp.description).toBe('Use your bench players');
-            expect(createdPowerUp === null || createdPowerUp === void 0 ? void 0 : createdPowerUp.price).toBe('8');
-            expect(createdPowerUp === null || createdPowerUp === void 0 ? void 0 : createdPowerUp.isFeatured).toBe(true);
+            expect(createdPowerUp === null || createdPowerUp === void 0 ? void 0 : createdPowerUp.categoryId).toBeDefined();
             // Add more database assertions as needed
         }));
     });

@@ -1,5 +1,5 @@
 import { calculateUserTeamStats } from './player-stats-utils.js';
-import { retrieveFantasyLeagueMembershipPowerUpsByLeagueIdAndUserId } from '../power-ups/power-ups-model.js';
+import { retrieveFantasyLeagueMembershipPowerUpsByLeagueIdAndUserId } from './power-ups-model.js';
 import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
 import { fetchPlayerPointsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 
@@ -51,7 +51,7 @@ export async function calculateUserTotalPointsWithPowerUps(userId: string, leagu
   
   // For each power-up, apply its effect
   for (const membershipPowerUp of membershipPowerUps) {
-    const powerUpName = membershipPowerUp.powerUp.name as PowerUpType;
+    const powerUpName = membershipPowerUp.powerUpUsage.powerUp.name as PowerUpType;
     
     // Apply different effects based on power-up type
     switch (powerUpName) {

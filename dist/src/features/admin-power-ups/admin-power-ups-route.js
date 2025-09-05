@@ -14,18 +14,11 @@ import { savePowerUpToDatabase } from '../power-ups/power-ups-model.js';
 const adminPowerUpsApp = new OpenAPIHono();
 // Apply admin auth middleware to all routes under this admin app
 adminPowerUpsApp.use('*', validateAdminAuth);
-// Define the schema for a power-up (reused from original file)
+// Define the schema for a power-up (simplified)
 const PowerUpSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "Name cannot be empty"),
     description: z.string(),
-    price: z.string(), // Price in MATIC (Polygon)
-    tokenId: z.string(),
-    contractAddress: z.string().nullable(),
-    metadataUri: z.string(),
-    imageUrl: z.string().nullable(),
-    isActive: z.boolean().optional(),
-    isFeatured: z.boolean().optional(),
     categoryId: z.string().nullable().optional(),
     category: z.object({
         id: z.string(),
@@ -46,12 +39,6 @@ const createPowerUpRoute = createRoute({
                     schema: z.object({
                         name: z.string().min(1, "Name cannot be empty"),
                         description: z.string(),
-                        price: z.string(), // Price in MATIC (Polygon)
-                        tokenId: z.string(),
-                        contractAddress: z.string().optional(),
-                        metadataUri: z.string(),
-                        imageUrl: z.string().nullable(),
-                        isFeatured: z.boolean().optional(),
                         categoryId: z.string().optional(), // Category ID for the power-up
                     }),
                 },
@@ -109,7 +96,11 @@ adminPowerUpsApp.openapi(createPowerUpRoute, (c) => __awaiter(void 0, void 0, vo
     // const adminUserId = c.get('adminUserId'); // If you set this in the middleware
     const requestData = c.req.valid('json');
     // Save the power-up to the database
-    const powerUp = yield savePowerUpToDatabase(Object.assign(Object.assign({}, requestData), { isActive: true, isFeatured: requestData.isFeatured || false }));
+    const powerUp = yield savePowerUpToDatabase({
+        name: requestData.name,
+        description: requestData.description,
+        categoryId: requestData.categoryId || null,
+    });
     // Include category information in the response if available
     const powerUpResponse = Object.assign(Object.assign({}, powerUp), { createdAt: powerUp.createdAt.toISOString(), updatedAt: powerUp.updatedAt.toISOString() });
     return c.json({

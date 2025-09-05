@@ -37,28 +37,18 @@ async function main() {
     throw new Error('Failed to seed power-up categories');
   }
 
-  // Define sample power-ups with their categories and IDs
+  // Define sample power-ups with their categories (simplified, no blockchain details)
   const powerUps = [
     {
       id: '1',
       name: 'Triple Captain',
       description: "Captain's points are tripled instead of doubled.",
-      price: '15',
-      tokenId: '1',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      metadataUri: 'https://example.com/metadata/1',
-      imageUrl: 'https://example.com/images/triple-captain.png',
       categoryId: rareCategory.id,
     },
     {
       id: '2',
       name: 'Defensive Wall',
       description: 'All defenders get +2 extra points for a clean sheet.',
-      price: '8',
-      tokenId: '2',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      metadataUri: 'https://example.com/metadata/2',
-      imageUrl: 'https://example.com/images/defensive-wall.png',
       categoryId: commonCategory.id,
     },
     {
@@ -66,11 +56,6 @@ async function main() {
       name: 'Momentum Boost',
       description:
         'If the team scores above a set threshold (e.g., 80 points), they get +10 bonus points.',
-      price: '12',
-      tokenId: '3',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      metadataUri: 'https://example.com/metadata/3',
-      imageUrl: 'https://example.com/images/momentum-boost.png',
       categoryId: rareCategory.id,
     },
     {
@@ -78,33 +63,18 @@ async function main() {
       name: 'Point Multiplier',
       description:
         'Apply a 1.5x multiplier to the entire team\'s points for a single Gameweek.',
-      price: '25',
-      tokenId: '4',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      metadataUri: 'https://example.com/metadata/4',
-      imageUrl: 'https://example.com/images/point-multiplier.png',
       categoryId: legendaryCategory.id,
     },
     {
       id: '5',
       name: 'Double Points',
       description: 'Double your points for one gameweek.',
-      price: '10',
-      tokenId: '5',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      metadataUri: 'https://example.com/metadata/5',
-      imageUrl: 'https://example.com/images/double-points.png',
       categoryId: commonCategory.id,
     },
     {
       id: '6',
       name: 'Bench Boost',
       description: 'Use your bench players.',
-      price: '8',
-      tokenId: '6',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      metadataUri: 'https://example.com/metadata/6',
-      imageUrl: 'https://example.com/images/bench-boost.png',
       categoryId: commonCategory.id,
     },
   ];
@@ -118,13 +88,6 @@ async function main() {
         id: powerUp.id,
         name: powerUp.name,
         description: powerUp.description,
-        price: powerUp.price,
-        tokenId: powerUp.tokenId,
-        contractAddress: powerUp.contractAddress,
-        metadataUri: powerUp.metadataUri,
-        imageUrl: powerUp.imageUrl,
-        isActive: true,
-        isFeatured: true,
         categoryId: powerUp.categoryId,
       },
     });

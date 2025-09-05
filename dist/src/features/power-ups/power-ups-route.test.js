@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import app from '../../index.js';
 import { describe, it, expect, vi } from 'vitest';
 import { saveUserToDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
-import { savePowerUpToDatabase, saveUserPowerUpToDatabase, deleteAllPowerUpsFromDatabase, deleteAllUserPowerUpsFromDatabase, deleteAllFantasyLeagueMembershipPowerUpsFromDatabase } from './power-ups-model.js';
+import { savePowerUpToDatabase, savePowerUpUsageToDatabase, deleteAllPowerUpsFromDatabase, deleteAllPowerUpUsagesFromDatabase, deleteAllFantasyLeagueMembershipPowerUpsFromDatabase } from './power-ups-model.js';
 import { createPopulatedPowerUp } from './power-ups-factories.js';
 import { createAuthHeaders, createBody } from '../../utils/testUtils.js';
 import { mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
@@ -140,7 +140,7 @@ describe('Power-Ups Routes', () => {
             expect(doublePoints.isFeatured).toBe(true);
             // Clean up
             yield deleteAllFantasyLeagueMembershipPowerUpsFromDatabase();
-            yield deleteAllUserPowerUpsFromDatabase();
+            yield deleteAllPowerUpUsagesFromDatabase();
             yield deleteAllPowerUpsFromDatabase();
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -177,13 +177,12 @@ describe('Power-Ups Routes', () => {
             });
             const powerUp1 = yield savePowerUpToDatabase(powerUpData1);
             const powerUp2 = yield savePowerUpToDatabase(powerUpData2);
-            // Create a user power-up relationship
-            yield saveUserPowerUpToDatabase({
+            // Create a user power-up usage relationship
+            yield savePowerUpUsageToDatabase({
                 userId: user.id,
                 powerUpId: powerUp1.id,
-                tokenId: '1',
-                amount: 1,
-                isBurnt: false
+                transactionId: '0x1234567890123456789012345678901234567890123456789012345678901234',
+                isVerified: true
             });
             // Mock authentication
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
@@ -198,7 +197,7 @@ describe('Power-Ups Routes', () => {
             expect(body.powerUps[0].name).toBe('Double Points');
             // Clean up
             yield deleteAllFantasyLeagueMembershipPowerUpsFromDatabase();
-            yield deleteAllUserPowerUpsFromDatabase();
+            yield deleteAllPowerUpUsagesFromDatabase();
             yield deleteAllPowerUpsFromDatabase();
             yield deleteUserFromDatabaseById(user.id);
         }));

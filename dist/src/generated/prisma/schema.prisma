@@ -1,0 +1,119 @@
+generator client {
+  binaryTargets = ["native"]
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NETLIFY_DATABASE_URL")
+}
+
+model User {
+  id            String                    @id @default(cuid())
+  email         String                    @unique
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  team          Team?
+  leagues       FantasyLeagueMembership[]
+  ownedLeagues  FantasyLeague[]
+  powerUpUsages PowerUpUsage[]
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  teamValue   Int      @default(0)
+  teamPlayers Int[]
+  captainId   Int? // ID of the captain player
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FantasyLeague {
+  id            String                    @id @default(cuid())
+  name          String
+  stake         String
+  limit         Int
+  leagueType    String
+  leagueMode    String
+  winners       Int
+  allowPowerUps Boolean
+  description   String?
+  code          String                    @unique
+  ownerId       String
+  status        String                    @default("pending") // pending, ongoing, closed
+  winnersArray  String[]                  @default([]) // Array of user IDs who won
+  owner         User                      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members       FantasyLeagueMembership[]
+  gameweekId    Int
+  gameweek      Gameweek                  @relation(fields: [gameweekId], references: [id])
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+}
+
+model FantasyLeagueMembership {
+  id        String                           @id @default(cuid())
+  userId    String
+  leagueId  String
+  teamName  String?
+  powerUps  FantasyLeagueMembershipPowerUp[]
+  user      User                             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league    FantasyLeague                    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  createdAt DateTime                         @default(now())
+  updatedAt DateTime                         @updatedAt
+
+  @@unique([userId, leagueId])
+}
+
+model Gameweek {
+  id       Int             @id
+  deadline DateTime
+  isActive Boolean         @default(false)
+  leagues  FantasyLeague[]
+}
+
+model PowerUp {
+  id            String           @id @default(cuid())
+  name          String
+  description   String
+  categoryId    String?
+  category      PowerUpCategory? @relation(fields: [categoryId], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  powerUpUsages PowerUpUsage[]
+}
+
+model PowerUpCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String
+  powerUps    PowerUp[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Add PowerUpUsage model to track NFT transaction usage
+model PowerUpUsage {
+  id                      String                          @id @default(cuid())
+  userId                  String
+  powerUpId               String
+  transactionId           String                          @unique // Polygon transaction hash
+  isVerified              Boolean                         @default(false) // Whether transaction was verified
+  createdAt               DateTime                        @default(now())
+  updatedAt               DateTime                        @updatedAt
+  user                    User                            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  powerUp                 PowerUp                         @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
+  leagueMembershipPowerUp FantasyLeagueMembershipPowerUp?
+}
+
+model FantasyLeagueMembershipPowerUp {
+  id                        String                  @id @default(cuid())
+  fantasyLeagueMembershipId String
+  powerUpUsageId            String                  @unique // Links to the verified transaction
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+  fantasyLeagueMembership   FantasyLeagueMembership @relation(fields: [fantasyLeagueMembershipId], references: [id], onDelete: Cascade)
+  powerUpUsage              PowerUpUsage            @relation(fields: [powerUpUsageId], references: [id], onDelete: Cascade)
+}

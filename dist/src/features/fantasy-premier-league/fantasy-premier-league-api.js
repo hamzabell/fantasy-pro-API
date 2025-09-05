@@ -43,6 +43,22 @@ export const fetchPlayerById = (playerId) => __awaiter(void 0, void 0, void 0, f
         throw new Error(`Player with ID ${playerId} not found`);
     return playerMapper(element);
 });
+export const fetchPlayersByIds = (playerIds) => __awaiter(void 0, void 0, void 0, function* () {
+    // Validate that we have at most 11 player IDs
+    if (playerIds.length > 11) {
+        throw new Error('Cannot fetch more than 11 players at a time');
+    }
+    const playerMapper = createPlayerMapper(yield getElementTypesFromBootstrap());
+    const players = yield getPlayersFromBootstrap();
+    // Find all players by their IDs
+    const foundPlayers = playerIds.map(playerId => {
+        const element = find(propEq(playerId, 'id'), players);
+        if (!element)
+            throw new Error(`Player with ID ${playerId} not found`);
+        return playerMapper(element);
+    });
+    return foundPlayers;
+});
 export const fetchTeamById = (teamId) => __awaiter(void 0, void 0, void 0, function* () {
     const teamMapper = createTeamMapper();
     const teams = yield getTeamsFromBootstrap();
@@ -130,4 +146,50 @@ export const fetchTotalCostForPlayers = (playerIds) => __awaiter(void 0, void 0,
     const players = yield fetchPlayers();
     const selectedPlayers = players.filter((player) => playerIds.includes(player.id));
     return selectedPlayers.reduce((total, player) => total + player.cost, 0);
+});
+export const fetchFutureGameweeks = () => __awaiter(void 0, void 0, void 0, function* () {
+    const bootstrapData = yield getBootstrapData();
+    const currentGameweek = bootstrapData.events.find(event => event.is_current);
+    if (!currentGameweek) {
+        throw new Error('No current gameweek found');
+    }
+    // Return all gameweeks that are:
+    // 1. After the current gameweek OR
+    // 2. The current gameweek if it's not active (not finished and not ongoing)
+    const futureGameweeks = bootstrapData.events.filter(event => {
+        if (event.id > currentGameweek.id) {
+            return true; // Future gameweeks
+        }
+        if (event.id === currentGameweek.id && !event.is_current) {
+            return true; // Current gameweek that hasn't started
+        }
+        return false;
+    });
+    const gameweeksWithFixtures = yield Promise.all(futureGameweeks.map((gameweek) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const fixturesData = yield fetchJson(API_ENDPOINTS.FIXTURES(gameweek.id));
+            const fixtures = fixturesData.map((fixture) => ({
+                id: fixture.id,
+                homeTeamId: fixture.team_h,
+                awayTeamId: fixture.team_a,
+                kickoffTime: fixture.kickoff_time,
+            }));
+            return {
+                id: gameweek.id,
+                fixtures,
+                isActive: !gameweek.finished,
+                deadlineTime: gameweek.deadline_time,
+            };
+        }
+        catch (error) {
+            // If we can't fetch fixtures, still return the gameweek with empty fixtures
+            return {
+                id: gameweek.id,
+                fixtures: [],
+                isActive: !gameweek.finished,
+                deadlineTime: gameweek.deadline_time,
+            };
+        }
+    })));
+    return gameweeksWithFixtures;
 });

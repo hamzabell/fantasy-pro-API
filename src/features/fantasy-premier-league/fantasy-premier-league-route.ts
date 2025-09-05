@@ -1,12 +1,14 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 
-import { fetchPlayerById, fetchPlayers, fetchTeamById, fetchTeams } from './fantasy-premier-league-api.js';
+import { fetchPlayerById, fetchPlayers, fetchPlayersByIds, fetchTeamById, fetchTeams, fetchFutureGameweeks } from './fantasy-premier-league-api.js';
 import {
 	getPlayerByIdRoute,
+	getPlayersByIdsRoute,
 	getPlayersRoute,
 	getPositionsRoute,
 	getTeamByIdRoute,
 	getTeamsRoute,
+	getFutureGameweeksRoute,
 } from './fantasy-premier-league-docs.js';
 
 // Initialize the Hono app with OpenAPI support
@@ -86,6 +88,34 @@ app.openapi(getPlayerByIdRoute, async (c) => {
 	return c.json(mappedPlayer, 200);
 });
 
+app.openapi(getPlayersByIdsRoute, async (c) => {
+	try {
+		const { playerIds } = c.req.valid('json');
+		
+		// Validate that we have at most 11 player IDs
+		if (playerIds.length > 11) {
+			return c.json({ error: 'Cannot fetch more than 11 players at a time' }, 400);
+		}
+		
+		const players = await fetchPlayersByIds(playerIds);
+		
+		const mappedPlayers = players.map((player) => ({
+			id: player.id.toString(),
+			name: player.name,
+			teamId: player.teamId,
+			position: player.position,
+			image: player.image,
+			cost: player.cost,
+		}));
+		
+		return c.json({
+			data: mappedPlayers,
+		}, 200);
+	} catch (error: any) {
+		return c.json({ error: error.message }, 404);
+	}
+});
+
 app.openapi(getTeamByIdRoute, async (c) => {
 	const { id } = c.req.valid('param');
 	const team = await fetchTeamById(Number(id));
@@ -106,6 +136,15 @@ app.openapi(getTeamByIdRoute, async (c) => {
 app.openapi(getPositionsRoute, async (c) => {
 	const positions = ['GKP', 'DEF', 'MID', 'FWD'];
 	return c.json(positions);
+});
+
+app.openapi(getFutureGameweeksRoute, async (c) => {
+	try {
+		const futureGameweeks = await fetchFutureGameweeks();
+		return c.json(futureGameweeks, 200);
+	} catch (error) {
+		return c.json({ error: 'Failed to fetch future gameweeks' }, 500);
+	}
 });
 
 export default app;

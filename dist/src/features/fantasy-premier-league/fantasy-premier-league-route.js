@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { fetchPlayerById, fetchPlayers, fetchTeamById, fetchTeams } from './fantasy-premier-league-api.js';
-import { getPlayerByIdRoute, getPlayersRoute, getPositionsRoute, getTeamByIdRoute, getTeamsRoute, } from './fantasy-premier-league-docs.js';
+import { fetchPlayerById, fetchPlayers, fetchPlayersByIds, fetchTeamById, fetchTeams, fetchFutureGameweeks } from './fantasy-premier-league-api.js';
+import { getPlayerByIdRoute, getPlayersByIdsRoute, getPlayersRoute, getPositionsRoute, getTeamByIdRoute, getTeamsRoute, getFutureGameweeksRoute, } from './fantasy-premier-league-docs.js';
 // Initialize the Hono app with OpenAPI support
 const app = new OpenAPIHono();
 // --- Route Handlers ---
@@ -72,6 +72,30 @@ app.openapi(getPlayerByIdRoute, (c) => __awaiter(void 0, void 0, void 0, functio
     };
     return c.json(mappedPlayer, 200);
 }));
+app.openapi(getPlayersByIdsRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { playerIds } = c.req.valid('json');
+        // Validate that we have at most 11 player IDs
+        if (playerIds.length > 11) {
+            return c.json({ error: 'Cannot fetch more than 11 players at a time' }, 400);
+        }
+        const players = yield fetchPlayersByIds(playerIds);
+        const mappedPlayers = players.map((player) => ({
+            id: player.id.toString(),
+            name: player.name,
+            teamId: player.teamId,
+            position: player.position,
+            image: player.image,
+            cost: player.cost,
+        }));
+        return c.json({
+            data: mappedPlayers,
+        }, 200);
+    }
+    catch (error) {
+        return c.json({ error: error.message }, 404);
+    }
+}));
 app.openapi(getTeamByIdRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = c.req.valid('param');
     const team = yield fetchTeamById(Number(id));
@@ -88,5 +112,14 @@ app.openapi(getTeamByIdRoute, (c) => __awaiter(void 0, void 0, void 0, function*
 app.openapi(getPositionsRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const positions = ['GKP', 'DEF', 'MID', 'FWD'];
     return c.json(positions);
+}));
+app.openapi(getFutureGameweeksRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const futureGameweeks = yield fetchFutureGameweeks();
+        return c.json(futureGameweeks, 200);
+    }
+    catch (error) {
+        return c.json({ error: 'Failed to fetch future gameweeks' }, 500);
+    }
 }));
 export default app;

@@ -10,24 +10,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import prisma from '../../prisma.js';
 const powerUpsApp = new OpenAPIHono();
-// Define the schema for a power-up
+// Define the schema for a power-up (simplified)
 const PowerUpSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "Name cannot be empty"),
     description: z.string(),
-    price: z.string(), // Price in MATIC (Polygon)
-    tokenId: z.string(),
-    contractAddress: z.string().nullable(),
-    metadataUri: z.string(),
-    imageUrl: z.string().nullable(),
-    isActive: z.boolean().optional(),
-    isFeatured: z.boolean().optional(),
     categoryId: z.string().nullable().optional(),
     category: z.object({
         id: z.string(),
         name: z.string(),
         description: z.string(),
     }).nullable().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+});
+// Define the schema for power-up usage (NFT transaction tracking)
+const PowerUpUsageSchema = z.object({
+    id: z.string().optional(),
+    userId: z.string(),
+    powerUpId: z.string(),
+    transactionId: z.string(),
+    isVerified: z.boolean(),
+    powerUp: PowerUpSchema.optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
 });
@@ -69,7 +73,6 @@ powerUpsApp.openapi(getAllPowerUpsRoute, (c) => __awaiter(void 0, void 0, void 0
     }
     // Retrieve all power-ups from the database, including category information
     const powerUps = yield prisma.powerUp.findMany({
-        where: { isActive: true },
         orderBy: { createdAt: 'desc' },
         include: {
             category: true
@@ -118,10 +121,6 @@ powerUpsApp.openapi(getFeaturedPowerUpsRoute, (c) => __awaiter(void 0, void 0, v
     }
     // Retrieve featured power-ups from the database, including category information
     const powerUps = yield prisma.powerUp.findMany({
-        where: {
-            isActive: true,
-            isFeatured: true
-        },
         orderBy: { createdAt: 'desc' },
         include: {
             category: true
@@ -142,10 +141,7 @@ const getUserPowerUpsRoute = createRoute({
                 'application/json': {
                     schema: z.object({
                         message: z.string(),
-                        powerUps: z.array(PowerUpSchema.extend({
-                            amount: z.number(),
-                            isBurnt: z.boolean(),
-                        })),
+                        powerUps: z.array(PowerUpUsageSchema),
                     }),
                 },
             },
@@ -171,11 +167,10 @@ powerUpsApp.openapi(getUserPowerUpsRoute, (c) => __awaiter(void 0, void 0, void 
     if (!user) {
         return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
     }
-    // Retrieve user's power-ups from the database, including category information
-    const userPowerUps = yield prisma.userPowerUp.findMany({
+    // Retrieve user's power-up usages from the database, including power-up and category information
+    const userPowerUpUsages = yield prisma.powerUpUsage.findMany({
         where: {
-            userId: user.id,
-            isBurnt: false
+            userId: user.id
         },
         include: {
             powerUp: {
@@ -187,7 +182,7 @@ powerUpsApp.openapi(getUserPowerUpsRoute, (c) => __awaiter(void 0, void 0, void 
     });
     return c.json({
         message: 'User power-ups retrieved successfully',
-        powerUps: userPowerUps.map(userPowerUp => (Object.assign(Object.assign({}, userPowerUp.powerUp), { amount: userPowerUp.amount, isBurnt: userPowerUp.isBurnt, createdAt: userPowerUp.powerUp.createdAt.toISOString(), updatedAt: userPowerUp.powerUp.updatedAt.toISOString() }))),
+        powerUps: userPowerUpUsages.map(usage => (Object.assign(Object.assign({}, usage), { createdAt: usage.createdAt.toISOString(), updatedAt: usage.updatedAt.toISOString() }))),
     }, 200);
 }));
 // Get power-ups applied in a league for the current user
@@ -248,20 +243,23 @@ powerUpsApp.openapi(getLeaguePowerUpsRoute, (c) => __awaiter(void 0, void 0, voi
             fantasyLeagueMembership: {
                 userId: user.id,
                 leagueId: leagueId
-            },
-            isBurnt: false
+            }
         },
         include: {
-            powerUp: {
+            powerUpUsage: {
                 include: {
-                    category: true
+                    powerUp: {
+                        include: {
+                            category: true
+                        }
+                    }
                 }
             }
         }
     });
     return c.json({
         message: 'League power-ups retrieved successfully',
-        powerUps: membershipPowerUps.map(membershipPowerUp => (Object.assign(Object.assign({}, membershipPowerUp.powerUp), { createdAt: membershipPowerUp.powerUp.createdAt.toISOString(), updatedAt: membershipPowerUp.powerUp.updatedAt.toISOString() }))),
+        powerUps: membershipPowerUps.map(membershipPowerUp => (Object.assign(Object.assign({}, membershipPowerUp.powerUpUsage.powerUp), { transactionId: membershipPowerUp.powerUpUsage.transactionId, createdAt: membershipPowerUp.powerUpUsage.createdAt.toISOString(), updatedAt: membershipPowerUp.powerUpUsage.updatedAt.toISOString() }))),
     }, 200);
 }));
 export default powerUpsApp;

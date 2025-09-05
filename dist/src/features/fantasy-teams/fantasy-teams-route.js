@@ -7,12 +7,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
-import { fetchTotalCostForPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { fetchTotalCostForPlayers, fetchPlayersByIds } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { ErrorResponseSchema, TeamResponseSchema } from './fantasy-teams-schemas.js';
 import { saveTeamToDatabase, retrieveTeamFromDatabaseByUserId, updateTeamInDatabaseById } from './fantasy-teams-model.js';
 import { saveUserToDatabase, retrieveUserFromDatabaseById } from '../users/users-model.js';
 const fantasyTeamsApp = new OpenAPIHono();
+// Add summary description for the Fantasy Teams API
+const fantasyTeamsInfoRoute = createRoute({
+    method: 'get',
+    path: '/',
+    summary: 'Fantasy Teams API',
+    description: 'API endpoints for managing fantasy teams including creating, retrieving, and updating teams with detailed player information.',
+    tags: ["Fantasy Teams"],
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        message: z.string().openapi({ example: 'Fantasy Teams API' }),
+                    }),
+                },
+            },
+            description: 'Fantasy Teams API information',
+        },
+    },
+});
+fantasyTeamsApp.openapi(fantasyTeamsInfoRoute, (c) => c.json({ message: 'Fantasy Teams API' }));
 // Define the route for creating a team
 const createTeamRoute = createRoute({
     method: 'post',
@@ -23,19 +44,12 @@ const createTeamRoute = createRoute({
         body: {
             content: {
                 'application/json': {
-                    // We'll handle validation manually, so we don't specify a schema here
-                    schema: {
-                        type: 'object',
-                        properties: {
-                            players: {
-                                type: 'array',
-                                items: {
-                                    type: 'number'
-                                }
-                            }
-                        },
-                        required: ['players']
-                    }
+                    schema: z.object({
+                        players: z.array(z.number()).min(11).max(11).openapi({
+                            example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                            description: 'Array of exactly 11 player IDs'
+                        }),
+                    }),
                 },
             },
         },
@@ -47,7 +61,7 @@ const createTeamRoute = createRoute({
                     schema: TeamResponseSchema,
                 },
             },
-            description: 'Team created successfully',
+            description: 'Team created successfully. Response includes detailed player information with id, name, teamId, position, image, and cost.',
         },
         400: {
             content: {
@@ -55,7 +69,7 @@ const createTeamRoute = createRoute({
                     schema: ErrorResponseSchema,
                 },
             },
-            description: 'Invalid input',
+            description: 'Invalid input - budget exceeded, duplicate players, incorrect number of players, or user already has a team',
         },
         401: {
             content: {
@@ -63,7 +77,7 @@ const createTeamRoute = createRoute({
                     schema: ErrorResponseSchema,
                 },
             },
-            description: 'Unauthorized',
+            description: 'Unauthorized - Missing or invalid Authorization header',
         },
         500: {
             content: {
@@ -88,7 +102,7 @@ const getTeamRoute = createRoute({
                     schema: TeamResponseSchema,
                 },
             },
-            description: 'Team retrieved successfully',
+            description: 'Team retrieved successfully with detailed player information including id, name, teamId, position, image, and cost.',
         },
         400: {
             content: {
@@ -96,7 +110,7 @@ const getTeamRoute = createRoute({
                     schema: ErrorResponseSchema,
                 },
             },
-            description: 'Invalid input',
+            description: 'User does not have a team',
         },
         401: {
             content: {
@@ -104,7 +118,47 @@ const getTeamRoute = createRoute({
                     schema: ErrorResponseSchema,
                 },
             },
-            description: 'Unauthorized',
+            description: 'Unauthorized - Missing or invalid Authorization header',
+        },
+        500: {
+            content: {
+                'application/json': {
+                    schema: ErrorResponseSchema,
+                },
+            },
+            description: 'Internal server error',
+        },
+    },
+});
+// Define the route for getting a team by user ID
+const getTeamByUserIdRoute = createRoute({
+    method: 'get',
+    path: '/team/{userId}',
+    tags: ["Fantasy Teams"],
+    request: {
+        params: z.object({
+            userId: z.string().openapi({
+                example: '12345678-1234-1234-1234-123456789012',
+                description: 'The ID of the user whose team to retrieve'
+            }),
+        }),
+    },
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: TeamResponseSchema,
+                },
+            },
+            description: 'Team retrieved successfully with detailed player information including id, name, teamId, position, image, and cost.',
+        },
+        400: {
+            content: {
+                'application/json': {
+                    schema: ErrorResponseSchema,
+                },
+            },
+            description: 'User does not have a team',
         },
         500: {
             content: {
@@ -126,18 +180,12 @@ const updateTeamRoute = createRoute({
         body: {
             content: {
                 'application/json': {
-                    schema: {
-                        type: 'object',
-                        properties: {
-                            players: {
-                                type: 'array',
-                                items: {
-                                    type: 'number'
-                                }
-                            }
-                        },
-                        required: ['players']
-                    }
+                    schema: z.object({
+                        players: z.array(z.number()).min(11).max(11).openapi({
+                            example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                            description: 'Array of exactly 11 player IDs'
+                        }),
+                    }),
                 },
             },
         },
@@ -149,7 +197,7 @@ const updateTeamRoute = createRoute({
                     schema: TeamResponseSchema,
                 },
             },
-            description: 'Team updated successfully',
+            description: 'Team updated successfully. Response includes detailed player information with id, name, teamId, position, image, and cost.',
         },
         400: {
             content: {
@@ -157,7 +205,7 @@ const updateTeamRoute = createRoute({
                     schema: ErrorResponseSchema,
                 },
             },
-            description: 'Invalid input',
+            description: 'Invalid input - budget exceeded, duplicate players, incorrect number of players, or user does not have a team',
         },
         401: {
             content: {
@@ -165,7 +213,7 @@ const updateTeamRoute = createRoute({
                     schema: ErrorResponseSchema,
                 },
             },
-            description: 'Unauthorized',
+            description: 'Unauthorized - Missing or invalid Authorization header',
         },
         500: {
             content: {
@@ -239,12 +287,23 @@ fantasyTeamsApp.openapi(createTeamRoute, (c) => __awaiter(void 0, void 0, void 0
             teamPlayers: playerIds,
         };
         const createdTeam = yield saveTeamToDatabase(teamData);
-        // Return success response
+        // Fetch detailed player information
+        const players = yield fetchPlayersByIds(createdTeam.teamPlayers);
+        // Map players to the same format as the player-by-ids endpoint
+        const playerDetails = players.map((player) => ({
+            id: player.id.toString(),
+            name: player.name,
+            teamId: player.teamId,
+            position: player.position,
+            image: player.image,
+            cost: player.cost,
+        }));
+        // Return success response with detailed player information
         return c.json({
             message: 'Team created successfully',
             team: {
                 balance: budget - totalCost, // Return the remaining budget, not the total cost
-                players: createdTeam.teamPlayers, // Return the player IDs as stored in DB
+                players: playerDetails, // Return detailed player objects instead of just IDs
             },
         }, 201);
     }
@@ -266,17 +325,66 @@ fantasyTeamsApp.openapi(getTeamRoute, (c) => __awaiter(void 0, void 0, void 0, f
         if (!team) {
             return c.json({ error: 'User does not have a team.' }, 400);
         }
-        // Return success response
+        // Fetch detailed player information
+        const players = yield fetchPlayersByIds(team.teamPlayers);
+        // Map players to the same format as the player-by-ids endpoint
+        const playerDetails = players.map((player) => ({
+            id: player.id.toString(),
+            name: player.name,
+            teamId: player.teamId,
+            position: player.position,
+            image: player.image,
+            cost: player.cost,
+        }));
+        // Return success response with detailed player information
         return c.json({
             message: 'Team retrieved successfully',
             team: {
                 balance: 100 - team.teamValue, // Return the remaining budget (100 - used amount)
-                players: team.teamPlayers,
+                players: playerDetails,
             },
         }, 200);
     }
     catch (error) {
         console.error('Error retrieving team:', error);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+}));
+fantasyTeamsApp.openapi(getTeamByUserIdRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Get userId from path parameters
+        const userId = c.req.param('userId');
+        if (!userId) {
+            return c.json({ error: 'User ID is required' }, 400);
+        }
+        // Retrieve team from database using the provided userId
+        const team = yield retrieveTeamFromDatabaseByUserId(userId);
+        // Check if user has a team
+        if (!team) {
+            return c.json({ error: 'User does not have a team.' }, 400);
+        }
+        // Fetch detailed player information
+        const players = yield fetchPlayersByIds(team.teamPlayers);
+        // Map players to the same format as the player-by-ids endpoint
+        const playerDetails = players.map((player) => ({
+            id: player.id.toString(),
+            name: player.name,
+            teamId: player.teamId,
+            position: player.position,
+            image: player.image,
+            cost: player.cost,
+        }));
+        // Return success response with detailed player information
+        return c.json({
+            message: 'Team retrieved successfully',
+            team: {
+                balance: 100 - team.teamValue, // Return the remaining budget (100 - used amount)
+                players: playerDetails,
+            },
+        }, 200);
+    }
+    catch (error) {
+        console.error('Error retrieving team by user ID:', error);
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
@@ -327,13 +435,24 @@ fantasyTeamsApp.openapi(updateTeamRoute, (c) => __awaiter(void 0, void 0, void 0
                 teamPlayers: playerIds,
             },
         });
-        // Return success response
+        // Fetch detailed player information
+        const players = yield fetchPlayersByIds(updatedTeam.teamPlayers);
+        // Map players to the same format as the player-by-ids endpoint
+        const playerDetails = players.map((player) => ({
+            id: player.id.toString(),
+            name: player.name,
+            teamId: player.teamId,
+            position: player.position,
+            image: player.image,
+            cost: player.cost,
+        }));
+        // Return success response with detailed player information
         // Looking at the test, it expects the balance to be the remaining budget (100 - teamValue)
         return c.json({
             message: 'Team updated successfully',
             team: {
                 balance: budget - updatedTeam.teamValue, // Return the remaining budget
-                players: updatedTeam.teamPlayers,
+                players: playerDetails, // Return detailed player objects instead of just IDs
             },
         }, 200);
     }

@@ -84,6 +84,54 @@ export const getPlayerByIdRoute = createRoute({
 	tags: ['Fantasy Premier League'],
 });
 
+export const getPlayersByIdsRoute = createRoute({
+	method: 'post',
+	path: '/players-by-ids',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: z.object({
+						playerIds: z.array(z.number()).max(11).openapi({
+							example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+						}),
+					}),
+				},
+			},
+		},
+	},
+	responses: {
+		200: {
+			content: {
+				'application/json': {
+					schema: z.object({
+						data: z.array(PlayerSchema),
+					}),
+				},
+			},
+			description: 'Retrieve players by IDs',
+		},
+		400: {
+			content: {
+				'application/json': {
+					schema: ErrorSchema,
+				},
+			},
+			description: 'Invalid request - playerIds must be an array of up to 11 numbers',
+		},
+		404: {
+			content: {
+				'application/json': {
+					schema: ErrorSchema,
+				},
+			},
+			description: 'One or more players not found',
+		},
+	},
+	security: [{ BearerAuth: [] }],
+	tags: ['Fantasy Premier League'],
+});
+
 export const getTeamByIdRoute = createRoute({
 	method: 'get',
 	path: '/teams/{id}',
@@ -129,8 +177,42 @@ export const getPositionsRoute = createRoute({
 	tags: ['Fantasy Premier League'],
 });
 
-
-
+export const getFutureGameweeksRoute = createRoute({
+	method: 'get',
+	path: '/gameweeks/future',
+	responses: {
+		200: {
+			content: {
+				'application/json': {
+					schema: z.array(z.object({
+						id: z.number(),
+						fixtures: z.array(z.object({
+							id: z.number(),
+							homeTeamId: z.number(),
+							awayTeamId: z.number(),
+							kickoffTime: z.string().nullable(),
+						})),
+						isActive: z.boolean(),
+						deadlineTime: z.string(),
+					})).openapi('FutureGameweeksResponse'),
+				},
+			},
+			description: 'Retrieve all future gameweeks available for league creation',
+		},
+		500: {
+			content: {
+				'application/json': {
+					schema: z.object({
+						error: z.string(),
+					}),
+				},
+			},
+			description: 'Server error',
+		},
+	},
+	security: [{ BearerAuth: [] }],
+	tags: ['Fantasy Premier League'],
+});
 
 
 

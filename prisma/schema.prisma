@@ -17,9 +17,7 @@ model User {
   team      Team?
   leagues   FantasyLeagueMembership[]
   ownedLeagues FantasyLeague[]
-  powerUps  UserPowerUp[]
-  // Relationship to AdminOtpSecret (one-to-one or one-to-zero)
-  adminOtpSecret AdminOtpSecret?
+  powerUpUsages PowerUpUsage[]
 }
 
 model Team {
@@ -45,6 +43,8 @@ model FantasyLeague {
   description String?
   code        String      @unique
   ownerId     String
+  status      String      @default("pending") // pending, ongoing, closed
+  winnersArray String[]   @default([]) // Array of user IDs who won
   owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members     FantasyLeagueMembership[]
   gameweekId  Int
@@ -78,19 +78,11 @@ model PowerUp {
   id          String      @id @default(cuid())
   name        String
   description String
-  price       String      // Price in MATIC (Polygon)
-  tokenId     String      // NFT token ID on Polygon
-  contractAddress String?  // Contract address on Polygon (optional until launched)
-  metadataUri String      // URI to metadata
-  imageUrl    String?
-  isActive    Boolean     @default(true)
-  isFeatured  Boolean     @default(false)
   categoryId  String?
   category    PowerUpCategory? @relation(fields: [categoryId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  userPowerUps UserPowerUp[]
-  fantasyLeagueMembershipPowerUps FantasyLeagueMembershipPowerUp[]
+  powerUpUsages PowerUpUsage[]
 }
 
 model PowerUpCategory {
@@ -102,38 +94,27 @@ model PowerUpCategory {
   updatedAt   DateTime    @updatedAt
 }
 
-model UserPowerUp {
-  id          String      @id @default(cuid())
-  userId      String
-  powerUpId   String
-  tokenId     String      // NFT token ID on Polygon
-  amount      Int         @default(1)
-  isBurnt     Boolean     @default(false)  // Whether the power-up has been used/burnt
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  powerUp     PowerUp     @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, powerUpId])
+// Add PowerUpUsage model to track NFT transaction usage
+model PowerUpUsage {
+  id              String    @id @default(cuid())
+  userId          String
+  powerUpId       String
+  transactionId   String    @unique // Polygon transaction hash
+  isVerified      Boolean   @default(false) // Whether transaction was verified
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  powerUp         PowerUp   @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
+  leagueMembershipPowerUp FantasyLeagueMembershipPowerUp?
 }
 
 model FantasyLeagueMembershipPowerUp {
   id                      String      @id @default(cuid())
   fantasyLeagueMembershipId String
-  powerUpId               String
-  isBurnt                 Boolean     @default(false)  // Whether the power-up has been used/burnt in this league
+  powerUpUsageId          String      @unique // Links to the verified transaction
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @updatedAt
   fantasyLeagueMembership FantasyLeagueMembership @relation(fields: [fantasyLeagueMembershipId], references: [id], onDelete: Cascade)
-  powerUp                 PowerUp     @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
-
-  @@unique([fantasyLeagueMembershipId, powerUpId])
+  powerUpUsage            PowerUpUsage @relation(fields: [powerUpUsageId], references: [id], onDelete: Cascade)
 }
 
-// Model to store TOTP secrets for admin users
-model AdminOtpSecret {
-  userId   String   @id
-  secret   String   // The TOTP secret. Consider encrypting this in a real application.
-  issuer   String?  // Optional: The issuer name (e.g., 'FantasyPro')
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}

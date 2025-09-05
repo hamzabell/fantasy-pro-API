@@ -1,0 +1,293 @@
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { calculateAllLeagueWinners, getProcessingStats } from './optimized-winner-calculator.js';
+import prisma from '../../prisma.js';
+
+describe('Optimized Winner Calculator', () => {
+  let testGameweek: any;
+  let testUsers: any[] = [];
+  let testLeagues: any[] = [];
+
+  beforeAll(async () => {
+    // Create test gameweek
+    testGameweek = await prisma.gameweek.create({
+      data: {
+        id: Math.floor(Math.random() * 100000) + 5000,
+        deadline: new Date('2024-08-15T11:30:00Z'),
+        isActive: false
+      }
+    });
+  });
+
+  afterAll(async () => {
+    // Clean up
+    await prisma.fantasyLeagueMembership.deleteMany({
+      where: { userId: { in: testUsers.map(u => u.id) } }
+    });
+    await prisma.fantasyLeague.deleteMany({
+      where: { gameweekId: testGameweek.id }
+    });
+    await prisma.team.deleteMany({
+      where: { userId: { in: testUsers.map(u => u.id) } }
+    });
+    await Promise.all(
+      testUsers.map(user => 
+        prisma.user.delete({ where: { id: user.id } }).catch(() => {})
+      )
+    );
+    await prisma.gameweek.delete({
+      where: { id: testGameweek.id }
+    });
+  });
+
+  beforeEach(async () => {
+    // Clean up existing data
+    await prisma.fantasyLeagueMembership.deleteMany({
+      where: { userId: { in: testUsers.map(u => u.id) } }
+    });
+    await prisma.fantasyLeague.deleteMany({
+      where: { gameweekId: testGameweek.id }
+    });
+    await prisma.team.deleteMany({
+      where: { userId: { in: testUsers.map(u => u.id) } }
+    });
+    await Promise.all(
+      testUsers.map(user => 
+        prisma.user.delete({ where: { id: user.id } }).catch(() => {})
+      )
+    );
+    
+    testUsers = [];
+    testLeagues = [];
+  });
+
+  async function createTestData(numUsers: number, numLeagues: number, usersPerLeague: number = 5) {
+    // Create users
+    const timestamp = Date.now();
+    for (let i = 0; i < numUsers; i++) {
+      const user = await prisma.user.create({
+        data: { email: `perftest${i}-${timestamp}@example.com` }
+      });
+
+      // Create team for user
+      await prisma.team.create({
+        data: {
+          userId: user.id,
+          teamValue: 1000,
+          teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+          captainId: Math.floor(Math.random() * 11) + 1
+        }
+      });
+
+      testUsers.push(user);
+    }
+
+    // Create leagues
+    for (let i = 0; i < numLeagues; i++) {
+      const league = await prisma.fantasyLeague.create({
+        data: {
+          name: `Performance Test League ${i}`,
+          stake: '10',
+          limit: 10,
+          leagueType: 'public',
+          leagueMode: 'classic',
+          winners: 1,
+          allowPowerUps: false,
+          code: `PERF${i.toString().padStart(3, '0')}`,
+          ownerId: testUsers[0].id,
+          gameweekId: testGameweek.id,
+          status: 'ongoing'
+        }
+      });
+
+      // Add members to league - distribute users more evenly across leagues
+      const membersToAdd = Math.min(usersPerLeague, testUsers.length);
+      const startIndex = (i * usersPerLeague) % testUsers.length;
+      
+      for (let j = 0; j < membersToAdd; j++) {
+        const userIndex = (startIndex + j) % testUsers.length;
+        await prisma.fantasyLeagueMembership.create({
+          data: {
+            userId: testUsers[userIndex].id,
+            leagueId: league.id,
+            teamName: `Team ${j}`
+          }
+        });
+      }
+
+      testLeagues.push(league);
+    }
+  }
+
+  describe('Performance Tests', () => {
+    it('should handle small batch efficiently (10 leagues, 50 users)', async () => {
+      await createTestData(50, 10, 5);
+
+      const startTime = Date.now();
+      
+      const result = await calculateAllLeagueWinners(testGameweek.id, {
+        batchSize: 5,
+        concurrentBatches: 2
+      });
+
+      const duration = Date.now() - startTime;
+      
+      expect(result.totalProcessed).toBe(10);
+      expect(result.successful).toBe(10);
+      expect(result.failed).toBe(0);
+      expect(duration).toBeLessThan(5000); // Should complete in under 5 seconds
+      
+      console.log(`Small batch test completed in ${duration}ms`);
+    });
+
+    it('should handle medium batch efficiently (100 leagues, 200 users)', async () => {
+      await createTestData(200, 100, 5);
+
+      const startTime = Date.now();
+      
+      const result = await calculateAllLeagueWinners(testGameweek.id, {
+        batchSize: 20,
+        concurrentBatches: 3
+      });
+
+      const duration = Date.now() - startTime;
+      
+      expect(result.totalProcessed).toBe(100);
+      expect(result.successful).toBe(100);
+      expect(result.failed).toBe(0);
+      expect(duration).toBeLessThan(15000); // Should complete in under 15 seconds
+      
+      console.log(`Medium batch test completed in ${duration}ms`);
+    }, 20000); // Increase timeout for this test
+
+    it('should handle error scenarios gracefully', async () => {
+      await createTestData(20, 5, 4);
+
+      // Mock a database error during processing
+      const originalUpdate = prisma.fantasyLeague.update;
+      let callCount = 0;
+      
+      vi.spyOn(prisma.fantasyLeague, 'update').mockImplementation(async (args: any) => {
+        callCount++;
+        if (callCount === 2) { // Fail the second league
+          throw new Error('Simulated database error');
+        }
+        return originalUpdate(args);
+      });
+
+      const result = await calculateAllLeagueWinners(testGameweek.id, {
+        batchSize: 2,
+        concurrentBatches: 1
+      });
+
+      expect(result.totalProcessed).toBe(5);
+      expect(result.failed).toBeGreaterThan(0);
+      expect(result.successful).toBeLessThan(5);
+      
+      // Cleanup mock
+      vi.restoreAllMocks();
+    });
+
+    it('should optimize database queries', async () => {
+      await createTestData(30, 15, 3);
+
+      // Mock prisma to count queries
+      let queryCount = 0;
+      const originalFindMany = prisma.fantasyLeague.findMany;
+      const originalTransaction = prisma.$transaction;
+
+      vi.spyOn(prisma.fantasyLeague, 'findMany').mockImplementation(async (...args) => {
+        queryCount++;
+        return originalFindMany(...args);
+      });
+
+      vi.spyOn(prisma, '$transaction').mockImplementation(async (fn) => {
+        queryCount++; // Count transaction as one query
+        return originalTransaction(fn);
+      });
+
+      await calculateAllLeagueWinners(testGameweek.id, {
+        batchSize: 5,
+        concurrentBatches: 2
+      });
+
+      // Should use minimal queries: 1 initial query + batch transactions
+      expect(queryCount).toBeLessThan(10);
+      
+      console.log(`Total database queries: ${queryCount}`);
+      
+      vi.restoreAllMocks();
+    });
+  });
+
+  describe('Processing Stats', () => {
+    it('should return accurate processing statistics', async () => {
+      await createTestData(15, 8, 3);
+
+      // Set some leagues to different statuses
+      await prisma.fantasyLeague.update({
+        where: { id: testLeagues[0].id },
+        data: { status: 'closed' }
+      });
+      
+      await prisma.fantasyLeague.update({
+        where: { id: testLeagues[1].id },
+        data: { status: 'pending' }
+      });
+
+      const stats = await getProcessingStats(testGameweek.id);
+
+      expect(stats.total).toBe(8);
+      expect(stats.closed).toBe(1);
+      expect(stats.ongoing).toBe(6); // 8 - 1 closed - 1 pending
+      expect(stats.processing).toBe(true); // Still has ongoing leagues
+    });
+
+    it('should indicate when processing is complete', async () => {
+      await createTestData(10, 3, 2);
+
+      // Set all leagues to closed
+      await prisma.fantasyLeague.updateMany({
+        where: { gameweekId: testGameweek.id },
+        data: { status: 'closed' }
+      });
+
+      const stats = await getProcessingStats(testGameweek.id);
+
+      expect(stats.total).toBe(3);
+      expect(stats.closed).toBe(3);
+      expect(stats.ongoing).toBe(0);
+      expect(stats.processing).toBe(false);
+    });
+  });
+
+  describe('Configuration Options', () => {
+    it('should respect custom batch size', async () => {
+      await createTestData(20, 10, 3);
+
+      const result = await calculateAllLeagueWinners(testGameweek.id, {
+        batchSize: 3, // Small batch size
+        concurrentBatches: 1
+      });
+
+      expect(result.successful).toBe(10);
+    });
+
+    it('should handle concurrent batches correctly', async () => {
+      await createTestData(30, 15, 3);
+
+      const startTime = Date.now();
+
+      const result = await calculateAllLeagueWinners(testGameweek.id, {
+        batchSize: 5,
+        concurrentBatches: 4 // High concurrency
+      });
+
+      const duration = Date.now() - startTime;
+
+      expect(result.successful).toBe(15);
+      expect(duration).toBeLessThan(10000); // Should be faster with high concurrency
+      
+      console.log(`High concurrency test completed in ${duration}ms`);
+    });
+  });
+});

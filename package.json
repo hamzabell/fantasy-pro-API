@@ -11,8 +11,7 @@
     "prisma:studio": "npx prisma studio",
     "prisma:seed": "tsx prisma/seed.ts && tsx prisma/seed-powerups.ts && tsx prisma/seed-powerup-categories.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
-    "get-auth-token": "tsx src/utils/get-auth-token.ts",
-    "generate-admin-credentials": "tsx scripts/generate-admin-totp-credentials.ts"
+    "get-auth-token": "tsx src/utils/get-auth-token.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.17.0",
@@ -23,23 +22,16 @@
     "@types/ramda": "^0.30.2",
     "axios": "^1.11.0",
     "hono": "^4.8.5",
-    "jsonwebtoken": "^9.0.2",
-    "otplib": "^12.0.1",
     "pg": "^8.16.3",
-    "qrcode": "^1.5.4",
     "ramda": "^0.31.3",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^11.1.0",
     "vitest": "^3.2.4"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
     "@types/express": "^5.0.3",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.17",
-    "@types/qrcode": "^1.5.5",
     "@types/swagger-ui-dist": "^3.30.6",
-    "@types/uuid": "^10.0.0",
     "dotenv": "^17.2.0",
     "prisma": "^6.14.0",
     "ts-node": "^10.9.2",

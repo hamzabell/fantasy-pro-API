@@ -15,7 +15,8 @@ import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
 import { calculateUserTeamStats } from './player-stats-utils.js';
-import { retrieveUserPowerUpsByUserId, updateUserPowerUpInDatabaseById, saveFantasyLeagueMembershipPowerUpToDatabase } from '../power-ups/power-ups-model.js';
+import { retrievePowerUpFromDatabaseById, savePowerUpUsageToDatabase, saveFantasyLeagueMembershipPowerUpToDatabase, retrievePowerUpUsageByTransactionId } from './power-ups-model.js';
+import { verifyNFTTransaction } from './polygon-utils.js';
 const fantasyLeaguesApp = new OpenAPIHono();
 // Define the schema for a fantasy league
 const FantasyLeagueSchema = z.object({
@@ -112,20 +113,26 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, voi
     }
     // Generate a code if not provided
     const code = requestData.code || Math.random().toString(36).substring(2, 8).toUpperCase();
-    // Get the gameweek ID - use provided one or default to current
-    let gameweekId;
-    if (requestData.gameweekId) {
-        gameweekId = requestData.gameweekId;
+    // Gameweek ID is required
+    if (!requestData.gameweekId) {
+        return c.json({ message: 'gameweekId is required' }, 400);
     }
-    else {
-        try {
-            // Get current gameweek
-            const currentGameweek = yield fetchGameweek('current');
-            gameweekId = currentGameweek.id;
+    const gameweekId = requestData.gameweekId;
+    // Validate that the provided gameweek is not in the past or ongoing
+    try {
+        const currentGameweek = yield fetchGameweek('current');
+        // Prevent creating leagues for past gameweeks
+        if (gameweekId < currentGameweek.id) {
+            return c.json({ message: 'Cannot create league for past gameweeks' }, 400);
         }
-        catch (error) {
-            return c.json({ message: 'Unable to determine current gameweek' }, 500);
+        // Prevent creating leagues for the current gameweek if it's active (ongoing)
+        if (gameweekId === currentGameweek.id && currentGameweek.isActive) {
+            return c.json({ message: 'Cannot create league for ongoing gameweek' }, 400);
         }
+    }
+    catch (error) {
+        console.warn('Could not fetch gameweek data for creation validation:', error);
+        return c.json({ message: 'Unable to validate gameweek' }, 500);
     }
     const data = createPopulatedFantasyLeague(Object.assign(Object.assign({}, requestData), { code, ownerId: user.id, gameweekId }));
     // Save the league to the database
@@ -367,7 +374,10 @@ const joinFantasyLeagueRoute = createRoute({
                     schema: z.object({
                         code: z.string().min(1, "Code cannot be empty"),
                         teamName: z.string().min(1, "Team name cannot be empty"),
-                        powerUpIds: z.array(z.string()).optional(), // Optional power-ups to use when joining
+                        powerUpUsage: z.object({
+                            powerUpId: z.string(),
+                            transactionId: z.string().regex(/^0x[a-fA-F0-9]{64}$/, "Invalid transaction hash format")
+                        }).optional(), // Optional power-up with transaction ID
                     }),
                 },
             },
@@ -443,34 +453,22 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 
     if (!user) {
         return c.json({ message: 'Unauthorized: Missing or invalid Authorization header' }, 401);
     }
-    const { code, teamName, powerUpIds } = c.req.valid('json');
+    const { code, teamName, powerUpUsage } = c.req.valid('json');
     // Retrieve the league from the database using the code
     const league = yield retrieveFantasyLeagueFromDatabaseByCode(code);
     if (!league) {
         return c.json({ error: 'Fantasy league not found' }, 404);
     }
-    // Check if the league's gameweek is in the future
-    try {
-        // Get the gameweek details from the API
-        const gameweek = yield fetchGameweek('current');
-        // If we successfully fetched the gameweek data, perform validation
-        if (gameweek && gameweek.id !== undefined) {
-            // If the league's gameweek is a past gameweek, prevent joining
-            if (league.gameweekId < gameweek.id) {
-                return c.json({ error: 'Cannot join league: associated gameweek has already passed' }, 400);
-            }
-            // If the league's gameweek is the current gameweek and it's active (ongoing), prevent joining
-            if (league.gameweekId === gameweek.id && gameweek.isActive) {
-                return c.json({ error: 'Cannot join league: associated gameweek is ongoing' }, 400);
-            }
-            // If we reach here, either:
-            // 1. league.gameweekId > gameweek.id (future gameweek) - OK to join
-            // 2. league.gameweekId === gameweek.id && !gameweek.isActive (current but inactive gameweek) - OK to join
-        }
+    // Check if the league status allows joining
+    if (league.status === 'ongoing') {
+        return c.json({ error: 'Cannot join league: league is currently ongoing' }, 400);
     }
-    catch (error) {
-        // If we can't fetch gameweek data, we'll allow joining as a fallback
-        console.warn('Could not fetch gameweek data for join validation:', error);
+    if (league.status === 'closed') {
+        return c.json({ error: 'Cannot join league: league is closed' }, 400);
+    }
+    // Only allow joining if league status is 'pending'
+    if (league.status !== 'pending') {
+        return c.json({ error: 'Cannot join league: invalid league status' }, 400);
     }
     // Check if user is already a member
     const existingMemberships = yield retrieveFantasyLeagueMembershipsByLeagueId(league.id);
@@ -488,26 +486,43 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 
     if (!userTeam) {
         return c.json({ message: 'User must create a team before joining a league' }, 400);
     }
-    // Handle power-ups if provided
-    if (powerUpIds && powerUpIds.length > 0) {
+    // Handle power-up if provided
+    let verifiedPowerUpUsage = null;
+    if (powerUpUsage) {
         // Verify that the league allows power-ups
         if (!league.allowPowerUps) {
             return c.json({ message: 'This league does not allow power-ups' }, 400);
         }
-        // Verify that the user owns these power-ups and they haven't been burnt
-        const userPowerUps = yield retrieveUserPowerUpsByUserId(user.id);
-        const validPowerUpIds = new Set(userPowerUps.map(up => up.powerUpId));
-        // Check if all requested power-ups are owned by the user
-        for (const powerUpId of powerUpIds) {
-            if (!validPowerUpIds.has(powerUpId)) {
-                return c.json({ message: `User does not own power-up with id: ${powerUpId}` }, 400);
-            }
-            // Check if the power-up is already burnt
-            const userPowerUp = userPowerUps.find(up => up.powerUpId === powerUpId);
-            if (userPowerUp && userPowerUp.isBurnt) {
-                return c.json({ message: `Power-up with id: ${powerUpId} has already been used` }, 400);
-            }
+        // Check if this transaction has already been used
+        const existingUsage = yield retrievePowerUpUsageByTransactionId(powerUpUsage.transactionId);
+        if (existingUsage) {
+            return c.json({ message: 'This transaction has already been used for a power-up' }, 400);
         }
+        // Verify the transaction on blockchain
+        const transactionVerification = yield verifyNFTTransaction(powerUpUsage.transactionId);
+        if (!transactionVerification.success) {
+            return c.json({
+                message: `Transaction verification failed: ${transactionVerification.error || 'Invalid transaction'}`
+            }, 400);
+        }
+        // Verify that the power-up ID from the transaction matches what the user claims
+        if (transactionVerification.powerUpId !== powerUpUsage.powerUpId) {
+            return c.json({
+                message: 'Power-up ID from transaction does not match the provided power-up ID'
+            }, 400);
+        }
+        // Verify that the power-up exists in our database
+        const powerUp = yield retrievePowerUpFromDatabaseById(powerUpUsage.powerUpId);
+        if (!powerUp) {
+            return c.json({ message: 'Invalid power-up ID' }, 400);
+        }
+        // Create the power-up usage record
+        verifiedPowerUpUsage = yield savePowerUpUsageToDatabase({
+            userId: user.id,
+            powerUpId: powerUpUsage.powerUpId,
+            transactionId: powerUpUsage.transactionId,
+            isVerified: true
+        });
     }
     // Create membership with team name
     const membership = yield saveFantasyLeagueMembershipToDatabase({
@@ -515,25 +530,12 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 
         leagueId: league.id,
         teamName, // Required team name
     });
-    // If power-ups were provided, burn them and associate them with the membership
-    if (powerUpIds && powerUpIds.length > 0) {
-        // Burn the power-ups (mark them as used)
-        for (const powerUpId of powerUpIds) {
-            const userPowerUp = (yield retrieveUserPowerUpsByUserId(user.id)).find(up => up.powerUpId === powerUpId);
-            if (userPowerUp) {
-                yield updateUserPowerUpInDatabaseById({
-                    id: userPowerUp.id,
-                    userPowerUp: {
-                        isBurnt: true
-                    }
-                });
-                // Associate the power-up with the membership
-                yield saveFantasyLeagueMembershipPowerUpToDatabase({
-                    fantasyLeagueMembershipId: membership.id,
-                    powerUpId: powerUpId
-                });
-            }
-        }
+    // If power-up was provided and verified, associate it with the membership
+    if (verifiedPowerUpUsage) {
+        yield saveFantasyLeagueMembershipPowerUpToDatabase({
+            fantasyLeagueMembershipId: membership.id,
+            powerUpUsageId: verifiedPowerUpUsage.id
+        });
     }
     return c.json({
         message: 'Successfully joined league',

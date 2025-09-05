@@ -7,6 +7,16 @@ export interface Player {
 	teamId: number;
 }
 
+export interface PlayerDetails {
+	id: number;
+	name: string;
+	cost: number;
+	position: string;
+	teamId: number;
+	teamName: string;
+	status: 'healthy' | 'injured' | 'doubtful';
+}
+
 export interface Team {
 	id: number;
 	name: string;
@@ -34,6 +44,9 @@ export interface BootstrapData {
 		element_type: number;
 		now_cost: number;
 		team: number;
+		chance_of_playing_this_round: number | null;
+		chance_of_playing_next_round: number | null;
+		news: string;
 	}>;
 	teams: Array<{
 		id: number;

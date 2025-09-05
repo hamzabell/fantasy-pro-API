@@ -12,7 +12,9 @@ export const createPopulatedFantasyLeague = ({
 	allowPowerUps = faker.datatype.boolean(),
 	code = faker.string.alphanumeric(6).toUpperCase(),
 	ownerId = '',
-	gameweekId = faker.number.int({ min: 1, max: 5 }) // Use valid gameweek IDs that exist in the database
+	gameweekId = faker.number.int({ min: 1, max: 5 }), // Use valid gameweek IDs that exist in the database
+	status = 'pending' as FantasyLeague['status'],
+	winnersArray = [] as FantasyLeague['winnersArray']
 } ={} ) => ({
 	name,
 	description,
@@ -24,5 +26,7 @@ export const createPopulatedFantasyLeague = ({
 	allowPowerUps,
 	code,
 	ownerId,
-	gameweekId
+	gameweekId,
+	status,
+	winnersArray
 })

@@ -1,5 +1,5 @@
 import { describe, test, expect, vi } from 'vitest';
-import { fetchTotalCostForPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchTotalCostForPlayers, fetchPlayersByIds } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import app from '../../index.js'
 import { createBody, createAuthHeaders } from '../../utils/testUtils.js';
 import {mockSupabaseAuthSuccess, mockUser} from '../../utils/supabaseMocks.js';
@@ -40,6 +40,19 @@ describe("Fantasy Teams", () => {
 		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+		vi.mocked(fetchPlayersByIds).mockResolvedValue([
+			{ id: 1, name: 'Player 1', teamId: 1, position: 'Forward', image: 'image1.jpg', cost: 10 },
+			{ id: 2, name: 'Player 2', teamId: 2, position: 'Midfielder', image: 'image2.jpg', cost: 8 },
+			{ id: 3, name: 'Player 3', teamId: 3, position: 'Defender', image: 'image3.jpg', cost: 6 },
+			{ id: 4, name: 'Player 4', teamId: 4, position: 'Goalkeeper', image: 'image4.jpg', cost: 5 },
+			{ id: 5, name: 'Player 5', teamId: 5, position: 'Forward', image: 'image5.jpg', cost: 12 },
+			{ id: 6, name: 'Player 6', teamId: 6, position: 'Midfielder', image: 'image6.jpg', cost: 9 },
+			{ id: 7, name: 'Player 7', teamId: 7, position: 'Defender', image: 'image7.jpg', cost: 7 },
+			{ id: 8, name: 'Player 8', teamId: 8, position: 'Goalkeeper', image: 'image8.jpg', cost: 4 },
+			{ id: 9, name: 'Player 9', teamId: 9, position: 'Forward', image: 'image9.jpg', cost: 11 },
+			{ id: 10, name: 'Player 10', teamId: 10, position: 'Midfielder', image: 'image10.jpg', cost: 8 },
+			{ id: 11, name: 'Player 11', teamId: 11, position: 'Defender', image: 'image11.jpg', cost: 6 }
+		]);
 
 		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];	
 		
@@ -63,7 +76,16 @@ describe("Fantasy Teams", () => {
 			message: 'Team created successfully',
 			team: {
 				balance: 20,
-				players: playerIds // Updated to match the actual response
+				players: expect.arrayContaining([
+					expect.objectContaining({
+						id: expect.any(String),
+						name: expect.any(String),
+						teamId: expect.any(Number),
+						position: expect.any(String),
+						image: expect.any(String),
+						cost: expect.any(Number)
+					})
+				])
 			}
 		}
 
@@ -113,6 +135,19 @@ describe("Fantasy Teams", () => {
 		const mockSupabase = mockSupabaseAuthSuccess();
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+		vi.mocked(fetchPlayersByIds).mockResolvedValue([
+			{ id: 1, name: 'Player 1', teamId: 1, position: 'Forward', image: 'image1.jpg', cost: 10 },
+			{ id: 2, name: 'Player 2', teamId: 2, position: 'Midfielder', image: 'image2.jpg', cost: 8 },
+			{ id: 3, name: 'Player 3', teamId: 3, position: 'Defender', image: 'image3.jpg', cost: 6 },
+			{ id: 4, name: 'Player 4', teamId: 4, position: 'Goalkeeper', image: 'image4.jpg', cost: 5 },
+			{ id: 5, name: 'Player 5', teamId: 5, position: 'Forward', image: 'image5.jpg', cost: 12 },
+			{ id: 6, name: 'Player 6', teamId: 6, position: 'Midfielder', image: 'image6.jpg', cost: 9 },
+			{ id: 7, name: 'Player 7', teamId: 7, position: 'Defender', image: 'image7.jpg', cost: 7 },
+			{ id: 8, name: 'Player 8', teamId: 8, position: 'Goalkeeper', image: 'image8.jpg', cost: 4 },
+			{ id: 9, name: 'Player 9', teamId: 9, position: 'Forward', image: 'image9.jpg', cost: 11 },
+			{ id: 10, name: 'Player 10', teamId: 10, position: 'Midfielder', image: 'image10.jpg', cost: 8 },
+			{ id: 11, name: 'Player 11', teamId: 11, position: 'Defender', image: 'image11.jpg', cost: 6 }
+		]);
 
 		const playerIds = [1, 2, 3, 4, 5]; // Less than 11 players
 
@@ -176,6 +211,19 @@ describe("Fantasy Teams", () => {
 		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+		vi.mocked(fetchPlayersByIds).mockResolvedValue([
+			{ id: 1, name: 'Player 1', teamId: 1, position: 'Forward', image: 'image1.jpg', cost: 10 },
+			{ id: 2, name: 'Player 2', teamId: 2, position: 'Midfielder', image: 'image2.jpg', cost: 8 },
+			{ id: 3, name: 'Player 3', teamId: 3, position: 'Defender', image: 'image3.jpg', cost: 6 },
+			{ id: 4, name: 'Player 4', teamId: 4, position: 'Goalkeeper', image: 'image4.jpg', cost: 5 },
+			{ id: 5, name: 'Player 5', teamId: 5, position: 'Forward', image: 'image5.jpg', cost: 12 },
+			{ id: 6, name: 'Player 6', teamId: 6, position: 'Midfielder', image: 'image6.jpg', cost: 9 },
+			{ id: 7, name: 'Player 7', teamId: 7, position: 'Defender', image: 'image7.jpg', cost: 7 },
+			{ id: 8, name: 'Player 8', teamId: 8, position: 'Goalkeeper', image: 'image8.jpg', cost: 4 },
+			{ id: 9, name: 'Player 9', teamId: 9, position: 'Forward', image: 'image9.jpg', cost: 11 },
+			{ id: 10, name: 'Player 10', teamId: 10, position: 'Midfielder', image: 'image10.jpg', cost: 8 },
+			{ id: 11, name: 'Player 11', teamId: 11, position: 'Defender', image: 'image11.jpg', cost: 6 }
+		]);
 
 		const playerIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1]; // Player 1 is duplicated
 
@@ -215,6 +263,19 @@ describe("Fantasy Teams", () => {
 		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
 		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+		vi.mocked(fetchPlayersByIds).mockResolvedValue([
+			{ id: 1, name: 'Player 1', teamId: 1, position: 'Forward', image: 'image1.jpg', cost: 10 },
+			{ id: 2, name: 'Player 2', teamId: 2, position: 'Midfielder', image: 'image2.jpg', cost: 8 },
+			{ id: 3, name: 'Player 3', teamId: 3, position: 'Defender', image: 'image3.jpg', cost: 6 },
+			{ id: 4, name: 'Player 4', teamId: 4, position: 'Goalkeeper', image: 'image4.jpg', cost: 5 },
+			{ id: 5, name: 'Player 5', teamId: 5, position: 'Forward', image: 'image5.jpg', cost: 12 },
+			{ id: 6, name: 'Player 6', teamId: 6, position: 'Midfielder', image: 'image6.jpg', cost: 9 },
+			{ id: 7, name: 'Player 7', teamId: 7, position: 'Defender', image: 'image7.jpg', cost: 7 },
+			{ id: 8, name: 'Player 8', teamId: 8, position: 'Goalkeeper', image: 'image8.jpg', cost: 4 },
+			{ id: 9, name: 'Player 9', teamId: 9, position: 'Forward', image: 'image9.jpg', cost: 11 },
+			{ id: 10, name: 'Player 10', teamId: 10, position: 'Midfielder', image: 'image10.jpg', cost: 8 },
+			{ id: 11, name: 'Player 11', teamId: 11, position: 'Defender', image: 'image11.jpg', cost: 6 }
+		]);
 
 		const playerIds = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 
@@ -259,7 +320,16 @@ describe("Fantasy Teams", () => {
 				message: 'Team retrieved successfully',
 				team: {
 					balance: 100 - teamValue,
-					players: teamPlayers	
+					players: expect.arrayContaining([
+						expect.objectContaining({
+							id: expect.any(String),
+							name: expect.any(String),
+							teamId: expect.any(Number),
+							position: expect.any(String),
+							image: expect.any(String),
+							cost: expect.any(Number)
+						})
+					])
 				}
 			}
 
@@ -339,7 +409,16 @@ describe("Fantasy Teams", () => {
 				message: 'Team updated successfully',
 				team: {
 					balance: 100 - teamValue,
-					players: updatedTeamPlayers
+					players: expect.arrayContaining([
+						expect.objectContaining({
+							id: expect.any(String),
+							name: expect.any(String),
+							teamId: expect.any(Number),
+							position: expect.any(String),
+							image: expect.any(String),
+							cost: expect.any(Number)
+						})
+					])
 				}
 			}
 
@@ -377,7 +456,16 @@ describe("Fantasy Teams", () => {
 				message: 'Team updated successfully',
 				team: {
 					balance: 100 -  teamValue,
-					players: updatedTeamPlayers
+					players: expect.arrayContaining([
+						expect.objectContaining({
+							id: expect.any(String),
+							name: expect.any(String),
+							teamId: expect.any(Number),
+							position: expect.any(String),
+							image: expect.any(String),
+							cost: expect.any(Number)
+						})
+					])
 				}
 			}
 
