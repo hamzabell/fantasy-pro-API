@@ -1,15 +1,26 @@
 import 'dotenv/config';
+import './types/hono.js'; // Import Hono type extensions
 import { serve } from '@hono/node-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import fantasyPremierLeagueApp from './features/fantasy-premier-league/fantasy-premier-league-route.js';
-import { validateUserAuth } from './features/supabase/supabase-helpers.js';
+import { validateUserAuth, supabase } from './features/supabase/supabase-helpers.js';
 import { swaggerUI } from '@hono/swagger-ui';
 import fantasyTeamsApp from './features/fantasy-teams/fantasy-teams-route.js';
 import authenticationApp from './features/authentication/authentication-route.js';
 import fantasyLeaguesApp from './features/fantasy-leagues/fantasy-leagues-route.js';
 import leaguePowerUpsApp from './features/fantasy-leagues/league-power-ups-route.js';
 import gameweekWebhookApp from './features/webhooks/gameweek-webhook-route.js';
+import prisma from './prisma.js';
+import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
+import { createLogger } from './fp/infrastructure/Logger.js';
 const app = new OpenAPIHono();
+// Create the application environment for dependency injection
+const env = createEnvironment(prisma, supabase, createLogger(), defaultConfig);
+// Inject environment into all requests
+app.use('*', (c, next) => {
+    c.set('env', env);
+    return next();
+});
 // Add OpenAPI documentation for all routes - BEFORE registering routes!
 app.doc('/doc', {
     openapi: '3.0.0',

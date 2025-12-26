@@ -1,17 +1,9 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { fetchTotalCostForPlayers, fetchPlayersByIds } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import * as RTE from 'fp-ts/ReaderTaskEither';
+import { pipe } from 'fp-ts/function';
 import { ErrorResponseSchema, TeamResponseSchema } from './fantasy-teams-schemas.js';
-import { saveTeamToDatabase, retrieveTeamFromDatabaseByUserId, updateTeamInDatabaseById } from './fantasy-teams-model.js';
-import { saveUserToDatabase, retrieveUserFromDatabaseById } from '../users/users-model.js';
+import { runProgram } from '../../fp/middleware/ErrorHandler.js';
+import { createTeamService, getTeamService, updateTeamService } from './service/TeamService.js';
 const fantasyTeamsApp = new OpenAPIHono();
 // Add summary description for the Fantasy Teams API
 const fantasyTeamsInfoRoute = createRoute({
@@ -225,240 +217,60 @@ const updateTeamRoute = createRoute({
         },
     },
 });
-fantasyTeamsApp.openapi(createTeamRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // Get the authenticated user from context
-        const user = c.get('user');
-        if (!user) {
-            return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
-        }
-        // Parse and validate request body manually
-        let body;
-        try {
-            body = yield c.req.json();
-        }
-        catch (parseError) {
-            return c.json({ error: 'Invalid JSON in request body' }, 400);
-        }
-        // Custom validation for players array
-        if (!body.players || !Array.isArray(body.players)) {
-            return c.json({ error: 'You must select exactly 11 players for your team.' }, 400);
-        }
-        if (body.players.length !== 11) {
-            return c.json({ error: 'You must select exactly 11 players for your team.' }, 400);
-        }
-        const playerIds = body.players;
-        const budget = 100; // Fixed budget of 100M for all users
-        // Check for duplicate players
-        if (new Set(playerIds).size !== playerIds.length) {
-            return c.json({ error: 'Duplicate players are not allowed.' }, 400);
-        }
-        // Calculate total cost using the API function
-        const totalCost = yield fetchTotalCostForPlayers(playerIds);
-        // Check if total cost exceeds budget
-        if (totalCost > budget) {
-            return c.json({ error: `Total cost exceeds budget. Total: ${totalCost}M, Budget: ${budget}M` }, 400);
-        }
-        // Check if user already has a team
-        const existingTeam = yield retrieveTeamFromDatabaseByUserId(user.id);
-        if (existingTeam) {
-            return c.json({ error: 'User already has a team. Please update your existing team instead.' }, 400);
-        }
-        // Ensure user exists in database
-        // In a real application, this would be handled by the auth middleware
-        // But for tests, we need to make sure the user exists
-        let dbUser = yield retrieveUserFromDatabaseById(user.id);
-        if (!dbUser) {
-            try {
-                dbUser = yield saveUserToDatabase({
-                    id: user.id,
-                    email: user.email,
-                });
-            }
-            catch (error) {
-                // User might already exist, which is fine
-                console.log('User already exists in database');
-            }
-        }
-        // Create team in database
-        const teamData = {
-            userId: user.id,
-            teamValue: totalCost,
-            teamPlayers: playerIds,
-        };
-        const createdTeam = yield saveTeamToDatabase(teamData);
-        // Fetch detailed player information
-        const players = yield fetchPlayersByIds(createdTeam.teamPlayers);
-        // Map players to the same format as the player-by-ids endpoint
-        const playerDetails = players.map((player) => ({
+fantasyTeamsApp.openapi(createTeamRoute, (c) => runProgram(c, pipe(RTE.of(c.req.valid('json')), RTE.chainW(({ players }) => createTeamService(c.get('user').id, players))))((result) => c.json({
+    message: 'Team created successfully',
+    team: {
+        balance: result.balance,
+        players: result.players.map((player) => ({
             id: player.id.toString(),
             name: player.name,
             teamId: player.teamId,
             position: player.position,
             image: player.image,
             cost: player.cost,
-        }));
-        // Return success response with detailed player information
-        return c.json({
-            message: 'Team created successfully',
-            team: {
-                balance: budget - totalCost, // Return the remaining budget, not the total cost
-                players: playerDetails, // Return detailed player objects instead of just IDs
-            },
-        }, 201);
-    }
-    catch (error) {
-        console.error('Error creating team:', error);
-        return c.json({ error: 'Internal server error' }, 500);
-    }
-}));
-fantasyTeamsApp.openapi(getTeamRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // Get the authenticated user from context
-        const user = c.get('user');
-        if (!user) {
-            return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
-        }
-        // Retrieve team from database
-        const team = yield retrieveTeamFromDatabaseByUserId(user.id);
-        // Check if user has a team
-        if (!team) {
-            return c.json({ error: 'User does not have a team.' }, 400);
-        }
-        // Fetch detailed player information
-        const players = yield fetchPlayersByIds(team.teamPlayers);
-        // Map players to the same format as the player-by-ids endpoint
-        const playerDetails = players.map((player) => ({
+        })),
+    },
+}, 201)));
+fantasyTeamsApp.openapi(getTeamRoute, (c) => runProgram(c, getTeamService(c.get('user').id))((result) => c.json({
+    message: 'Team retrieved successfully',
+    team: {
+        balance: result.balance,
+        players: result.players.map((player) => ({
             id: player.id.toString(),
             name: player.name,
             teamId: player.teamId,
             position: player.position,
             image: player.image,
             cost: player.cost,
-        }));
-        // Return success response with detailed player information
-        return c.json({
-            message: 'Team retrieved successfully',
-            team: {
-                balance: 100 - team.teamValue, // Return the remaining budget (100 - used amount)
-                players: playerDetails,
-            },
-        }, 200);
-    }
-    catch (error) {
-        console.error('Error retrieving team:', error);
-        return c.json({ error: 'Internal server error' }, 500);
-    }
-}));
-fantasyTeamsApp.openapi(getTeamByUserIdRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // Get userId from path parameters
-        const userId = c.req.param('userId');
-        if (!userId) {
-            return c.json({ error: 'User ID is required' }, 400);
-        }
-        // Retrieve team from database using the provided userId
-        const team = yield retrieveTeamFromDatabaseByUserId(userId);
-        // Check if user has a team
-        if (!team) {
-            return c.json({ error: 'User does not have a team.' }, 400);
-        }
-        // Fetch detailed player information
-        const players = yield fetchPlayersByIds(team.teamPlayers);
-        // Map players to the same format as the player-by-ids endpoint
-        const playerDetails = players.map((player) => ({
+        })),
+    },
+}, 200)));
+fantasyTeamsApp.openapi(getTeamByUserIdRoute, (c) => runProgram(c, getTeamService(c.req.param('userId')))((result) => c.json({
+    message: 'Team retrieved successfully',
+    team: {
+        balance: result.balance,
+        players: result.players.map((player) => ({
             id: player.id.toString(),
             name: player.name,
             teamId: player.teamId,
             position: player.position,
             image: player.image,
             cost: player.cost,
-        }));
-        // Return success response with detailed player information
-        return c.json({
-            message: 'Team retrieved successfully',
-            team: {
-                balance: 100 - team.teamValue, // Return the remaining budget (100 - used amount)
-                players: playerDetails,
-            },
-        }, 200);
-    }
-    catch (error) {
-        console.error('Error retrieving team by user ID:', error);
-        return c.json({ error: 'Internal server error' }, 500);
-    }
-}));
-fantasyTeamsApp.openapi(updateTeamRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // Get the authenticated user from context
-        const user = c.get('user');
-        if (!user) {
-            return c.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, 401);
-        }
-        // Parse and validate request body manually
-        let body;
-        try {
-            body = yield c.req.json();
-        }
-        catch (parseError) {
-            return c.json({ error: 'Invalid JSON in request body' }, 400);
-        }
-        // Custom validation for players array
-        if (!body.players || !Array.isArray(body.players)) {
-            return c.json({ error: 'You must select exactly 11 players for your team.' }, 400);
-        }
-        if (body.players.length !== 11) {
-            return c.json({ error: 'You must select exactly 11 players for your team.' }, 400);
-        }
-        const playerIds = body.players;
-        const budget = 100; // Fixed budget of 100M for all users
-        // Check for duplicate players
-        if (new Set(playerIds).size !== playerIds.length) {
-            return c.json({ error: 'Duplicate players are not allowed.' }, 400);
-        }
-        // Calculate total cost using the API function
-        const totalCost = yield fetchTotalCostForPlayers(playerIds);
-        // Check if total cost exceeds budget
-        if (totalCost > budget) {
-            return c.json({ error: `Total cost exceeds budget. Total: ${totalCost}M, Budget: ${budget}M` }, 400);
-        }
-        // Check if user has a team
-        const existingTeam = yield retrieveTeamFromDatabaseByUserId(user.id);
-        if (!existingTeam) {
-            return c.json({ error: 'User does not have a team.' }, 400);
-        }
-        // Update team in database
-        const updatedTeam = yield updateTeamInDatabaseById({
-            id: existingTeam.id,
-            team: {
-                teamValue: totalCost,
-                teamPlayers: playerIds,
-            },
-        });
-        // Fetch detailed player information
-        const players = yield fetchPlayersByIds(updatedTeam.teamPlayers);
-        // Map players to the same format as the player-by-ids endpoint
-        const playerDetails = players.map((player) => ({
+        })),
+    },
+}, 200)));
+fantasyTeamsApp.openapi(updateTeamRoute, (c) => runProgram(c, pipe(RTE.of(c.req.valid('json')), RTE.chainW(({ players }) => updateTeamService(c.get('user').id, players))))((result) => c.json({
+    message: 'Team updated successfully',
+    team: {
+        balance: result.balance,
+        players: result.players.map((player) => ({
             id: player.id.toString(),
             name: player.name,
             teamId: player.teamId,
             position: player.position,
             image: player.image,
             cost: player.cost,
-        }));
-        // Return success response with detailed player information
-        // Looking at the test, it expects the balance to be the remaining budget (100 - teamValue)
-        return c.json({
-            message: 'Team updated successfully',
-            team: {
-                balance: budget - updatedTeam.teamValue, // Return the remaining budget
-                players: playerDetails, // Return detailed player objects instead of just IDs
-            },
-        }, 200);
-    }
-    catch (error) {
-        console.error('Error updating team:', error);
-        return c.json({ error: 'Internal server error' }, 500);
-    }
-}));
+        })),
+    },
+}, 200)));
 export default fantasyTeamsApp;
