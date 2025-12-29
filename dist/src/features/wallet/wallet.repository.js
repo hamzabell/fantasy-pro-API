@@ -1,5 +1,4 @@
-import { taskEither as TE } from 'fp-ts';
-import { function as F } from 'fp-ts';
+import { taskEither as TE, function as F } from 'fp-ts';
 const { pipe } = F;
 import { notFoundError } from '../../fp/domain/errors/AppError.js';
 import { safePrisma } from '../../fp/utils/fp-utils.js';

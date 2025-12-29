@@ -1,17 +1,17 @@
 import type { PrismaClient, Wallet, Transaction } from '../../generated/prisma/index.js';
-import { taskEither as TE } from 'fp-ts';
-import { function as F } from 'fp-ts';
+import { taskEither as TE, function as F } from 'fp-ts';
 const { pipe } = F;
+import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { notFoundError } from '../../fp/domain/errors/AppError.js';
 import { safePrisma } from '../../fp/utils/fp-utils.js';
 import { Decimal } from '../../generated/prisma/runtime/library.js';
 
 export interface WalletRepository {
-  create: (data: { userId: string; address: string; encryptedPrivateKey: string }) => TE.TaskEither<AppError, Wallet>;
-  findByUserId: (userId: string) => TE.TaskEither<AppError, Wallet>;
-  updateBalance: (userId: string, newBalance: Decimal) => TE.TaskEither<AppError, Wallet>;
-  getTransactions: (userId: string) => TE.TaskEither<AppError, Transaction[]>;
+  create: (data: { userId: string; address: string; encryptedPrivateKey: string }) => TaskEither<AppError, Wallet>;
+  findByUserId: (userId: string) => TaskEither<AppError, Wallet>;
+  updateBalance: (userId: string, newBalance: Decimal) => TaskEither<AppError, Wallet>;
+  getTransactions: (userId: string) => TaskEither<AppError, Transaction[]>;
 }
 
 export const createWalletRepository = (prisma: PrismaClient): WalletRepository => ({

@@ -1,8 +1,8 @@
 
-import { taskEither as TE } from 'fp-ts';
-import { either as E } from 'fp-ts';
-import { function as F } from 'fp-ts';
+import { taskEither as TE, either as E, function as F } from 'fp-ts';
 const { pipe } = F;
+import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
+import type { Either } from 'fp-ts/lib/Either.js';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { 
@@ -67,7 +67,7 @@ export const generateGoogleAuthUrl = (referralCode?: string): string => {
   return client.generateAuthUrl(options);
 };
 
-export const loginWithGoogleCode = (code: string, referralCode?: string): TE.TaskEither<AppError, AuthResponse> =>
+export const loginWithGoogleCode = (code: string, referralCode?: string): TaskEither<AppError, AuthResponse> =>
   pipe(
     // 1. Exchange Code for Tokens
     TE.tryCatch(

@@ -1,7 +1,8 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { taskEither as TE } from 'fp-ts';
-import { function as F } from 'fp-ts';
+import { taskEither as TE, either as E, function as F } from 'fp-ts';
 const { pipe } = F;
+import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
+import type { Either } from 'fp-ts/lib/Either.js';
 import type { AppEnvironment } from '../../fp/infrastructure/Environment.js';
 import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';
@@ -161,20 +162,20 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
     // 1. Validate Business Rules
     TE.fromIOEither(() => {
       if (body.leagueMode === 'head-to-head' && body.limit > 2) {
-        return { _tag: 'Left', left: businessRuleError('LeagueLimit', 'Head-to-head leagues can have a maximum of 2 teams') };
+        return E.left(businessRuleError('LeagueLimit', 'Head-to-head leagues can have a maximum of 2 teams'));
       }
       
       if (body.leagueType === 'public' && body.creatorCommission > 0) {
-          return { _tag: 'Left', left: businessRuleError('InvalidCommission', 'Public leagues cannot have a creator commission') };
+          return E.left(businessRuleError('InvalidCommission', 'Public leagues cannot have a creator commission'));
       }
 
       // Validate Commission Cap
       const platformCommission = body.limit < 5 ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0);
       const totalCommission = platformCommission + body.creatorCommission;
       if (totalCommission >= 100) {
-          return { _tag: 'Left', left: businessRuleError('InvalidCommission', `Total commission (${totalCommission}%) cannot exceed or equal 100%`) };
+          return E.left(businessRuleError('InvalidCommission', `Total commission (${totalCommission}%) cannot exceed or equal 100%`));
       }
-      return { _tag: 'Right', right: null };
+      return E.right(null);
     }),
     // 2. Check if user has a team
     TE.chainW(() => 

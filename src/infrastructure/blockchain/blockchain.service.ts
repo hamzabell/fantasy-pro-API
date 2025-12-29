@@ -1,6 +1,7 @@
 import { TonClient, WalletContractV4, internal, SendMode, toNano, fromNano, Address, beginCell } from '@ton/ton';
 import { mnemonicToWalletKey, keyPairFromSecretKey } from '@ton/crypto';
 import { taskEither as TE } from 'fp-ts';
+import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { blockchainError } from '../../fp/domain/errors/AppError.js';
 
@@ -10,12 +11,12 @@ const OP_DISTRIBUTE_WINNINGS = 0x82b42f3c; // Random placeholders
 const OP_FUND_ESCROW = 0x93a2b1c4;
 
 export interface BlockchainService {
-  getBalance: (address: string) => TE.TaskEither<AppError, string>;
-  transferTON: (secretKeyHex: string, toAddress: string, amount: string) => TE.TaskEither<AppError, string>;
-  joinLeagueOnChain: (secretKeyHex: string, leagueId: string, userAddress: string) => TE.TaskEither<AppError, string>;
-  fundEscrow: (secretKeyHex: string, amount: string) => TE.TaskEither<AppError, string>;
-  getGasCost: (toAddress: string, amount: string) => TE.TaskEither<AppError, string>;
-  distributeWinnings: (secretKeyHex: string, leagueId: string, winners: string[], amounts: string[], platformCommission: string, creatorWallet: string | null, creatorCommission: string) => TE.TaskEither<AppError, string>;
+  getBalance: (address: string) => TaskEither<AppError, string>;
+  transferTON: (secretKeyHex: string, toAddress: string, amount: string) => TaskEither<AppError, string>;
+  joinLeagueOnChain: (secretKeyHex: string, leagueId: string, userAddress: string) => TaskEither<AppError, string>;
+  fundEscrow: (secretKeyHex: string, amount: string) => TaskEither<AppError, string>;
+  getGasCost: (toAddress: string, amount: string) => TaskEither<AppError, string>;
+  distributeWinnings: (secretKeyHex: string, leagueId: string, winners: string[], amounts: string[], platformCommission: string, creatorWallet: string | null, creatorCommission: string) => TaskEither<AppError, string>;
 }
 
 export const createBlockchainService = (

@@ -1,8 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { createRoute, z } from '@hono/zod-openapi';
-import { function as F } from 'fp-ts';
+import { function as F, taskEither as TE } from 'fp-ts';
 const { pipe } = F;
-import { taskEither as TE } from 'fp-ts';
 import type { AppEnvironment } from '../../fp/infrastructure/Environment.js';
 import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 

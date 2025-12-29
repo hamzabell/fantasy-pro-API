@@ -1,5 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { either as E } from 'fp-ts';
+import type { Either } from 'fp-ts/lib/Either.js';
 import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';

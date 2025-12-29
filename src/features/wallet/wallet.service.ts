@@ -1,6 +1,6 @@
-import { taskEither as TE } from 'fp-ts';
-import { function as F } from 'fp-ts';
+import { taskEither as TE, function as F } from 'fp-ts';
 const { pipe } = F;
+import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { internalError, paymentError, insufficientBalanceError } from '../../fp/domain/errors/AppError.js';
 import type { WalletRepository } from './wallet.repository.js';
@@ -10,12 +10,12 @@ import type { BlockchainService } from '../../infrastructure/blockchain/blockcha
 import { Decimal } from '../../generated/prisma/runtime/library.js';
 
 export interface WalletService {
-  createWalletForUser: (userId: string) => TE.TaskEither<AppError, Wallet>;
-  getWalletBalance: (userId: string) => TE.TaskEither<AppError, string>;
-  getUserWallet: (userId: string) => TE.TaskEither<AppError, Wallet>;
-  transferFunds: (userId: string, toAddress: string, amount: string) => TE.TaskEither<AppError, string>;
-  getUserTransactions: (userId: string) => TE.TaskEither<AppError, Transaction[]>;
-  creditUser: (userId: string, amount: string) => TE.TaskEither<AppError, string>;
+  createWalletForUser: (userId: string) => TaskEither<AppError, Wallet>;
+  getWalletBalance: (userId: string) => TaskEither<AppError, string>;
+  getUserWallet: (userId: string) => TaskEither<AppError, Wallet>;
+  transferFunds: (userId: string, toAddress: string, amount: string) => TaskEither<AppError, string>;
+  getUserTransactions: (userId: string) => TaskEither<AppError, Transaction[]>;
+  creditUser: (userId: string, amount: string) => TaskEither<AppError, string>;
 }
 
 export const createWalletService = (repo: WalletRepository, blockchainService: BlockchainService): WalletService => ({
