@@ -1,6 +1,6 @@
 import { taskEither as TE, function as F } from 'fp-ts';
 const { pipe } = F;
-import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
+type TaskEither<E, A> = TE.TaskEither<E, A>;
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { internalError, paymentError, insufficientBalanceError } from '../../fp/domain/errors/AppError.js';
 import type { WalletRepository } from './wallet.repository.js';

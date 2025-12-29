@@ -1,8 +1,8 @@
 
 import { taskEither as TE, either as E, function as F } from 'fp-ts';
 const { pipe } = F;
-import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
-import type { Either } from 'fp-ts/lib/Either.js';
+type TaskEither<E, A> = TE.TaskEither<E, A>;
+type Either<E, A> = E.Either<E, A>;
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { 

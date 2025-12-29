@@ -1,6 +1,6 @@
 import { taskEither as TE, either as E, function as F } from 'fp-ts';
 const { pipe } = F;
-import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
+type TaskEither<E, A> = TE.TaskEither<E, A>;
 import type { ZodSchema } from 'zod';
 import type { AppError } from '../domain/errors/AppError.js';
 import { databaseError, validationError } from '../domain/errors/AppError.js';

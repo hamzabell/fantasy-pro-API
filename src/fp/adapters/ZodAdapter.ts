@@ -1,6 +1,5 @@
-import * as E from 'fp-ts/lib/Either.js'
-import * as TE from 'fp-ts/lib/TaskEither.js'
-import { pipe } from 'fp-ts/lib/function.js'
+import { either as E, taskEither as TE, function as F } from 'fp-ts';
+const { pipe } = F;
 import { z } from 'zod'
 import type { AppError } from '../domain/errors/AppError.js'
 import { validationError } from '../domain/errors/AppError.js'

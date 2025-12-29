@@ -1,7 +1,5 @@
-import * as RTE from 'fp-ts/lib/ReaderTaskEither.js'
-import * as TE from 'fp-ts/lib/TaskEither.js'
-import * as O from 'fp-ts/lib/Option.js'
-import { pipe } from 'fp-ts/lib/function.js'
+import { readerTaskEither as RTE, taskEither as TE, option as O, function as F } from 'fp-ts';
+const { pipe } = F;
 import type { Team, RealLifeLeague } from '../../../generated/prisma/index.js'
 import type { AppEnvironment } from '../../../fp/infrastructure/Environment.js'
 import type { AppError } from '../../../fp/domain/errors/AppError.js'

@@ -1,5 +1,5 @@
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import { taskEither as TE, function as F } from 'fp-ts';
+const { pipe } = F;
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library.js';
 import { databaseError, notFoundError } from '../domain/errors/AppError.js';
 // Core wrapper: Wrap Prisma operations in TaskEither
