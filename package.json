@@ -7,7 +7,7 @@
     "start": "node dist/src/index.js",
     "test": "NODE_ENV=test vitest",
     "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:migrate": "npx prisma db push --accept-data-loss",
     "prisma:studio": "npx prisma studio",
     "prisma:seed": "tsx prisma/seed.ts && tsx prisma/seed-powerups.ts && tsx prisma/seed-powerup-categories.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
