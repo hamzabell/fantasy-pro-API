@@ -9,7 +9,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma db push --accept-data-loss",
     "prisma:studio": "npx prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts && tsx prisma/seed-powerups.ts && tsx prisma/seed-powerup-categories.ts",
+    "prisma:seed": "tsx prisma/seed.ts && tsx src/utils/reseed-public-leagues.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
     "get-auth-token": "tsx src/utils/get-auth-token.ts"
   },
