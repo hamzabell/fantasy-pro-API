@@ -1,7 +1,7 @@
 
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import * as E from 'fp-ts/lib/Either.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import * as E from 'fp-ts/es6/Either.js';
+import { pipe } from 'fp-ts/es6/function.js';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { 

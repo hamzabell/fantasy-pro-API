@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeAll } from 'vitest';
-import * as E from 'fp-ts/lib/Either.js'; // Ensure E is available if needed, usually via TaskEither in service types
+import * as E from 'fp-ts/es6/Either.js'; // Ensure E is available if needed, usually via TaskEither in service types
 // Mocks must be defined before imports that use them (like app -> index -> Environment)
 const mocks = vi.hoisted(() => ({
     getUserWallet: vi.fn(),

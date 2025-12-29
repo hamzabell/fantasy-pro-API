@@ -1,7 +1,7 @@
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import * as E from 'fp-ts/lib/Either.js';
-import { pipe } from 'fp-ts/lib/function.js';
-import type { TaskEither } from 'fp-ts/lib/TaskEither.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import * as E from 'fp-ts/es6/Either.js';
+import { pipe } from 'fp-ts/es6/function.js';
+import type { TaskEither } from 'fp-ts/es6/TaskEither.js';
 import type { ZodSchema } from 'zod';
 import type { AppError } from '../domain/errors/AppError.js';
 import { databaseError, validationError } from '../domain/errors/AppError.js';

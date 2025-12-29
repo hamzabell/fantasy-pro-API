@@ -21,7 +21,7 @@ export function saveUserToDatabase(user) {
     });
 }
 // Adapting to TaskEither for functional architecture conformance
-import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
 import { databaseError, notFoundError } from '../../fp/domain/errors/AppError.js';
 // Removed invalid import
 /**

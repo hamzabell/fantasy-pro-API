@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import app from './wallet.routes.js';
-import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
 
 // We need to test the router logic. 
 // Since the router imports 'env' from context, we need to inject the mock service into the request context.

@@ -8,8 +8,8 @@ import { createPublicLeagueService } from '../../features/fantasy-leagues/public
 export const createEnvironment = (prisma, logger, config) => {
     const walletRepo = createWalletRepository(prisma);
     // TODO: Move these to config/env vars
-    const blockchainService = createBlockchainService(process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.TON_KO_ADDRESS || '', // Keeper/Escrow Address
-    process.env.TON_MNEMONIC || '');
+    const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '', // Keeper/Escrow Address
+    process.env.SERVER_MNEMONIC || '');
     const walletService = createWalletService(walletRepo, blockchainService);
     const paymentService = createPaymentService();
     const publicLeagueService = createPublicLeagueService(prisma, walletService);

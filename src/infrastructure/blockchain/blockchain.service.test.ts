@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createBlockchainService } from './blockchain.service.js';
-import * as E from 'fp-ts/lib/Either.js';
+import * as E from 'fp-ts/es6/Either.js';
 
 // Mock @ton/ton and @ton/crypto
 const mockSend = vi.fn();

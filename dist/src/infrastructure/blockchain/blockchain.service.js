@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { TonClient, WalletContractV4, internal, SendMode, toNano, fromNano, Address, beginCell } from '@ton/ton';
 import { mnemonicToWalletKey, keyPairFromSecretKey } from '@ton/crypto';
-import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
 import { blockchainError } from '../../fp/domain/errors/AppError.js';
 // OpCodes for the Escrow Contract (Placeholder values - needs update when contract is deployed)
 const OP_JOIN_LEAGUE = 0x5fcc3d14;

@@ -1,6 +1,6 @@
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import * as E from 'fp-ts/lib/Either.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import * as E from 'fp-ts/es6/Either.js';
+import { pipe } from 'fp-ts/es6/function.js';
 import { databaseError, validationError } from '../domain/errors/AppError.js';
 // Helper to wrap Prisma calls
 export const safePrisma = (operation, opName = 'unknown') => TE.tryCatch(operation, (error) => databaseError('Read', opName, error) // Adjusted to match DatabaseError signature

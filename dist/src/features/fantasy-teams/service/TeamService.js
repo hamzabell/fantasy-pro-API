@@ -1,7 +1,7 @@
-import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import * as O from 'fp-ts/lib/Option.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import * as RTE from 'fp-ts/es6/ReaderTaskEither.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import * as O from 'fp-ts/es6/Option.js';
+import { pipe } from 'fp-ts/es6/function.js';
 import { businessRuleError, conflictError, externalApiError } from '../../../fp/domain/errors/AppError.js';
 import { createTeam as createTeamRepo, findTeamByUserAndLeague, findTeamByUserAndLeagueOptional, updateTeam as updateTeamRepo, findAllTeams } from '../repository/TeamRepository.js';
 import { getOrCreateUser } from '../../users/repository/UserRepository.js';

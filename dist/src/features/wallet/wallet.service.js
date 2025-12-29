@@ -7,8 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import { pipe } from 'fp-ts/es6/function.js';
 import { internalError, paymentError, insufficientBalanceError } from '../../fp/domain/errors/AppError.js';
 import { encrypt, decrypt } from './encryption.js';
 import { Decimal } from '../../generated/prisma/runtime/library.js';

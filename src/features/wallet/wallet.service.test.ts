@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWalletService } from './wallet.service.js';
-import * as E from 'fp-ts/lib/Either.js';
-import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as E from 'fp-ts/es6/Either.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
 import { ethers } from 'ethers';
 
 // Mock Dependencies

@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import * as E from 'fp-ts/lib/Either.js';
+import * as E from 'fp-ts/es6/Either.js';
 import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
@@ -119,6 +119,7 @@ const googleCallbackRoute = createRoute({
 });
 app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const { code, state } = c.req.valid('query');
+    console.log('[Auth] Google Callback received. Code:', code ? 'present' : 'missing', 'State:', state);
     let referralCode;
     if (state) {
         try {

@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import { pipe } from 'fp-ts/es6/function.js';
 import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';
 import { insufficientBalanceError, businessRuleError } from '../../fp/domain/errors/AppError.js';

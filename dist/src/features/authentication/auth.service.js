@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import * as E from 'fp-ts/lib/Either.js';
-import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/es6/TaskEither.js';
+import * as E from 'fp-ts/es6/Either.js';
+import { pipe } from 'fp-ts/es6/function.js';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { authenticationError, internalError } from '../../fp/domain/errors/AppError.js';
@@ -46,6 +46,7 @@ export const loginWithGoogleCode = (code, referralCode) => pipe(
 // 1. Exchange Code for Tokens
 TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
     const { tokens } = yield client.getToken(code);
+    console.log('[Auth] Google Tokens received. ID Token present:', !!tokens.id_token);
     client.setCredentials(tokens);
     // Verify ID Token
     const ticket = yield client.verifyIdToken({
@@ -57,7 +58,10 @@ TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
         throw new Error('Invalid Google Token payload');
     }
     return payload;
-}), (e) => authenticationError('Google Auth Failed', e)), 
+}), (e) => {
+    console.error('[Auth] Google Auth Detail Failure:', e);
+    return authenticationError('Google Auth Failed', 'InvalidToken');
+}), 
 // 2. Find or Create User
 TE.chain((payload) => pipe(retrieveUserFromDatabaseByEmail(payload.email || ''), TE.chain((existingUser) => {
     if (existingUser) {
