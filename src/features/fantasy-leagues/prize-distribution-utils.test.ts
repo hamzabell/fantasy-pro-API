@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { calculatePrizeDistribution } from './prize-distribution-utils.js';
+import { calculatePrizeDistribution, calculatePayouts, COMMISSION_RATES } from './prize-distribution-utils.js';
 
 describe('Prize Distribution Utils', () => {
   describe('calculatePrizeDistribution', () => {
@@ -103,5 +103,38 @@ describe('Prize Distribution Utils', () => {
       
       expect(actual).toEqual(expected);
     });
+  });
+
+  describe('calculatePayouts', () => {
+      // Dynamic import removed, using top-level import
+
+
+      test('given H2H league: it should deduct 5% commission', () => {
+          const result = calculatePayouts(100, 'public', 'head-to-head', 2);
+          expect(result.commission.percentage).toBe(COMMISSION_RATES.H2H);
+          expect(result.commission.amount).toBe(5);
+          expect(result.netPool).toBe(95);
+      });
+
+      test('given Public league: it should deduct 10% commission', () => {
+          const result = calculatePayouts(100, 'public', 'classic', 10);
+          expect(result.commission.percentage).toBe(COMMISSION_RATES.PUBLIC);
+          expect(result.commission.amount).toBe(10);
+          expect(result.netPool).toBe(90);
+      });
+
+      test('given Private Paid league (>5 users): it should deduct 0% commission', () => {
+          const result = calculatePayouts(100, 'private', 'classic', 10);
+          expect(result.commission.percentage).toBe(COMMISSION_RATES.PRIVATE_PAID);
+          expect(result.commission.amount).toBe(0);
+          expect(result.netPool).toBe(100);
+      });
+
+      test('given Private Free league (<=5 users): it should deduct 5% commission', () => {
+          const result = calculatePayouts(100, 'private', 'classic', 5);
+          expect(result.commission.percentage).toBe(COMMISSION_RATES.PRIVATE_FREE);
+          expect(result.commission.amount).toBe(5);
+          expect(result.netPool).toBe(95);
+      });
   });
 });

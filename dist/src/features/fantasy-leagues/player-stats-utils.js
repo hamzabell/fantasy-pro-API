@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
+import { retrieveTeamFromDatabaseByUserAndLeague } from '../fantasy-teams/fantasy-teams-model.js';
 import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 /**
  * Calculates the total points and goals for a user's team in a specific gameweek.
@@ -16,10 +16,10 @@ import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fant
  * @param gameweekId - The gameweek ID for calculating points
  * @returns Object containing total points and goals
  */
-export function calculateUserTeamStats(userId, gameweekId) {
+export function calculateUserTeamStats(userId, gameweekId, realLifeLeague) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the user's team
-        const team = yield retrieveTeamFromDatabaseByUserId(userId);
+        const team = yield retrieveTeamFromDatabaseByUserAndLeague(userId, realLifeLeague);
         let points = 0;
         let goals = 0;
         if (team) {

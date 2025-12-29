@@ -1,35 +1,78 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import * as RTE from 'fp-ts/lib/ReaderTaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js'
-import { ErrorResponseSchema, TeamResponseSchema } from './fantasy-teams-schemas.js';
+import { ErrorResponseSchema, TeamResponseSchema, TeamsListResponseSchema } from './fantasy-teams-schemas.js';
 import type { User } from '../../generated/prisma/index.js';
+import { RealLifeLeague } from '../../generated/prisma/index.js';
 import { runProgram } from '../../fp/middleware/ErrorHandler.js';
-import { createTeamService, getTeamService, updateTeamService } from './service/TeamService.js';
+import { createTeamService, getTeamService, updateTeamService, updateTeamCaptainService, getAllTeamsService } from './service/TeamService.js';
 
 const fantasyTeamsApp = new OpenAPIHono();
 
-// Add summary description for the Fantasy Teams API
-const fantasyTeamsInfoRoute = createRoute({
+// Route for getting all fantasy teams
+const getAllTeamsRoute = createRoute({
 	method: 'get',
 	path: '/',
-	summary: 'Fantasy Teams API',
-	description: 'API endpoints for managing fantasy teams including creating, retrieving, and updating teams with detailed player information.',
+	summary: 'Get all fantasy teams',
+	description: 'Retrieve a list of all fantasy teams, optionally filtered by real life league.',
 	tags: ["Fantasy Teams"],
+    security: [{ BearerAuth: [] }],
+    request: {
+        query: z.object({
+            realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE')
+        })
+    },
 	responses: {
 		200: {
 			content: {
 				'application/json': {
-					schema: z.object({
-						message: z.string().openapi({ example: 'Fantasy Teams API' }),
-					}),
+					schema: TeamsListResponseSchema,
 				},
 			},
-			description: 'Fantasy Teams API information',
+			description: 'List of teams retrieved successfully',
+		},
+        401: {
+			content: {
+				'application/json': {
+					schema: ErrorResponseSchema,
+				},
+			},
+			description: 'Unauthorized - Missing or invalid Authorization header',
+		},
+		500: {
+			content: {
+				'application/json': {
+					schema: ErrorResponseSchema,
+				},
+			},
+			description: 'Internal server error',
 		},
 	},
 });
 
-fantasyTeamsApp.openapi(fantasyTeamsInfoRoute, (c) => c.json({ message: 'Fantasy Teams API' }));
+fantasyTeamsApp.openapi(getAllTeamsRoute, (async (c: any) => {
+    const { realLifeLeague } = c.req.valid('query');
+	return await runProgram(c,
+		getAllTeamsService(realLifeLeague)
+	)(
+		(result) => c.json({
+			message: 'Teams retrieved successfully',
+			teams: result.teams.map((teamData: any) => ({
+                userId: teamData.userId,
+                balance: teamData.balance,
+                players: teamData.players.map((player: any) => ({
+                    id: player.id.toString(),
+                    name: player.name,
+                    teamId: player.teamId,
+                    position: player.position,
+                    image: player.image,
+                    cost: player.cost,
+                })),
+                realLifeLeague: teamData.realLifeLeague
+            })),
+		}, 200)
+	);
+}) as any);
 
 // Define the route for creating a team
 const createTeamRoute = createRoute({
@@ -42,10 +85,11 @@ const createTeamRoute = createRoute({
 			content: {
 				'application/json': {
 					schema: z.object({
-						players: z.array(z.number()).min(11).max(11).openapi({
-							example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-							description: 'Array of exactly 11 player IDs'
+						players: z.array(z.number()).min(5).max(5).openapi({
+							example: [1, 2, 3, 4, 5],
+							description: 'Array of exactly 5 player IDs'
 						}),
+						realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default(RealLifeLeague.PREMIER_LEAGUE)
 					}),
 				},
 			},
@@ -92,7 +136,12 @@ const getTeamRoute = createRoute({
 	method: 'get',
 	path: '/team',
 	security: [{ BearerAuth: [] }], // Add authentication requirement
-	tags: ["Fantasy Teams"], 
+	tags: ["Fantasy Teams"],
+    request: {
+        query: z.object({
+            realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE')
+        })
+    }, 
 	responses: {
 		200: {
 			content: {
@@ -133,6 +182,7 @@ const getTeamRoute = createRoute({
 const getTeamByUserIdRoute = createRoute({
 	method: 'get',
 	path: '/team/{userId}',
+	security: [{ BearerAuth: [] }],
 	tags: ["Fantasy Teams"], 
 	request: {
 		params: z.object({
@@ -141,6 +191,9 @@ const getTeamByUserIdRoute = createRoute({
 				description: 'The ID of the user whose team to retrieve'
 			}),
 		}),
+        query: z.object({
+            realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE')
+        })
 	},
 	responses: {
 		200: {
@@ -181,10 +234,11 @@ const updateTeamRoute = createRoute({
 			content: {
 				'application/json': {
 					schema: z.object({
-						players: z.array(z.number()).min(11).max(11).openapi({
-							example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-							description: 'Array of exactly 11 player IDs'
+						players: z.array(z.number()).min(5).max(5).openapi({
+							example: [1, 2, 3, 4, 5],
+							description: 'Array of exactly 5 player IDs'
 						}),
+						realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default(RealLifeLeague.PREMIER_LEAGUE)
 					}),
 				},
 			},
@@ -226,12 +280,12 @@ const updateTeamRoute = createRoute({
 	},
 });
 
-fantasyTeamsApp.openapi(createTeamRoute, (c) =>
-	runProgram(c,
+fantasyTeamsApp.openapi(createTeamRoute, (async (c: any) => {
+	return await runProgram(c,
 		pipe(
-			RTE.of(c.req.valid('json') as { players: number[] }),
-			RTE.chainW(({ players }) =>
-				createTeamService((c.get('user') as User).id, players)
+			RTE.of(c.req.valid('json') as { players: number[], realLifeLeague: RealLifeLeague }),
+			RTE.chainW(({ players, realLifeLeague }) =>
+				createTeamService((c.get('user') as User).id, players, realLifeLeague)
 			)
 		)
 	)(
@@ -249,12 +303,13 @@ fantasyTeamsApp.openapi(createTeamRoute, (c) =>
 				})),
 			},
 		}, 201)
-	)
-);
+	);
+}) as any);
 
-fantasyTeamsApp.openapi(getTeamRoute, (c) =>
-	runProgram(c,
-		getTeamService((c.get('user') as User).id)
+fantasyTeamsApp.openapi(getTeamRoute, (async (c: any) => {
+    const { realLifeLeague } = c.req.valid('query');
+	return await runProgram(c,
+		getTeamService((c.get('user') as User).id, realLifeLeague)
 	)(
 		(result) => c.json({
 			message: 'Team retrieved successfully',
@@ -270,12 +325,13 @@ fantasyTeamsApp.openapi(getTeamRoute, (c) =>
 				})),
 			},
 		}, 200)
-	)
-);
+	);
+}) as any);
 
-fantasyTeamsApp.openapi(getTeamByUserIdRoute, (c) =>
-	runProgram(c,
-		getTeamService(c.req.param('userId') as string)
+fantasyTeamsApp.openapi(getTeamByUserIdRoute, (async (c: any) => {
+    const { realLifeLeague } = c.req.valid('query');
+	return await runProgram(c,
+		getTeamService(c.req.param('userId') as string, realLifeLeague)
 	)(
 		(result) => c.json({
 			message: 'Team retrieved successfully',
@@ -291,15 +347,15 @@ fantasyTeamsApp.openapi(getTeamByUserIdRoute, (c) =>
 				})),
 			},
 		}, 200)
-	)
-);
+	);
+}) as any);
 
-fantasyTeamsApp.openapi(updateTeamRoute, (c) =>
-	runProgram(c,
+fantasyTeamsApp.openapi(updateTeamRoute, (async (c: any) => {
+	return await runProgram(c,
 		pipe(
-			RTE.of(c.req.valid('json') as { players: number[] }),
-			RTE.chainW(({ players }) =>
-				updateTeamService((c.get('user') as User).id, players)
+			RTE.of(c.req.valid('json') as { players: number[], realLifeLeague: RealLifeLeague }),
+			RTE.chainW(({ players, realLifeLeague }) =>
+				updateTeamService((c.get('user') as User).id, players, realLifeLeague)
 			)
 		)
 	)(
@@ -317,7 +373,7 @@ fantasyTeamsApp.openapi(updateTeamRoute, (c) =>
 				})),
 			},
 		}, 200)
-	)
-);
+	);
+}) as any);
 
 export default fantasyTeamsApp;

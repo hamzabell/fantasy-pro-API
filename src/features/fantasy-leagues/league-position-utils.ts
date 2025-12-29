@@ -1,8 +1,8 @@
 import { retrieveFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById } from './fantasy-leagues-model.js';
-import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
+import { retrieveTeamFromDatabaseByUserAndLeague } from '../fantasy-teams/fantasy-teams-model.js';
 import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import * as R from 'ramda';
-import type {Team} from '../../generated/prisma/index.js';
+import type {Team, RealLifeLeague} from '../../generated/prisma/index.js';
 
 /**
  * Calculates the position of a user in a league based on points and goals.
@@ -12,7 +12,7 @@ import type {Team} from '../../generated/prisma/index.js';
  * @param userId - The ID of the user whose position to calculate
  * @returns Object containing position, teamName, points, and goals
  */
-export async function calculateLeaguePosition(leagueId: string, gameweekId: number, userId: string) {
+export async function calculateLeaguePosition(leagueId: string, gameweekId: number, userId: string, realLifeLeague: RealLifeLeague) {
   // Get all members of the league
   const memberships = await retrieveFantasyLeagueMembershipsByLeagueId(leagueId);
   
@@ -22,7 +22,7 @@ export async function calculateLeaguePosition(leagueId: string, gameweekId: numb
     if (!memberUser) return null;
     
     // Get the user's team
-    const team = await retrieveTeamFromDatabaseByUserId(membership.userId);
+    const team = await retrieveTeamFromDatabaseByUserAndLeague(membership.userId, realLifeLeague);
     
     // Calculate points and goals for each player in the team
     const playerStats = team 

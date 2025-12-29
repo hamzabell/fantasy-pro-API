@@ -123,13 +123,35 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  name: 'name',
+  image: 'image',
+  password: 'password',
+  country: 'country',
+  currency: 'currency',
+  balanceUsd: 'balanceUsd',
+  totalDeposited: 'totalDeposited',
+  totalWithdrawn: 'totalWithdrawn',
+  walletAddress: 'walletAddress',
+  kycStatus: 'kycStatus',
+  mobileMoneyNumber: 'mobileMoneyNumber',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WalletScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  address: 'address',
+  encryptedPrivateKey: 'encryptedPrivateKey',
+  balance: 'balance',
+  lastBalanceUpdate: 'lastBalanceUpdate',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.TeamScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  realLifeLeague: 'realLifeLeague',
   teamValue: 'teamValue',
   teamPlayers: 'teamPlayers',
   captainId: 'captainId',
@@ -140,17 +162,22 @@ exports.Prisma.TeamScalarFieldEnum = {
 exports.Prisma.FantasyLeagueScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  description: 'description',
   stake: 'stake',
   limit: 'limit',
   leagueType: 'leagueType',
   leagueMode: 'leagueMode',
   winners: 'winners',
-  allowPowerUps: 'allowPowerUps',
-  description: 'description',
   code: 'code',
   ownerId: 'ownerId',
+  realLifeLeague: 'realLifeLeague',
   status: 'status',
   winnersArray: 'winnersArray',
+  entryFeeUsd: 'entryFeeUsd',
+  totalPoolUsd: 'totalPoolUsd',
+  currentParticipants: 'currentParticipants',
+  blockchainTxHash: 'blockchainTxHash',
+  prizeDistribution: 'prizeDistribution',
   gameweekId: 'gameweekId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -161,6 +188,13 @@ exports.Prisma.FantasyLeagueMembershipScalarFieldEnum = {
   userId: 'userId',
   leagueId: 'leagueId',
   teamName: 'teamName',
+  stakeAmount: 'stakeAmount',
+  position: 'position',
+  score: 'score',
+  payoutAmount: 'payoutAmount',
+  payoutStatus: 'payoutStatus',
+  blockchainTxHash: 'blockchainTxHash',
+  joinedAt: 'joinedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -168,47 +202,34 @@ exports.Prisma.FantasyLeagueMembershipScalarFieldEnum = {
 exports.Prisma.GameweekScalarFieldEnum = {
   id: 'id',
   deadline: 'deadline',
-  isActive: 'isActive'
+  isActive: 'isActive',
+  realLifeLeague: 'realLifeLeague'
 };
 
-exports.Prisma.PowerUpScalarFieldEnum = {
+exports.Prisma.TransactionScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  description: 'description',
-  categoryId: 'categoryId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.PowerUpCategoryScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.PowerUpUsageScalarFieldEnum = {
-  id: 'id',
+  txHash: 'txHash',
+  type: 'type',
+  leagueId: 'leagueId',
   userId: 'userId',
-  powerUpId: 'powerUpId',
-  transactionId: 'transactionId',
-  isVerified: 'isVerified',
+  amount: 'amount',
+  status: 'status',
+  blockNumber: 'blockNumber',
+  gasUsed: 'gasUsed',
+  errorMessage: 'errorMessage',
+  metadata: 'metadata',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.FantasyLeagueMembershipPowerUpScalarFieldEnum = {
-  id: 'id',
-  fantasyLeagueMembershipId: 'fantasyLeagueMembershipId',
-  powerUpUsageId: 'powerUpUsageId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  confirmedAt: 'confirmedAt'
 };
 
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -221,17 +242,23 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.RealLifeLeague = exports.$Enums.RealLifeLeague = {
+  PREMIER_LEAGUE: 'PREMIER_LEAGUE'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Wallet: 'Wallet',
   Team: 'Team',
   FantasyLeague: 'FantasyLeague',
   FantasyLeagueMembership: 'FantasyLeagueMembership',
   Gameweek: 'Gameweek',
-  PowerUp: 'PowerUp',
-  PowerUpCategory: 'PowerUpCategory',
-  PowerUpUsage: 'PowerUpUsage',
-  FantasyLeagueMembershipPowerUp: 'FantasyLeagueMembershipPowerUp'
+  Transaction: 'Transaction'
 };
 
 /**

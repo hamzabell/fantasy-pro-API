@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { retrieveFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById } from './fantasy-leagues-model.js';
-import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
+import { retrieveTeamFromDatabaseByUserAndLeague } from '../fantasy-teams/fantasy-teams-model.js';
 import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import * as R from 'ramda';
 /**
@@ -19,7 +19,7 @@ import * as R from 'ramda';
  * @param userId - The ID of the user whose position to calculate
  * @returns Object containing position, teamName, points, and goals
  */
-export function calculateLeaguePosition(leagueId, gameweekId, userId) {
+export function calculateLeaguePosition(leagueId, gameweekId, userId, realLifeLeague) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get all members of the league
         const memberships = yield retrieveFantasyLeagueMembershipsByLeagueId(leagueId);
@@ -29,7 +29,7 @@ export function calculateLeaguePosition(leagueId, gameweekId, userId) {
             if (!memberUser)
                 return null;
             // Get the user's team
-            const team = yield retrieveTeamFromDatabaseByUserId(membership.userId);
+            const team = yield retrieveTeamFromDatabaseByUserAndLeague(membership.userId, realLifeLeague);
             // Calculate points and goals for each player in the team
             const playerStats = team
                 ? yield Promise.all(team.teamPlayers.map((playerId) => __awaiter(this, void 0, void 0, function* () {

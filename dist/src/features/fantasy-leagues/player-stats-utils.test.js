@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { calculateUserTeamStats } from './player-stats-utils.js';
-import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
+import { retrieveTeamFromDatabaseByUserAndLeague } from '../fantasy-teams/fantasy-teams-model.js';
 import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { RealLifeLeague } from '../../generated/prisma/index.js';
 // Mock the imported functions
 vi.mock('../fantasy-teams/fantasy-teams-model.js', () => ({
-    retrieveTeamFromDatabaseByUserId: vi.fn(),
+    retrieveTeamFromDatabaseByUserAndLeague: vi.fn(),
 }));
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js', () => ({
     fetchPlayerPointsByGameweek: vi.fn(),
@@ -23,13 +24,14 @@ describe('Player Stats Utils', () => {
     describe('calculateUserTeamStats', () => {
         const userId = 'test-user-id';
         const gameweekId = 1;
+        const realLifeLeague = 'PREMIER_LEAGUE';
         beforeEach(() => {
             // Clear all mocks before each test
             vi.clearAllMocks();
         });
         test('given a user with a team: it should calculate the total points and goals for all players', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock the team with players
-            vi.mocked(retrieveTeamFromDatabaseByUserId).mockResolvedValue({
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague).mockResolvedValue({
                 userId,
                 teamPlayers: [1, 2, 3],
             });
@@ -42,7 +44,7 @@ describe('Player Stats Utils', () => {
                 .mockResolvedValueOnce(1) // Player 1
                 .mockResolvedValueOnce(0) // Player 2
                 .mockResolvedValueOnce(1); // Player 3
-            const result = yield calculateUserTeamStats(userId, gameweekId);
+            const result = yield calculateUserTeamStats(userId, gameweekId, realLifeLeague);
             // Total points: 5 + 3 + 2 = 10
             // Total goals: 1 + 0 + 1 = 2
             expect(result.points).toBe(10);
@@ -50,14 +52,14 @@ describe('Player Stats Utils', () => {
         }));
         test('given a user without a team: it should return zero points and goals', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock no team for the user
-            vi.mocked(retrieveTeamFromDatabaseByUserId).mockResolvedValue(null);
-            const result = yield calculateUserTeamStats(userId, gameweekId);
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague).mockResolvedValue(null);
+            const result = yield calculateUserTeamStats(userId, gameweekId, realLifeLeague);
             expect(result.points).toBe(0);
             expect(result.goals).toBe(0);
         }));
         test('given API errors when fetching player data: it should handle errors gracefully and continue processing', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock the team with players
-            vi.mocked(retrieveTeamFromDatabaseByUserId).mockResolvedValue({
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague).mockResolvedValue({
                 userId,
                 teamPlayers: [1, 2, 3],
             });
@@ -88,7 +90,7 @@ describe('Player Stats Utils', () => {
                 }
                 return 0;
             }));
-            const result = yield calculateUserTeamStats(userId, gameweekId);
+            const result = yield calculateUserTeamStats(userId, gameweekId, realLifeLeague);
             // Even with one player failing, we should still get data for the others
             // Total points: 0 + 3 + 2 = 5 (skipped player 1 due to error)
             // Total goals: 0 + 0 + 1 = 1 (skipped player 1 due to error)
@@ -97,11 +99,11 @@ describe('Player Stats Utils', () => {
         }));
         test('given an empty team: it should return zero points and goals', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock an empty team
-            vi.mocked(retrieveTeamFromDatabaseByUserId).mockResolvedValue({
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague).mockResolvedValue({
                 userId,
                 teamPlayers: [],
             });
-            const result = yield calculateUserTeamStats(userId, gameweekId);
+            const result = yield calculateUserTeamStats(userId, gameweekId, realLifeLeague);
             expect(result.points).toBe(0);
             expect(result.goals).toBe(0);
         }));

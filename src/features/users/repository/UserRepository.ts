@@ -1,4 +1,5 @@
 import * as RTE from 'fp-ts/lib/ReaderTaskEither.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as O from 'fp-ts/lib/Option.js'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { User } from '../../../generated/prisma/index.js'
@@ -26,7 +27,7 @@ export const findUserById = (
 	id: string
 ): RTE.ReaderTaskEither<AppEnvironment, AppError, User> =>
 	({ prisma }) =>
-		findUniqueTE('User', id)(
+		findUniqueTE<User>('User', id)(
 			prisma.user.findUnique({ where: { id } })
 		)
 
@@ -34,12 +35,13 @@ export const findUserById = (
 export const findUserByIdOptional = (
 	userId: string
 ): RTE.ReaderTaskEither<AppEnvironment, AppError, O.Option<User>> =>
-	({ prisma }) => pipe(
-		prismaTE<User | null>('Read', 'User')(
-			prisma.user.findUnique({ where: { id: userId } })
-		),
-		RTE.map(O.fromNullable)
-	)
+	({ prisma }) =>
+		pipe(
+			prismaTE<User | null>('Read', 'User')(
+				prisma.user.findUnique({ where: { id: userId } })
+			),
+			TE.map(O.fromNullable)
+		) as TE.TaskEither<AppError, O.Option<User>>
 
 export const findAllUsers = (): RTE.ReaderTaskEither<AppEnvironment, AppError, User[]> =>
 	({ prisma }) =>
@@ -66,7 +68,7 @@ export const deleteUser = (
 
 export const deleteAllUsers = (): RTE.ReaderTaskEither<AppEnvironment, AppError, { count: number }> =>
 	({ prisma }) =>
-		prismaTE('Delete', 'User')(
+		prismaTE<{ count: number }>('Delete', 'User')(
 			prisma.user.deleteMany()
 		)
 

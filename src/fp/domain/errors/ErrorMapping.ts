@@ -26,4 +26,5 @@ export const toHttpStatus = (error: AppError): number => {
 		case 'InternalError':
 			return 500
 	}
+    return 500;
 }

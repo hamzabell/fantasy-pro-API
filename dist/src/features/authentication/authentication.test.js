@@ -7,46 +7,102 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { describe, test, expect, vi } from 'vitest';
-import { createAuthHeaders, createHeaders } from '../../utils/testUtils.js';
-import { mockSupabaseAuthSuccess } from '../../utils/supabaseMocks.js';
-import { supabase } from '../supabase/supabase-helpers.js';
-import { saveUserToDatabase, deleteUserFromDatabaseById } from '../users/users-model.js';
-import { createMockUser } from '../../utils/supabaseMocks-factories.js';
-import app from '../../index.js';
-import { faker } from '@faker-js/faker';
-import { createPopulatedUser } from '../users/users-factories.js';
-describe("Authentication", () => {
-    test("given that a user is authenticated: it should return the user's details  ", () => __awaiter(void 0, void 0, void 0, function* () {
-        // Create a unique user for this test
-        const testUser = createMockUser({
-            email: faker.internet.email(),
-        });
-        // First create a user in the database
-        const user = yield saveUserToDatabase(createPopulatedUser({
-            id: testUser.id,
-            email: testUser.email,
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Hono } from 'hono';
+import app from './authentication-route.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+// Mock dependencies
+const mockAuthService = {
+    generateGoogleAuthUrl: vi.fn(),
+    loginWithGoogleCode: vi.fn(),
+};
+const mockWalletService = {
+    getUserWallet: vi.fn(),
+};
+// Mock service imports
+vi.mock('./auth.service.js', () => ({
+    generateGoogleAuthUrl: () => mockAuthService.generateGoogleAuthUrl(),
+    loginWithGoogleCode: (code) => mockAuthService.loginWithGoogleCode(code),
+}));
+vi.mock('../wallet/wallet.repository.js', () => ({
+    createWalletRepository: vi.fn(),
+}));
+vi.mock('../wallet/wallet.service.js', () => ({
+    createWalletService: () => mockWalletService,
+}));
+vi.mock('../../infrastructure/blockchain/blockchain.service.js', () => ({
+    createBlockchainService: vi.fn()
+}));
+describe('Authentication Routes', () => {
+    let testApp;
+    beforeEach(() => {
+        vi.clearAllMocks();
+        process.env.FRONTEND_URL = 'http://localhost:8100';
+        testApp = new Hono();
+        testApp.route('/', app);
+    });
+    describe('GET /google/url', () => {
+        it('should return google auth url', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockUrl = 'https://accounts.google.com/o/oauth2/v2/auth?...';
+            mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
+            const res = yield testApp.request('/google/url');
+            expect(res.status).toBe(200);
+            expect(yield res.json()).toEqual({ url: mockUrl });
         }));
-        const mockSupabase = mockSupabaseAuthSuccess(testUser);
-        vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
-        const res = yield app.request('/api/auth/user', Object.assign(Object.assign({}, createAuthHeaders()), { method: 'GET' }));
-        expect(res.status).toBe(200);
-        const actual = yield res.json();
-        const expected = {
-            id: user.id,
-            email: user.email
-        };
-        expect(actual).toEqual(expected);
-        // Clean up
-        yield deleteUserFromDatabaseById(user.id);
-    }));
-    test("given an unauthenticated user: it should return a 401 unauthorized error", () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield app.request('/api/auth/user', Object.assign(Object.assign({}, createHeaders()), { method: 'GET' }));
-        expect(res.status).toBe(401);
-        const actual = yield res.json();
-        const expected = {
-            error: 'Unauthorized: Missing or invalid Authorization header'
-        };
-        expect(actual).toEqual(expected);
-    }));
+    });
+    describe('GET /google/callback', () => {
+        it('should redirect to frontend with token on success', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockCode = 'auth_code';
+            const mockToken = 'jwt_token';
+            const mockUser = {
+                id: '123',
+                email: 'test@example.com',
+                name: 'Test User',
+                image: 'http://image.com'
+            };
+            mockAuthService.loginWithGoogleCode.mockReturnValue(TE.right({ token: mockToken, user: mockUser }));
+            const res = yield testApp.request(`/google/callback?code=${mockCode}`);
+            expect(res.status).toBe(302);
+            expect(res.headers.get('Location')).toBe(`http://localhost:8100/auth/callback?token=${mockToken}`);
+        }));
+        it('should return 400 on failure', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockCode = 'bad_code';
+            mockAuthService.loginWithGoogleCode.mockReturnValue(TE.left({ _tag: 'AuthenticationError', message: 'Failed' }));
+            const res = yield testApp.request(`/google/callback?code=${mockCode}`);
+            expect(res.status).toBe(400);
+            const body = yield res.json();
+            expect(body).toHaveProperty('error');
+        }));
+    });
+    describe('GET /user', () => {
+        it('should return user details with wallet address if authorized', () => __awaiter(void 0, void 0, void 0, function* () {
+            const authApp = new Hono();
+            authApp.use('*', (c, next) => __awaiter(void 0, void 0, void 0, function* () {
+                c.set('user', {
+                    id: '123',
+                    email: 'test@example.com',
+                    name: 'Test User',
+                    image: 'http://image.com',
+                    walletAddress: null
+                });
+                yield next();
+            }));
+            authApp.route('/', app);
+            mockWalletService.getUserWallet.mockReturnValue(TE.right({ address: '0x123' }));
+            const res = yield authApp.request('/user', { method: 'GET' });
+            expect(res.status).toBe(200);
+            expect(yield res.json()).toEqual({
+                id: '123',
+                email: 'test@example.com',
+                name: 'Test User',
+                image: 'http://image.com',
+                walletAddress: '0x123'
+            });
+        }));
+        it('should return 401 if not authorized', () => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield testApp.request('/user', { method: 'GET' });
+            expect(res.status).toBe(401); // Can be 401 or 500 depending on how passport fail is handled or mocked middleware. In plain request, no user is set, route checks user.
+            // The route implementation: const user = c.get('user'); if (!user) return 401.
+        }));
+    });
 });

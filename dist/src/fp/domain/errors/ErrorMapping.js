@@ -28,4 +28,5 @@ export const toHttpStatus = (error) => {
         case 'InternalError':
             return 500;
     }
+    return 500;
 };

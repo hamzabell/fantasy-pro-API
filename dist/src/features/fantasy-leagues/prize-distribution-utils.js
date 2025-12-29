@@ -1,5 +1,45 @@
 import * as R from 'ramda';
 /**
+ * Payout distribution logic.
+ *
+ * Commission Rules:
+ * - H2H: 5%
+ * - Public: 10%
+ * - Private (Limit > 5, Paid creation): 0%
+ * - Private (Limit <= 5, Free creation): 5%
+ */
+export const COMMISSION_RATES = {
+    H2H: 0.05,
+    PUBLIC: 0.10,
+    PRIVATE_FREE: 0.05,
+    PRIVATE_PAID: 0.00
+};
+export function calculatePayouts(totalPool, leagueType, leagueMode, limit) {
+    let commissionRate = 0;
+    if (leagueMode === 'head-to-head') {
+        commissionRate = COMMISSION_RATES.H2H;
+    }
+    else if (leagueType === 'public') {
+        commissionRate = COMMISSION_RATES.PUBLIC;
+    }
+    else {
+        // Private Leagues
+        if (limit > 5) {
+            commissionRate = COMMISSION_RATES.PRIVATE_PAID;
+        }
+        else {
+            commissionRate = COMMISSION_RATES.PRIVATE_FREE;
+        }
+    }
+    const commissionAmount = totalPool * commissionRate;
+    const netPool = totalPool - commissionAmount;
+    return {
+        winners: [], // To be populated by caller
+        commission: { percentage: commissionRate, amount: commissionAmount },
+        netPool
+    };
+}
+/**
  * Calculates prize distribution for a fantasy league based on the number of winners.
  *
  * @param winners - The number of winning positions in the league

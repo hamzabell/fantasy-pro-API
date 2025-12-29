@@ -9,111 +9,186 @@ datasource db {
   url      = env("NETLIFY_DATABASE_URL")
 }
 
+// ... existing generator/datasource ...
+
+enum RealLifeLeague {
+  PREMIER_LEAGUE
+  // FUTURE: BUNDESLIGA, LA_LIGA, etc.
+}
+
 model User {
-  id            String                    @id @default(cuid())
-  email         String                    @unique
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  team          Team?
-  leagues       FantasyLeagueMembership[]
-  ownedLeagues  FantasyLeague[]
-  powerUpUsages PowerUpUsage[]
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String? // Full Name from Social Provider
+  image             String? // Profile Image URL
+  password          String? // Hashed password (New for Passport.js)
+  country           String? // NG, GH, US (New)
+  currency          String? // NGN, GHS, USD (New)
+  balanceUsd        Decimal  @default(0) @db.Decimal(18, 6) // New
+  totalDeposited    Decimal  @default(0) @db.Decimal(18, 6) // New
+  totalWithdrawn    Decimal  @default(0) @db.Decimal(18, 6) // New
+  walletAddress     String?  @unique // New
+  kycStatus         String   @default("pending") // pending, verified, rejected (New)
+  mobileMoneyNumber String? // New
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Existing relations
+  teams Team[]
+
+  leagues      FantasyLeagueMembership[]
+  ownedLeagues FantasyLeague[]
+
+  // New Finance relations
+  wallet Wallet?
+}
+
+model Wallet {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  address             String    @unique
+  encryptedPrivateKey String // AES encrypted
+  balance             Decimal   @default(0) @db.Decimal(18, 6)
+  lastBalanceUpdate   DateTime?
+  createdAt           DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([address])
 }
 
 model Team {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  teamValue   Int      @default(0)
-  teamPlayers Int[]
-  captainId   Int? // ID of the captain player
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String         @id @default(cuid())
+  userId         String
+  // Removed @unique to allow multiple teams per user (one per league)
+  realLifeLeague RealLifeLeague @default(PREMIER_LEAGUE)
+  teamValue      Int            @default(0)
+  teamPlayers    Int[]
+  captainId      Int? // ID of the captain player
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, realLifeLeague]) // Ensure one team per league per user
 }
 
 model FantasyLeague {
-  id            String                    @id @default(cuid())
-  name          String
-  stake         String
-  limit         Int
-  leagueType    String
-  leagueMode    String
-  winners       Int
-  allowPowerUps Boolean
-  description   String?
-  code          String                    @unique
-  ownerId       String
-  status        String                    @default("pending") // pending, ongoing, closed
-  winnersArray  String[]                  @default([]) // Array of user IDs who won
-  owner         User                      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  members       FantasyLeagueMembership[]
-  gameweekId    Int
-  gameweek      Gameweek                  @relation(fields: [gameweekId], references: [id])
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  // Existing fields mapped to PRD concepts or kept
+  stake          String? // Deprecated/Legacy, prefer entryFeeUsd
+  limit          Int // Acts as maxParticipants
+  leagueType     String
+  leagueMode     String
+  winners        Int
+  code           String         @unique
+  ownerId        String
+  realLifeLeague RealLifeLeague @default(PREMIER_LEAGUE)
+  status         String         @default("pending") // creating, open, in_progress, ended, paid_out, cancelled
+  winnersArray   String[]       @default([])
+
+  // New PRD fields
+  entryFeeUsd         Decimal @default(0) @db.Decimal(18, 6)
+  totalPoolUsd        Decimal @default(0) @db.Decimal(18, 6)
+  currentParticipants Int     @default(0)
+  blockchainTxHash    String? @unique
+  prizeDistribution   Json? // [{position: 1, percentage: 50}, ...]
+
+  // Relations
+  owner        User                      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members      FantasyLeagueMembership[]
+  gameweekId   Int
+  gameweek     Gameweek                  @relation(fields: [gameweekId], references: [id])
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt // merged from both
+
+  @@index([status])
 }
 
 model FantasyLeagueMembership {
-  id        String                           @id @default(cuid())
-  userId    String
-  leagueId  String
-  teamName  String?
-  powerUps  FantasyLeagueMembershipPowerUp[]
-  user      User                             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  league    FantasyLeague                    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  createdAt DateTime                         @default(now())
-  updatedAt DateTime                         @updatedAt
+  id       String  @id @default(cuid())
+  userId   String
+  leagueId String
+  teamName String?
+
+  // New PRD fields
+  stakeAmount      Decimal? @db.Decimal(18, 6) // Actual amount staked
+  position         Int? // Final ranking
+  score            Decimal? // Game score
+  payoutAmount     Decimal? @db.Decimal(18, 6)
+  payoutStatus     String   @default("pending") // pending, completed, failed
+  blockchainTxHash String?
+  joinedAt         DateTime @default(now()) // alias for createdAt
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league FantasyLeague @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, leagueId])
 }
 
 model Gameweek {
-  id       Int             @id
-  deadline DateTime
-  isActive Boolean         @default(false)
-  leagues  FantasyLeague[]
+  id Int @id
+  // NOTE: Keeping ID as Int for now to minimize breakage, but it might be problematic if different leagues have overlapping GW IDs.
+  // Ideally, this should be a composite or unique ID.
+  // However, the `Gameweek` model here seems to serve as a "deadline" reference.
+  // If we have EPL GW1 and Bundesliga GW1, they likely have different deadlines.
+  // So we MUST distinguish them.
+  // Changing @id usually requires a full database reset or complex migration. 
+  // Let's assume for now we might change the ID strategy later or use a workaround.
+  // But wait, `FantasyLeague` relates to `Gameweek` via `gameweekId`.
+  // If we add `realLifeLeague` here, we fan out the gameweeks.
+  // Since `id` is `@id`, it must be unique. 
+  // Strategy: 
+  // EPL GWs: 1-38
+  // Bundesliga GWs: 101-134 (Offset?) -> Hacky.
+  // Better: Change ID to autoincrement Int, add `externalId` (the API gw id) and `realLifeLeague`.
+  // BUT `FantasyLeague` stores `gameweekId` which is currently an Int.
+  // If we change `Gameweek` id to Autoincrement, we need to update `FantasyLeague` references.
+  // Let's Try:
+  // id Int @id @default(autoincrement())
+  // externalId Int
+  // realLifeLeague RealLifeLeague
+  // @@unique([externalId, realLifeLeague])
+
+  // CHANGING ID STRATEGY:
+  // Using autoincrement is safest.
+
+  // original: id Int @id
+
+  deadline       DateTime
+  isActive       Boolean         @default(false)
+  realLifeLeague RealLifeLeague  @default(PREMIER_LEAGUE)
+  leagues        FantasyLeague[]
 }
 
-model PowerUp {
-  id            String           @id @default(cuid())
-  name          String
-  description   String
-  categoryId    String?
-  category      PowerUpCategory? @relation(fields: [categoryId], references: [id])
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  powerUpUsages PowerUpUsage[]
-}
+// New Finance Models
 
-model PowerUpCategory {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  description String
-  powerUps    PowerUp[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
+// Deposit and Withdrawal models removed for Crypto-Native flow.
 
-// Add PowerUpUsage model to track NFT transaction usage
-model PowerUpUsage {
-  id                      String                          @id @default(cuid())
-  userId                  String
-  powerUpId               String
-  transactionId           String                          @unique // Polygon transaction hash
-  isVerified              Boolean                         @default(false) // Whether transaction was verified
-  createdAt               DateTime                        @default(now())
-  updatedAt               DateTime                        @updatedAt
-  user                    User                            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  powerUp                 PowerUp                         @relation(fields: [powerUpId], references: [id], onDelete: Cascade)
-  leagueMembershipPowerUp FantasyLeagueMembershipPowerUp?
-}
+model Transaction {
+  id           String    @id @default(uuid())
+  txHash       String    @unique
+  type         String // league_created, league_joined, winnings_distributed, wallet_funded
+  leagueId     String?
+  userId       String?
+  amount       Decimal?  @db.Decimal(18, 6)
+  status       String    @default("pending") // pending, confirmed, failed
+  blockNumber  Int?
+  gasUsed      String?
+  errorMessage String?
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  confirmedAt  DateTime?
 
-model FantasyLeagueMembershipPowerUp {
-  id                        String                  @id @default(cuid())
-  fantasyLeagueMembershipId String
-  powerUpUsageId            String                  @unique // Links to the verified transaction
-  createdAt                 DateTime                @default(now())
-  updatedAt                 DateTime                @updatedAt
-  fantasyLeagueMembership   FantasyLeagueMembership @relation(fields: [fantasyLeagueMembershipId], references: [id], onDelete: Cascade)
-  powerUpUsage              PowerUpUsage            @relation(fields: [powerUpUsageId], references: [id], onDelete: Cascade)
+  league FantasyLeague? @relation(fields: [leagueId], references: [id])
+
+  @@index([txHash])
+  @@index([leagueId])
+  @@index([type])
 }

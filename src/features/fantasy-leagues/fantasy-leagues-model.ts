@@ -13,7 +13,7 @@ export type PartialFantasyLeagueParameters = Parameters<typeof prisma.fantasyLea
  * @returns The newly created FantasyLeague.
  */
 export async function saveFantasyLeagueToDatabase(league: Omit<FantasyLeague, 'id' | 'createdAt' | 'updatedAt'>) {
-	return await prisma.fantasyLeague.create({ data: league });
+	return await prisma.fantasyLeague.create({ data: league as any });
 }
 
 /**
@@ -23,7 +23,7 @@ export async function saveFantasyLeagueToDatabase(league: Omit<FantasyLeague, 'i
  * @returns The newly created FantasyLeagueMembership.
  */
 export async function saveFantasyLeagueMembershipToDatabase(membership: Omit<FantasyLeagueMembership, 'id' | 'createdAt' | 'updatedAt'>) {
-	return await prisma.fantasyLeagueMembership.create({ data: membership });
+	return await prisma.fantasyLeagueMembership.create({ data: membership as any });
 }
 
 // READ
@@ -140,7 +140,7 @@ export async function updateFantasyLeagueInDatabaseById({
 }) {
 	return await prisma.fantasyLeague.update({
 		where: { id },
-		data: league,
+		data: league as any,
 	});
 }
 
@@ -165,7 +165,7 @@ export async function updateFantasyLeagueMembershipInDatabaseById({
 }) {
 	return await prisma.fantasyLeagueMembership.update({
 		where: { id },
-		data: membership,
+		data: membership as any,
 	});
 }
 

@@ -68,9 +68,8 @@ src/features/
 
 **Database Models (Prisma):**
 - `User` → `Team` (1:1) - User teams with player selections and captain
-- `User` → `FantasyLeague` (1:many owner) + `FantasyLeagueMembership` (many:many)  
+- `User` → `FantasyLeague` (1:many owner) + `FantasyLeagueMembership` (many:many)
 - `FantasyLeague` has status flow: `pending` → `ongoing` → `closed`
-- `PowerUp` system with NFT transaction verification via `PowerUpUsage`
 - `Gameweek` model for time-based league management
 
 ### Key Patterns
@@ -87,12 +86,6 @@ Each feature follows the pattern:
 - JWT tokens validated via Supabase `validateUserAuth` middleware
 - User context available as `c.get('user')` in protected routes
 - Webhooks use separate `WEBHOOK_API_TOKEN` Bearer authentication
-
-**Power-Up System:**
-- NFT-based power-ups on Polygon blockchain
-- Transaction verification via `polygon-utils.ts`
-- Users must transfer NFT ownership before using in leagues
-- Transaction-based tracking (not direct ownership)
 
 **League Management:**
 - Leagues tied to specific gameweeks with status validation
@@ -137,9 +130,6 @@ vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser)
 - Custom generated client location: `src/generated/prisma`
 
 ### Important Implementation Details
-
-**Power-Up Verification:**
-Mock verification in development, production requires actual Polygon transaction validation in `polygon-utils.ts`.
 
 **League Status Management:**
 - External webhook triggers status changes: `{gameweekId: number, status: "started" | "ended"}`

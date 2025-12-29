@@ -89,7 +89,9 @@ async function processBatch(
       const teamScores: TeamScore[] = [];
 
       for (const member of league.members) {
-        const team = member.user.team;
+        const teams = member.user.teams;
+        // Find the team that matches the league's realLifeLeague
+        const team = teams.find((t: any) => t.realLifeLeague === league.realLifeLeague);
         
         if (!team || !team.teamPlayers || team.teamPlayers.length === 0) {
           continue;
@@ -152,22 +154,29 @@ async function updateWinnersInBatch(results: LeagueWinnerResult[]): Promise<void
     return;
   }
 
-  // Use transaction for batch update
-  await prisma.$transaction(async (tx) => {
-    const updatePromises = successfulResults.map(result => 
-      tx.fantasyLeague.update({
+  // Use Promise.all to update concurrently but allow individual failures
+  // This is more robust than a single transaction which would fail the entire batch
+  // if one league record is missing or has issues
+  const updatePromises = successfulResults.map(async (result) => {
+    try {
+      await prisma.fantasyLeague.update({
         where: { id: result.leagueId },
         data: {
           winnersArray: result.winners,
           status: "closed"
         }
-      })
-    );
-
-    await Promise.all(updatePromises);
+      });
+      return true;
+    } catch (error) {
+      console.error(`Failed to update winners for league ${result.leagueId}:`, error);
+      return false; 
+    }
   });
 
-  console.log(`Updated ${successfulResults.length} leagues with winners`);
+  const updateResults = await Promise.all(updatePromises);
+  const successCount = updateResults.filter(Boolean).length;
+
+  console.log(`Updated ${successCount} leagues with winners (out of ${successfulResults.length} calculated)`);
 }
 
 /**
@@ -206,8 +215,9 @@ export async function calculateAllLeagueWinners(
             user: {
               select: { 
                 id: true, 
-                team: {
+                teams: {
                   select: {
+                    realLifeLeague: true,
                     teamPlayers: true,
                     captainId: true
                   }

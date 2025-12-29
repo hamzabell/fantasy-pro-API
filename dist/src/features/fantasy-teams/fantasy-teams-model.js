@@ -33,15 +33,19 @@ export function retrieveTeamFromDatabaseById(id) {
     });
 }
 /**
- * Retrieves a Team record from the database based on its user id.
+ * Retrieves a Team record from the database based on its user id and real life league.
  *
- * @param id - The id of the User to get the Team for.
+ * @param userId - The id of the User to get the Team for.
+ * @param realLifeLeague - The real life league.
  * @returns The Team with a given id or null if it wasn't found.
  */
-export function retrieveTeamFromDatabaseByUserId(userId) {
+export function retrieveTeamFromDatabaseByUserAndLeague(userId, realLifeLeague) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield prisma.team.findUnique({ where: {
-                userId
+                userId_realLifeLeague: {
+                    userId,
+                    realLifeLeague
+                }
             } });
     });
 }

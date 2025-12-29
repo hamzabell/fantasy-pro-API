@@ -94,5 +94,26 @@ export const toErrorResponse = (error: AppError): ErrorResponse => {
 				error: 'Internal server error',
 				timestamp
 			}
+
+		case 'BlockchainError':
+			return {
+				error: 'Blockchain error',
+				details: { message: error.message, txHash: error.txHash },
+				timestamp
+			}
+
+		case 'PaymentError':
+			return {
+				error: 'Payment error',
+				details: { message: error.message, orderId: error.orderId },
+				timestamp
+			}
+
+		case 'InsufficientBalanceError':
+			return {
+				error: 'Insufficient balance',
+				details: { required: error.required, available: error.available },
+				timestamp
+			}
 	}
 }

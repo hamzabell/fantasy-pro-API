@@ -21,9 +21,13 @@ export const mockUser = {
 /**
  * Creates a mock Authorization header for testing.
  */
-export const createAuthHeaders = (token = 'mock-token') => ({
-    headers: new Headers({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    })
-});
+import jwt from 'jsonwebtoken';
+export const createAuthHeaders = (userId = 'mock-user-id') => {
+    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET || 'your-secret-key');
+    return {
+        headers: new Headers({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        })
+    };
+};

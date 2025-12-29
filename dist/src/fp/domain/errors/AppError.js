@@ -51,3 +51,18 @@ export const internalError = (message, originalError) => ({
     message,
     originalError
 });
+export const blockchainError = (message, txHash) => ({
+    _tag: 'BlockchainError',
+    message,
+    txHash
+});
+export const paymentError = (message, orderId) => ({
+    _tag: 'PaymentError',
+    message,
+    orderId
+});
+export const insufficientBalanceError = (required, available) => ({
+    _tag: 'InsufficientBalanceError',
+    required,
+    available
+});

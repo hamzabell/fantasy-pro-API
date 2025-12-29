@@ -9,8 +9,31 @@ export type AppError =
 	| ExternalApiError
 	| BusinessRuleError
 	| InternalError
+	| BlockchainError
+	| PaymentError
+	| InsufficientBalanceError
 
-// Validation error (400)
+// Blockchain error
+export interface BlockchainError {
+	readonly _tag: 'BlockchainError'
+	readonly message: string
+	readonly txHash?: string
+}
+
+// Payment error (Yellow Card etc)
+export interface PaymentError {
+	readonly _tag: 'PaymentError'
+	readonly message: string
+	readonly orderId?: string
+}
+
+// Insufficient Balance error
+export interface InsufficientBalanceError {
+	readonly _tag: 'InsufficientBalanceError'
+	readonly required: number
+	readonly available: number
+}
+
 export interface ValidationError {
 	readonly _tag: 'ValidationError'
 	readonly field: string
@@ -175,3 +198,31 @@ export const internalError = (
 	message,
 	originalError
 })
+
+export const blockchainError = (
+	message: string,
+	txHash?: string
+): BlockchainError => ({
+	_tag: 'BlockchainError',
+	message,
+	txHash
+})
+
+export const paymentError = (
+	message: string,
+	orderId?: string
+): PaymentError => ({
+	_tag: 'PaymentError',
+	message,
+	orderId
+})
+
+export const insufficientBalanceError = (
+	required: number,
+	available: number
+): InsufficientBalanceError => ({
+	_tag: 'InsufficientBalanceError',
+	required,
+	available
+})
+

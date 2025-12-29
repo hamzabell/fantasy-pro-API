@@ -1,7 +1,7 @@
 import { z } from '@hono/zod-openapi';
 
 export const CreateTeamSchema = z.object({
-	players: z.array(z.number()).length(11, { message: 'Must select 11 players.' }),
+	players: z.array(z.number()).length(5, { message: 'Must select 5 players.' }),
 	// Budget is fixed at 100M for all users, not part of the request
 });
 
@@ -32,4 +32,14 @@ export const TeamResponseSchema = z.object({
 
 export const ErrorResponseSchema = z.object({
 	error: z.string().openapi({ example: 'Invalid players selection. Must select 11 players.' }),
+});
+
+export const TeamsListResponseSchema = z.object({
+	message: z.string().openapi({ example: 'Teams retrieved successfully' }),
+	teams: z.array(z.object({
+		userId: z.string(),
+		balance: z.number(),
+		players: z.array(PlayerDetailsSchema),
+        realLifeLeague: z.string().optional()
+	})).openapi({ description: 'List of teams with their players' }),
 });

@@ -1,5 +1,6 @@
 import {faker} from "@faker-js/faker";
 import type {FantasyLeague} from "../../generated/prisma/index.js";
+import { Prisma, RealLifeLeague } from "../../generated/prisma/index.js";
 
 export const createPopulatedFantasyLeague = ({
 	name = faker.internet.domainName(),
@@ -9,12 +10,17 @@ export const createPopulatedFantasyLeague = ({
 	leagueType = faker.helpers.arrayElement(['public', 'private']) as FantasyLeague['leagueType'],
 	leagueMode = faker.helpers.arrayElement(['classic', 'head-to-head']) as FantasyLeague['leagueMode'],
 	winners = faker.number.int({ min: 1, max: 10 }),
-	allowPowerUps = faker.datatype.boolean(),
 	code = faker.string.alphanumeric(6).toUpperCase(),
 	ownerId = '',
-	gameweekId = faker.number.int({ min: 1, max: 5 }), // Use valid gameweek IDs that exist in the database
+	gameweekId = 1,
 	status = 'pending' as FantasyLeague['status'],
-	winnersArray = [] as FantasyLeague['winnersArray']
+	winnersArray = [] as FantasyLeague['winnersArray'],
+    entryFeeUsd = new Prisma.Decimal(0),
+    totalPoolUsd = new Prisma.Decimal(0),
+    currentParticipants = 0,
+    blockchainTxHash = null,
+    prizeDistribution = JSON.stringify([]),
+    realLifeLeague = RealLifeLeague.PREMIER_LEAGUE,
 } ={} ) => ({
 	name,
 	description,
@@ -23,10 +29,16 @@ export const createPopulatedFantasyLeague = ({
 	leagueType,
 	leagueMode,
 	winners,
-	allowPowerUps,
 	code,
 	ownerId,
 	gameweekId,
 	status,
-	winnersArray
+	winnersArray,
+    entryFeeUsd,
+    totalPoolUsd,
+    currentParticipants,
+    blockchainTxHash: blockchainTxHash as string | null,
+    prizeDistribution,
+    realLifeLeague
 })
+

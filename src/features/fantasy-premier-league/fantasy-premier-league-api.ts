@@ -89,9 +89,13 @@ export const fetchGameweek = async (filter: 'previous' | 'next' | 'current'): Pr
 		if (filter === 'next') {
 			return {
 				id: -1,
+                name: 'TBA',
 				fixtures: [],
 				isActive: false,
 				deadlineTime: 'TBA',
+                isFinished: false,
+                isCurrent: false,
+                isNext: false
 			};
 		}
 		throw new Error(`No ${filter} gameweek found`);
@@ -107,9 +111,13 @@ export const fetchGameweek = async (filter: 'previous' | 'next' | 'current'): Pr
 
 	return {
 		id: targetGameweek.id,
+        name: `Gameweek ${targetGameweek.id}`,
 		fixtures,
 		isActive: !targetGameweek.finished,
 		deadlineTime: targetGameweek.deadline_time,
+        isFinished: targetGameweek.finished,
+        isCurrent: targetGameweek.is_current,
+        isNext: targetGameweek.is_next
 	};
 };
 
@@ -201,17 +209,25 @@ export const fetchFutureGameweeks = async (): Promise<Gameweek[]> => {
 				
 				return {
 					id: gameweek.id,
+                    name: `Gameweek ${gameweek.id}`,
 					fixtures,
 					isActive: !gameweek.finished,
 					deadlineTime: gameweek.deadline_time,
+                    isFinished: gameweek.finished,
+                    isCurrent: gameweek.is_current,
+                    isNext: gameweek.is_next
 				};
 			} catch (error) {
 				// If we can't fetch fixtures, still return the gameweek with empty fixtures
 				return {
 					id: gameweek.id,
+                    name: `Gameweek ${gameweek.id}`,
 					fixtures: [],
 					isActive: !gameweek.finished,
 					deadlineTime: gameweek.deadline_time,
+                    isFinished: gameweek.finished,
+                    isCurrent: gameweek.is_current,
+                    isNext: gameweek.is_next
 				};
 			}
 		})

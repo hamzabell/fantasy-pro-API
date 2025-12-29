@@ -112,7 +112,6 @@ describe('Optimized Winner Calculator', () => {
                             leagueType: 'public',
                             leagueMode: 'classic',
                             winners: 1,
-                            allowPowerUps: false,
                             code: `PERF${i.toString().padStart(3, '0')}`,
                             ownerId: ownerId,
                             gameweekId: testGameweek.id,
@@ -226,14 +225,25 @@ describe('Optimized Winner Calculator', () => {
         it('should return accurate processing statistics', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(15, 8, 3);
             // Set some leagues to different statuses
-            yield prisma.fantasyLeague.update({
-                where: { id: testLeagues[0].id },
-                data: { status: 'closed' }
+            // Check if league exists before updating to avoid race conditions with cleanup
+            const leagueExists = yield prisma.fantasyLeague.findUnique({
+                where: { id: testLeagues[0].id }
             });
-            yield prisma.fantasyLeague.update({
-                where: { id: testLeagues[1].id },
-                data: { status: 'pending' }
+            if (leagueExists) {
+                yield prisma.fantasyLeague.update({
+                    where: { id: testLeagues[0].id },
+                    data: { status: 'closed' }
+                });
+            }
+            const leagueExists2 = yield prisma.fantasyLeague.findUnique({
+                where: { id: testLeagues[1].id }
             });
+            if (leagueExists2) {
+                yield prisma.fantasyLeague.update({
+                    where: { id: testLeagues[1].id },
+                    data: { status: 'pending' }
+                });
+            }
             const stats = yield getProcessingStats(testGameweek.id);
             expect(stats.total).toBe(8);
             expect(stats.closed).toBe(1);

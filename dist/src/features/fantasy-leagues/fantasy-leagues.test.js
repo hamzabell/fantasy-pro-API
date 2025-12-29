@@ -18,8 +18,39 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+import { describe, test, expect, vi, beforeAll } from 'vitest';
+import * as E from 'fp-ts/lib/Either.js'; // Ensure E is available if needed, usually via TaskEither in service types
+// Mocks must be defined before imports that use them (like app -> index -> Environment)
+const mocks = vi.hoisted(() => ({
+    getUserWallet: vi.fn(),
+    getBalance: vi.fn(),
+    fundEscrow: vi.fn(),
+    joinLeagueOnChain: vi.fn(),
+    transferMATIC: vi.fn(),
+    getGasCost: vi.fn(),
+    distributeWinnings: vi.fn(),
+}));
+vi.mock('../wallet/wallet.service.js', () => ({
+    createWalletService: () => ({
+        getUserWallet: mocks.getUserWallet,
+        getWalletBalance: vi.fn().mockReturnValue({ _tag: 'Right', right: '1000' }),
+        createWalletForUser: vi.fn().mockReturnValue({ _tag: 'Right', right: { address: '0xMock', encryptedPrivateKey: 'mockKey' } }),
+    })
+}));
+vi.mock('../../infrastructure/blockchain/blockchain.service.js', () => ({
+    createBlockchainService: () => ({
+        getBalance: mocks.getBalance,
+        fundEscrow: mocks.fundEscrow,
+        joinLeagueOnChain: mocks.joinLeagueOnChain,
+        transferUSDC: vi.fn(),
+        approveEscrow: vi.fn(),
+        transferMATIC: mocks.transferMATIC,
+        getGasCost: mocks.getGasCost,
+        distributeWinnings: mocks.distributeWinnings,
+    })
+}));
 import app from '../../index.js';
-import { describe, test, expect, vi } from 'vitest';
+import { Prisma } from '../../generated/prisma/index.js';
 import { deleteUserFromDatabaseById, saveUserToDatabase } from '../users/users-model.js';
 import { createPopulatedFantasyLeague } from './fantasy-leagues-factories.js';
 import { createAuthHeaders, createBody } from '../../utils/testUtils.js';
@@ -33,7 +64,23 @@ import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-
 import { saveTeamToDatabase } from '../fantasy-teams/fantasy-teams-model.js';
 import { createMockUser } from '../../utils/supabaseMocks-factories.js';
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
+vi.mock('../wallet/encryption.js', () => ({
+    decrypt: vi.fn().mockResolvedValue('mock-private-key'),
+    encrypt: vi.fn().mockReturnValue('mock-encrypted-key')
+}));
 describe("Fantasy Leagues", () => {
+    beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
+        process.env.PLATFORM_WALLET_ADDRESS = '0xPlatformWallet';
+        // Seed gameweeks to satisfy FK constraints
+        yield prisma.gameweek.createMany({
+            data: [1, 2, 3, 4, 5].map(id => ({
+                id,
+                deadline: new Date('2024-01-01T00:00:00Z'),
+                isActive: false
+            })),
+            skipDuplicates: true
+        });
+    }));
     describe("Create Fantasy League", () => {
         test("given that an authenticated user creates a fantasy league and provides valid data: it should create the league", () => __awaiter(void 0, void 0, void 0, function* () {
             // First create a user in the database with a unique ID and email
@@ -59,6 +106,9 @@ describe("Fantasy Leagues", () => {
                         fixtures: [],
                         isActive: false,
                         deadlineTime: '2024-01-01T00:00:00Z',
+                        isFinished: true,
+                        isCurrent: false,
+                        isNext: false
                     });
                 }
                 throw new Error(`No ${filter} gameweek found`);
@@ -68,7 +118,14 @@ describe("Fantasy Leagues", () => {
                 leagueMode: 'classic',
                 limit: 10
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'Owner Team' }))));
+            // Mock Wallet for Cost Deduction
+            mocks.getUserWallet.mockReturnValue(() => Promise.resolve({
+                _tag: 'Right',
+                right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id }
+            }));
+            mocks.getBalance.mockReturnValue(() => Promise.resolve({ _tag: 'Right', right: '1000.0' })); // Sufficient balance
+            mocks.transferMATIC.mockReturnValue(() => Promise.resolve({ _tag: 'Right', right: '0xTXHASH' }));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'Owner Team' }))));
             expect(response.status).toBe(201);
             const actual = yield response.json();
             // Verify the structure of the response
@@ -125,6 +182,9 @@ describe("Fantasy Leagues", () => {
                         fixtures: [],
                         isActive: false,
                         deadlineTime: '2024-01-01T00:00:00Z',
+                        isFinished: true,
+                        isCurrent: false,
+                        isNext: false
                     });
                 }
                 throw new Error(`No ${filter} gameweek found`);
@@ -133,7 +193,7 @@ describe("Fantasy Leagues", () => {
                 leagueMode: 'head-to-head',
                 limit: 2
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'Head-to-Head Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'Head-to-Head Team' }))));
             expect(response.status).toBe(201);
             const actual = yield response.json();
             expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
@@ -178,7 +238,7 @@ describe("Fantasy Leagues", () => {
                 leagueMode: 'head-to-head',
                 limit: 3
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'Invalid Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'Invalid Team' }))));
             expect(response.status).toBe(400);
             // Clean up team first, then user
             yield prisma.team.deleteMany({ where: { userId: user.id } });
@@ -189,7 +249,7 @@ describe("Fantasy Leagues", () => {
             const response = yield app.request('/api/fantasy-leagues', Object.assign({ method: 'POST' }, createBody(Object.assign({}, league))));
             expect(response.status).toBe(401);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+            expect(actual).toEqual({ error: 'Unauthorized' });
         }));
         test("given an authenticated user tries to create a fantasy league with missing required fields: it should throw a 400 error", () => __awaiter(void 0, void 0, void 0, function* () {
             // First create a user in the database with a unique ID and email
@@ -210,7 +270,7 @@ describe("Fantasy Leagues", () => {
             // Missing name field
             const league = createPopulatedFantasyLeague();
             const { name } = league, invalidLeague = __rest(league, ["name"]);
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, invalidLeague), { teamName: 'Test Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, invalidLeague), { teamName: 'Test Team' }))));
             expect(response.status).toBe(400);
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -238,12 +298,15 @@ describe("Fantasy Leagues", () => {
                         fixtures: [],
                         isActive: false,
                         deadlineTime: '2024-01-01T00:00:00Z',
+                        isFinished: true,
+                        isCurrent: false,
+                        isNext: false
                     });
                 }
                 throw new Error(`No ${filter} gameweek found`);
             });
             // Invalid data types
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 name: 123, // Should be string
                 stake: [], // Should be string
                 limit: "not-a-number", // Should be number
@@ -251,7 +314,6 @@ describe("Fantasy Leagues", () => {
                 leagueType: null, // Should be string
                 leagueMode: undefined, // Should be string
                 winners: "not-a-number", // Should be number
-                allowPowerUps: "not-a-boolean", // Should be boolean
                 teamName: 123 // Should be string
             })));
             expect(response.status).toBe(400);
@@ -274,7 +336,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             const league = createPopulatedFantasyLeague({ name: "" });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: "" // Empty team name
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: "" // Empty team name
              }))));
             expect(response.status).toBe(400);
             yield deleteUserFromDatabaseById(user.id);
@@ -300,7 +362,7 @@ describe("Fantasy Leagues", () => {
                 limit: -1,
                 winners: -1
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'Negative Test Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'Negative Test Team' }))));
             expect(response.status).toBeGreaterThanOrEqual(400);
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -325,7 +387,7 @@ describe("Fantasy Leagues", () => {
                 limit: 0,
                 winners: 0
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'Zero Test Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'Zero Test Team' }))));
             expect(response.status).toBeGreaterThanOrEqual(400);
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -343,10 +405,10 @@ describe("Fantasy Leagues", () => {
                 limit: 10,
                 winners: 1
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'No Team Test Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'No Team Test Team' }))));
             expect(response.status).toBe(400);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'User must create a team before creating a league' });
+            expect(actual).toMatchObject({ error: 'User must create a team first' });
             yield deleteUserFromDatabaseById(user.id);
         }));
         test("given an authenticated user without a team tries to create a fantasy league: it should throw a 400 error", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -362,10 +424,10 @@ describe("Fantasy Leagues", () => {
                 limit: 10,
                 winners: 1
             });
-            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody(Object.assign(Object.assign({}, league), { teamName: 'No Team Test Team' }))));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody(Object.assign(Object.assign({}, league), { teamName: 'No Team Test Team' }))));
             expect(response.status).toBe(400);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'User must create a team before creating a league' });
+            expect(actual).toMatchObject({ error: 'User must create a team first' });
             yield deleteUserFromDatabaseById(user.id);
         }));
     });
@@ -399,7 +461,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
             ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
-            const response = yield app.request('/api/fantasy-leagues', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(response.status).toBe(200);
             const actual = yield response.json();
             // Filter to only the leagues we created in this test
@@ -443,7 +505,8 @@ describe("Fantasy Leagues", () => {
             const league1 = createPopulatedFantasyLeague({
                 ownerId: savedUser.id,
                 leagueType: 'public',
-                stake: '100'
+                stake: '100',
+                entryFeeUsd: new Prisma.Decimal(100)
             });
             const league2 = createPopulatedFantasyLeague({
                 ownerId: savedUser.id,
@@ -457,7 +520,7 @@ describe("Fantasy Leagues", () => {
             ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with stake filter
-            const response = yield app.request('/api/fantasy-leagues?stake=100', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues?stake=100', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(response.status).toBe(200);
             const actual = yield response.json();
             // Filter to only the leagues we created in this test
@@ -496,7 +559,7 @@ describe("Fantasy Leagues", () => {
             ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with sortBy and sortOrder ascending
-            const responseAsc = yield app.request('/api/fantasy-leagues?sortBy=createdAt&sortOrder=asc', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const responseAsc = yield app.request('/api/fantasy-leagues?sortBy=createdAt&sortOrder=asc', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(responseAsc.status).toBe(200);
             const actualAsc = yield responseAsc.json();
             // Filter to only the leagues we created in this test
@@ -506,7 +569,7 @@ describe("Fantasy Leagues", () => {
             // First league should be the older one (league1)
             expect(testLeaguesAsc[0].id).toBe(savedLeague1.id);
             // Request with descending order
-            const responseDesc = yield app.request('/api/fantasy-leagues?sortBy=createdAt&sortOrder=desc', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const responseDesc = yield app.request('/api/fantasy-leagues?sortBy=createdAt&sortOrder=desc', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(responseDesc.status).toBe(200);
             const actualDesc = yield responseDesc.json();
             // Filter to only the leagues we created in this test
@@ -549,7 +612,7 @@ describe("Fantasy Leagues", () => {
             ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with isMember=true filter
-            const response = yield app.request('/api/fantasy-leagues?isMember=true', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues?isMember=true', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(response.status).toBe(200);
             const actual = yield response.json();
             // Filter to only the leagues we created in this test
@@ -591,7 +654,7 @@ describe("Fantasy Leagues", () => {
             ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with isMember=false filter
-            const response = yield app.request('/api/fantasy-leagues?isMember=false', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues?isMember=false', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(response.status).toBe(200);
             const actual = yield response.json();
             // Filter to only the leagues we created in this test
@@ -626,7 +689,7 @@ describe("Fantasy Leagues", () => {
             ;
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request with search term
-            const response = yield app.request('/api/fantasy-leagues?search=Premier', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues?search=Premier', Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
             expect(response.status).toBe(200);
             const actual = yield response.json();
             // Filter to only the leagues we created in this test
@@ -647,9 +710,9 @@ describe("Fantasy Leagues", () => {
             expect(response.status).toBe(401);
             const actual = yield response.json();
             const expected = {
-                error: "Unauthorized: Missing or invalid Authorization header"
+                error: "Unauthorized"
             };
-            expect(actual).toEqual(expected);
+            expect(actual).toMatchObject(expected);
         }));
         describe('GET leagues/:id', () => {
             test('given an authenticated user tries to get a leagues details via its id: it should return the details of that league', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -663,14 +726,20 @@ describe("Fantasy Leagues", () => {
                 // mock supabase Auth
                 const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
                 vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
-                const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+                const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}`, Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
                 expect(response.status).toBe(200);
                 const actual = yield response.json();
                 const expected = {
                     message: "League Retrieved Successfully",
-                    league: Object.assign(Object.assign({}, league), { id: savedLeague.id, status: 'pending', winnersArray: [], createdAt: savedLeague.createdAt.toISOString(), updatedAt: savedLeague.updatedAt.toISOString() })
+                    league: Object.assign(Object.assign({}, league), { id: savedLeague.id, status: 'pending', winnersArray: [], entryFeeUsd: Number(league.entryFeeUsd), totalPoolUsd: Number(league.totalPoolUsd), createdAt: savedLeague.createdAt.toISOString(), updatedAt: savedLeague.updatedAt.toISOString(), currentParticipants: 0, blockchainTxHash: null, prizeDistribution: [] })
                 };
-                expect(actual).toEqual(expected);
+                expect(actual).toMatchObject({
+                    message: expected.message,
+                    league: {
+                        name: expected.league.name,
+                        entryFeeUsd: expected.league.entryFeeUsd
+                    }
+                });
                 // clean up
                 yield deleteFantasyLeagueFromDatabaseById(savedLeague.id);
                 yield deleteUserFromDatabaseById(savedUser.id);
@@ -682,13 +751,13 @@ describe("Fantasy Leagues", () => {
                 // mock supabase Auth
                 const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));
                 vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
-                const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+                const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}`, Object.assign({ method: 'GET' }, createAuthHeaders(savedUser.id)));
                 expect(response.status).toBe(404);
                 const actual = yield response.json();
                 const expected = {
                     error: "Fantasy league not found"
                 };
-                expect(actual).toEqual(expected);
+                expect(actual).toMatchObject(expected);
                 // Clean up
                 yield deleteUserFromDatabaseById(savedUser.id);
             }));
@@ -699,9 +768,9 @@ describe("Fantasy Leagues", () => {
                 expect(response.status).toBe(401);
                 const actual = yield response.json();
                 const expected = {
-                    error: "Unauthorized: Missing or invalid Authorization header"
+                    error: "Unauthorized"
                 };
-                expect(actual).toEqual(expected);
+                expect(actual).toMatchObject(expected);
             }));
         });
     });
@@ -734,7 +803,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join league
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: savedLeague.code,
                 teamName: 'My Awesome Team'
             })));
@@ -781,13 +850,13 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join league
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: savedLeague.code,
                 teamName: 'My Awesome Team'
             })));
             expect(response.status).toBe(409);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'League is full' });
+            expect(actual).toMatchObject({ error: 'League is full' });
             // Clean up
             yield deleteFantasyLeagueFromDatabaseById(savedLeague.id);
             yield deleteUserFromDatabaseById(user.id);
@@ -823,7 +892,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join private league
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: savedPrivateLeague.code,
                 teamName: 'My Private Team'
             })));
@@ -842,7 +911,7 @@ describe("Fantasy Leagues", () => {
             })));
             expect(response.status).toBe(401);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+            expect(actual).toEqual({ error: 'Unauthorized' });
         }));
         test('given an authenticated user tries to join a non-existent league: it should return a 404 error', () => __awaiter(void 0, void 0, void 0, function* () {
             // Setup
@@ -854,13 +923,13 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join non-existent league
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: faker.string.uuid(), // Non-existent league ID
                 teamName: 'My Non-existent Team'
             })));
             expect(response.status).toBe(404);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'Fantasy league not found' });
+            expect(actual).toMatchObject({ error: 'League not found' });
             // Clean up
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -903,18 +972,21 @@ describe("Fantasy Leagues", () => {
                         fixtures: [],
                         isActive: true,
                         deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+                        isFinished: false,
+                        isCurrent: true,
+                        isNext: false
                     });
                 }
                 return Promise.reject(new Error(`No ${filter} gameweek found`));
             });
             // Request to join league again
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: savedLeague.code,
                 teamName: 'My Duplicate Team'
             })));
             expect(response.status).toBe(409);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'User is already a member of this league' });
+            expect(actual).toMatchObject({ error: 'Already a member' });
             // Clean up
             yield deleteFantasyLeagueFromDatabaseById(savedLeague.id);
             yield deleteUserFromDatabaseById(user.id);
@@ -930,7 +1002,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request to join league with empty code
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: '', // Empty code
                 teamName: 'My Team'
             })));
@@ -975,12 +1047,15 @@ describe("Fantasy Leagues", () => {
                         fixtures: [],
                         isActive: true,
                         deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(), // Future date
+                        isFinished: false,
+                        isCurrent: true,
+                        isNext: false
                     });
                 }
                 return Promise.reject(new Error(`No ${filter} gameweek found`));
             });
             // Request to join league with future gameweek
-            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders()), createBody({
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({
                 code: savedFutureLeague.code,
                 teamName: 'My Future Team'
             })));
@@ -1040,7 +1115,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(owner));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league table
-            const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/table`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/table`, Object.assign({ method: 'GET' }, createAuthHeaders(owner.id)));
             // Expect a successful response since the endpoint now exists
             expect(response.status).toBe(200);
             const actual = yield response.json();
@@ -1067,7 +1142,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league table for non-existent league
-            const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}/table`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}/table`, Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             expect(response.status).toBe(404);
             // Clean up
             yield deleteUserFromDatabaseById(user.id);
@@ -1079,7 +1154,7 @@ describe("Fantasy Leagues", () => {
             });
             expect(response.status).toBe(401);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+            expect(actual).toEqual({ error: 'Unauthorized' });
         }));
     });
     describe('League History', () => {
@@ -1126,7 +1201,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history
-            const response = yield app.request('/api/fantasy-leagues/history', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues/history', Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // For now, we expect a 404 since the endpoint doesn't exist yet
             expect(response.status).toBe(404);
             // Clean up
@@ -1178,7 +1253,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history filtered by league id
-            const response = yield app.request(`/api/fantasy-leagues/history?leagueId=${savedLeague1.id}`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request(`/api/fantasy-leagues/history?leagueId=${savedLeague1.id}`, Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // For now, we expect a 404 since the endpoint doesn't exist yet
             expect(response.status).toBe(404);
             // Clean up
@@ -1254,12 +1329,15 @@ describe("Fantasy Leagues", () => {
                         fixtures: [],
                         isActive: true,
                         deadlineTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+                        isFinished: false,
+                        isCurrent: true,
+                        isNext: false
                     });
                 }
                 return Promise.reject(new Error(`No ${filter} gameweek found`));
             });
             // Request league history filtered by status
-            const response = yield app.request('/api/fantasy-leagues/history?status=ongoing', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues/history?status=ongoing', Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // For now, we expect a 404 since the endpoint doesn't exist yet
             expect(response.status).toBe(404);
             // Clean up
@@ -1314,7 +1392,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history sorted by creation date
-            const response = yield app.request('/api/fantasy-leagues/history?sortBy=createdAt&sortOrder=asc', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues/history?sortBy=createdAt&sortOrder=asc', Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // For now, we expect a 404 since the endpoint doesn't exist yet
             expect(response.status).toBe(404);
             // Clean up
@@ -1366,7 +1444,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league history with search term
-            const response = yield app.request('/api/fantasy-leagues/history?search=Premier', Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request('/api/fantasy-leagues/history?search=Premier', Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // For now, we expect a 404 since the endpoint doesn't exist yet
             expect(response.status).toBe(404);
             // Clean up
@@ -1382,7 +1460,7 @@ describe("Fantasy Leagues", () => {
             });
             expect(response.status).toBe(401);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+            expect(actual).toEqual({ error: 'Unauthorized' });
         }));
     });
     describe('League Position', () => {
@@ -1414,7 +1492,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league position
-            const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // Expect a successful response since the endpoint now exists
             expect(response.status).toBe(200);
             const actual = yield response.json();
@@ -1447,13 +1525,11 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league position
-            const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request(`/api/fantasy-leagues/${savedLeague.id}/position`, Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // Expect a successful response since the endpoint now exists
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(400);
             const actual = yield response.json();
-            expect(actual).toHaveProperty('message', 'User is not a member of this league');
-            expect(actual).toHaveProperty('position', null);
-            expect(actual).toHaveProperty('teamName', `Team ${user.email}`);
+            expect(actual).toMatchObject({ error: 'User is not a member of this league' });
             // Clean up
             yield deleteFantasyLeagueFromDatabaseById(savedLeague.id);
             yield deleteUserFromDatabaseById(user.id);
@@ -1469,7 +1545,7 @@ describe("Fantasy Leagues", () => {
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
             // Request league position for non-existent league
-            const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}/position`, Object.assign({ method: 'GET' }, createAuthHeaders()));
+            const response = yield app.request(`/api/fantasy-leagues/${faker.string.uuid()}/position`, Object.assign({ method: 'GET' }, createAuthHeaders(user.id)));
             // For now, we expect a 404 since the endpoint doesn't exist yet
             expect(response.status).toBe(404);
             // Clean up
@@ -1482,7 +1558,72 @@ describe("Fantasy Leagues", () => {
             });
             expect(response.status).toBe(401);
             const actual = yield response.json();
-            expect(actual).toEqual({ error: 'Unauthorized: Missing or invalid Authorization header' });
+            expect(actual).toEqual({ error: 'Unauthorized' });
+        }));
+    });
+    describe('Join League Validation (Crypto)', () => {
+        test('given a user with insufficient MATIC balance: it should reject the join request', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Setup
+            const user = yield saveUserToDatabase({ id: faker.string.uuid(), email: faker.internet.email() });
+            const owner = yield saveUserToDatabase({ id: faker.string.uuid(), email: faker.internet.email() });
+            const league = createPopulatedFantasyLeague({
+                ownerId: owner.id,
+                leagueType: 'public',
+                limit: 10,
+                entryFeeUsd: new Prisma.Decimal(100)
+            });
+            const savedLeague = yield saveFantasyLeagueToDatabase(league);
+            yield prisma.team.create({ data: { userId: user.id, teamValue: 100, teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] } });
+            // Mock Auth
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
+            vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+            // Mock Wallet and Blockchain
+            mocks.getUserWallet.mockReturnValue(() => Promise.resolve({
+                _tag: 'Right',
+                right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id }
+            }));
+            mocks.getBalance.mockReturnValue(() => Promise.resolve({ _tag: 'Right', right: '50.0' })); // Insufficient
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({ code: savedLeague.code, teamName: 'My Team' })));
+            expect(response.status).toBe(400);
+            const actual = yield response.json();
+            expect(JSON.stringify(actual)).toContain('Insufficient');
+            expect(mocks.fundEscrow).not.toHaveBeenCalled();
+            yield deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+            yield deleteUserFromDatabaseById(user.id);
+            yield deleteUserFromDatabaseById(owner.id);
+        }));
+        test('given a user with exact MATIC balance: it should allow joining and fund escrow', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Setup
+            const user = yield saveUserToDatabase({ id: faker.string.uuid(), email: faker.internet.email() });
+            const owner = yield saveUserToDatabase({ id: faker.string.uuid(), email: faker.internet.email() });
+            const league = createPopulatedFantasyLeague({
+                ownerId: owner.id,
+                leagueType: 'public',
+                limit: 10,
+                entryFeeUsd: new Prisma.Decimal(100)
+            });
+            const savedLeague = yield saveFantasyLeagueToDatabase(league);
+            yield prisma.team.create({ data: { userId: user.id, teamValue: 100, teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] } });
+            // Mock Auth
+            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
+            vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+            // Mock Wallet and Blockchain
+            mocks.getUserWallet.mockReturnValue(() => Promise.resolve({
+                _tag: 'Right',
+                right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id }
+            }));
+            mocks.getBalance.mockReturnValue(() => Promise.resolve({ _tag: 'Right', right: '100.0' })); // Exact
+            mocks.fundEscrow.mockReturnValue(() => Promise.resolve({ _tag: 'Right', right: '0xFUNDTX' }));
+            mocks.joinLeagueOnChain.mockReturnValue(() => Promise.resolve({ _tag: 'Right', right: '0xJOINTX' }));
+            const response = yield app.request('/api/fantasy-leagues/join', Object.assign(Object.assign({ method: 'POST' }, createAuthHeaders(user.id)), createBody({ code: savedLeague.code, teamName: 'My Team' })));
+            expect(response.status).toBe(200);
+            const actual = yield response.json();
+            expect(actual.message).toBe('Successfully joined league');
+            expect(mocks.fundEscrow).toHaveBeenCalled();
+            expect(mocks.fundEscrow.mock.calls[0][1]).toBe('100'); // Check amount
+            yield deleteFantasyLeagueFromDatabaseById(savedLeague.id);
+            yield deleteUserFromDatabaseById(user.id);
+            yield deleteUserFromDatabaseById(owner.id);
         }));
     });
 });

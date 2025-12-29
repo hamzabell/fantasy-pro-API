@@ -25,18 +25,19 @@ describe('League Winner Calculator', () => {
             }
         });
         // Create test users
+        const timestamp = Date.now();
         testUsers = yield Promise.all([
             prisma.user.create({
-                data: { email: 'winner1@example.com' }
+                data: { email: `winner1-${timestamp}@example.com` }
             }),
             prisma.user.create({
-                data: { email: 'winner2@example.com' }
+                data: { email: `winner2-${timestamp}@example.com` }
             }),
             prisma.user.create({
-                data: { email: 'winner3@example.com' }
+                data: { email: `winner3-${timestamp}@example.com` }
             }),
             prisma.user.create({
-                data: { email: 'loser@example.com' }
+                data: { email: `loser-${timestamp}@example.com` }
             })
         ]);
         // Create teams for users with different player compositions
@@ -108,7 +109,6 @@ describe('League Winner Calculator', () => {
                 leagueType: 'public',
                 leagueMode: 'classic',
                 winners: 2,
-                allowPowerUps: false,
                 code: 'CALC01',
                 ownerId: testUsers[0].id,
                 gameweekId: testGameweek.id,
@@ -196,7 +196,6 @@ describe('League Winner Calculator', () => {
                     leagueType: 'public',
                     leagueMode: 'classic',
                     winners: 1,
-                    allowPowerUps: false,
                     code: 'CAP01',
                     ownerId: testUsers[0].id,
                     gameweekId: testGameweek.id,

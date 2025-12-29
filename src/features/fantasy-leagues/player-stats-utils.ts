@@ -1,4 +1,5 @@
-import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
+import { retrieveTeamFromDatabaseByUserAndLeague } from '../fantasy-teams/fantasy-teams-model.js';
+import type { RealLifeLeague } from '../../generated/prisma/index.js';
 import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 
 /**
@@ -8,9 +9,9 @@ import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fant
  * @param gameweekId - The gameweek ID for calculating points
  * @returns Object containing total points and goals
  */
-export async function calculateUserTeamStats(userId: string, gameweekId: number) {
+export async function calculateUserTeamStats(userId: string, gameweekId: number, realLifeLeague: RealLifeLeague) {
   // Get the user's team
-  const team = await retrieveTeamFromDatabaseByUserId(userId);
+  const team = await retrieveTeamFromDatabaseByUserAndLeague(userId, realLifeLeague);
   
   let points = 0;
   let goals = 0;

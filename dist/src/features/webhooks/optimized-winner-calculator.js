@@ -65,7 +65,9 @@ function processBatch(leagues, playerScores, batchNumber) {
             try {
                 const teamScores = [];
                 for (const member of league.members) {
-                    const team = member.user.team;
+                    const teams = member.user.teams;
+                    // Find the team that matches the league's realLifeLeague
+                    const team = teams.find((t) => t.realLifeLeague === league.realLifeLeague);
                     if (!team || !team.teamPlayers || team.teamPlayers.length === 0) {
                         continue;
                     }
@@ -116,18 +118,28 @@ function updateWinnersInBatch(results) {
         if (successfulResults.length === 0) {
             return;
         }
-        // Use transaction for batch update
-        yield prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-            const updatePromises = successfulResults.map(result => tx.fantasyLeague.update({
-                where: { id: result.leagueId },
-                data: {
-                    winnersArray: result.winners,
-                    status: "closed"
-                }
-            }));
-            yield Promise.all(updatePromises);
+        // Use Promise.all to update concurrently but allow individual failures
+        // This is more robust than a single transaction which would fail the entire batch
+        // if one league record is missing or has issues
+        const updatePromises = successfulResults.map((result) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield prisma.fantasyLeague.update({
+                    where: { id: result.leagueId },
+                    data: {
+                        winnersArray: result.winners,
+                        status: "closed"
+                    }
+                });
+                return true;
+            }
+            catch (error) {
+                console.error(`Failed to update winners for league ${result.leagueId}:`, error);
+                return false;
+            }
         }));
-        console.log(`Updated ${successfulResults.length} leagues with winners`);
+        const updateResults = yield Promise.all(updatePromises);
+        const successCount = updateResults.filter(Boolean).length;
+        console.log(`Updated ${successCount} leagues with winners (out of ${successfulResults.length} calculated)`);
     });
 }
 /**
@@ -153,8 +165,9 @@ export function calculateAllLeagueWinners(gameweekId_1) {
                             user: {
                                 select: {
                                     id: true,
-                                    team: {
+                                    teams: {
                                         select: {
+                                            realLifeLeague: true,
                                             teamPlayers: true,
                                             captainId: true
                                         }

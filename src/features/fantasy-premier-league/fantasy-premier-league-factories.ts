@@ -24,6 +24,7 @@ export const createTeamMapper =
 			id: team.id,
 			name: team.name,
 			badgeImage: getTeamBadgeUrl(team.id),
+            shortName: team.short_name,
 		});
 
 export const createPlayer = ({

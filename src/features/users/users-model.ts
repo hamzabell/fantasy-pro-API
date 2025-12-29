@@ -13,28 +13,49 @@ export async function saveUserToDatabase(user: Parameters<typeof prisma.user.cre
 	return await prisma.user.create({ data: user });
 }
 
-// READ
+// Adapting to TaskEither for functional architecture conformance
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { databaseError, notFoundError } from '../../fp/domain/errors/AppError.js';
+// Removed invalid import
 
 /**
- * Retrieves a User record from the database based on its id.
- *
- * @param id - The id of the User to get.
- * @returns The User with a given id or null if it wasn't found.
+ * Retrieves a User record from the database based on its email.
  */
-export async function retrieveUserFromDatabaseById(userId: User["id"]) {
-	return await prisma.user.findUnique({
-		where: { id: userId }
-	})
-}
+export const retrieveUserFromDatabaseByEmail = (email: string) =>
+    TE.tryCatch(
+        async () => prisma.user.findUnique({ where: { email } }),
+        (e) => databaseError('Read', 'User', e)
+    );
+
+export const retrieveUserFromDatabaseById = (id: string) =>
+    TE.tryCatch(
+        async () => prisma.user.findUnique({ where: { id } }),
+        (e) => databaseError('Read', 'User', e)
+    );
 
 /**
- * Retrieves all User records from the database.
- *
- * @returns An array of all Users.
+ * Retrieves user statistics: matches (leagues joined), total points, and trophies (wins).
  */
-export async function retrieveAllUsersFromDatabase() {
-	return await prisma.user.findMany();
-}
+export const retrieveUserStats = (userId: string) =>
+    TE.tryCatch(
+        async () => {
+            const memberships = await prisma.fantasyLeagueMembership.findMany({
+                where: { userId },
+                select: {
+                    score: true,
+                    position: true
+                }
+            });
+
+            const matches = memberships.length;
+            const points = memberships.reduce((acc, m) => acc + (Number(m.score) || 0), 0);
+            const trophies = memberships.filter(m => m.position === 1).length;
+
+            return { matches, points, trophies };
+        },
+        (e) => databaseError('Read', 'UserStats', e)
+    );
+
 
 // UPDATE
 
@@ -90,5 +111,27 @@ export async function deleteUserFromDatabaseById(userId: User["id"]) {
  * @returns The number of Users that were deleted.
  */
 export async function deleteAllUsersFromDatabase() {
+	// Delete dependencies first to satisfy foreign key constraints
+	await prisma.team.deleteMany();
+	// Check if wallet model exists on prisma client before trying to delete
+	// @ts-ignore
+	if (prisma.wallet) {
+		// @ts-ignore
+		await prisma.wallet.deleteMany();
+	}
 	return await prisma.user.deleteMany();
+}
+
+/**
+ * Increments the user's coins.
+ */
+export async function incrementUserCoins(userId: string, amount: number) {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: {
+            coins: {
+                increment: amount
+            }
+        }
+    });
 }

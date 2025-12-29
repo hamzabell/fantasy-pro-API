@@ -21,13 +21,18 @@ export interface Team {
 	id: number;
 	name: string;
 	badgeImage: string;
+    shortName: string;
 }
 
 export interface Gameweek {
 	id: number;
+	name?: string;
 	fixtures: Fixture[];
 	isActive: boolean;
 	deadlineTime: string;
+	isFinished: boolean;
+	isCurrent: boolean;
+	isNext: boolean;
 }
 
 export interface Fixture {

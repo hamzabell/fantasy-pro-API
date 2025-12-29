@@ -78,9 +78,14 @@ export async function calculateLeagueWinners(
     const leagueMembers = await prisma.fantasyLeagueMembership.findMany({
       where: { leagueId },
       include: {
+        league: {
+          select: {
+            realLifeLeague: true
+          }
+        },
         user: {
           include: {
-            team: true
+            teams: true
           }
         }
       }
@@ -98,7 +103,13 @@ export async function calculateLeagueWinners(
     const teamScores: TeamScore[] = [];
 
     for (const member of leagueMembers) {
-      const team = member.user.team;
+      const teams = member.user.teams;
+      // Find the team that matches the league's realLifeLeague
+      // Since we included league in the query, member.league should be available
+      // valid casting for TS if needed, but runtime it should work given the include above
+      const realLifeLeague = (member as any).league?.realLifeLeague;
+      
+      const team = teams.find((t: any) => t.realLifeLeague === realLifeLeague);
       
       if (!team || !team.teamPlayers || team.teamPlayers.length === 0) {
         console.log(`No team found for user ${member.userId} in league ${leagueId}`);

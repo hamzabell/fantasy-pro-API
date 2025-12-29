@@ -20,30 +20,15 @@ export function saveUserToDatabase(user) {
         return yield prisma.user.create({ data: user });
     });
 }
-// READ
+// Adapting to TaskEither for functional architecture conformance
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { databaseError, notFoundError } from '../../fp/domain/errors/AppError.js';
+// Removed invalid import
 /**
- * Retrieves a User record from the database based on its id.
- *
- * @param id - The id of the User to get.
- * @returns The User with a given id or null if it wasn't found.
+ * Retrieves a User record from the database based on its email.
  */
-export function retrieveUserFromDatabaseById(userId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.user.findUnique({
-            where: { id: userId }
-        });
-    });
-}
-/**
- * Retrieves all User records from the database.
- *
- * @returns An array of all Users.
- */
-export function retrieveAllUsersFromDatabase() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield prisma.user.findMany();
-    });
-}
+export const retrieveUserFromDatabaseByEmail = (email) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () { return prisma.user.findUnique({ where: { email } }); }), (e) => databaseError('Read', 'User', e));
+export const retrieveUserFromDatabaseById = (id) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () { return prisma.user.findUnique({ where: { id } }); }), (e) => databaseError('Read', 'User', e));
 // UPDATE
 /**
  * Updates a User in the database.
@@ -88,6 +73,14 @@ export function deleteUserFromDatabaseById(userId) {
  */
 export function deleteAllUsersFromDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
+        // Delete dependencies first to satisfy foreign key constraints
+        yield prisma.team.deleteMany();
+        // Check if wallet model exists on prisma client before trying to delete
+        // @ts-ignore
+        if (prisma.wallet) {
+            // @ts-ignore
+            yield prisma.wallet.deleteMany();
+        }
         return yield prisma.user.deleteMany();
     });
 }

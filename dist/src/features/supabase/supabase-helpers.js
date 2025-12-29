@@ -25,7 +25,11 @@ export function validateUserAuth(c, next) {
         if (error || !user) {
             return c.json({ error: 'Unauthorized: Invalid token' }, 401);
         }
-        const userData = yield retrieveUserFromDatabaseById(user.user.id);
+        const userDataResult = yield retrieveUserFromDatabaseById(user.user.id)();
+        let userData = null;
+        if (userDataResult._tag === 'Right') {
+            userData = userDataResult.right;
+        }
         if (!userData) {
             const createdUser = yield saveUserToDatabase(createPopulatedUser({
                 id: user.user.id,

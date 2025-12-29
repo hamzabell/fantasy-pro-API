@@ -59,14 +59,20 @@ function calculateTeamPoints(teamPlayers, captainId, playerScores) {
  */
 export function calculateLeagueWinners(leagueId, gameweekId, numberOfWinners) {
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         try {
             // Get all league members with their teams
             const leagueMembers = yield prisma.fantasyLeagueMembership.findMany({
                 where: { leagueId },
                 include: {
+                    league: {
+                        select: {
+                            realLifeLeague: true
+                        }
+                    },
                     user: {
                         include: {
-                            team: true
+                            teams: true
                         }
                     }
                 }
@@ -80,7 +86,12 @@ export function calculateLeagueWinners(leagueId, gameweekId, numberOfWinners) {
             // Calculate scores for each team
             const teamScores = [];
             for (const member of leagueMembers) {
-                const team = member.user.team;
+                const teams = member.user.teams;
+                // Find the team that matches the league's realLifeLeague
+                // Since we included league in the query, member.league should be available
+                // valid casting for TS if needed, but runtime it should work given the include above
+                const realLifeLeague = (_a = member.league) === null || _a === void 0 ? void 0 : _a.realLifeLeague;
+                const team = teams.find((t) => t.realLifeLeague === realLifeLeague);
                 if (!team || !team.teamPlayers || team.teamPlayers.length === 0) {
                     console.log(`No team found for user ${member.userId} in league ${leagueId}`);
                     continue;

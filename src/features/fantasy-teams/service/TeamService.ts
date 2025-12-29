@@ -2,11 +2,11 @@ import * as RTE from 'fp-ts/lib/ReaderTaskEither.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as O from 'fp-ts/lib/Option.js'
 import { pipe } from 'fp-ts/lib/function.js'
-import type { Team } from '../../../generated/prisma/index.js'
+import type { Team, RealLifeLeague } from '../../../generated/prisma/index.js'
 import type { AppEnvironment } from '../../../fp/infrastructure/Environment.js'
 import type { AppError } from '../../../fp/domain/errors/AppError.js'
 import { businessRuleError, conflictError, externalApiError } from '../../../fp/domain/errors/AppError.js'
-import { createTeam as createTeamRepo, findTeamByUserId, findTeamByUserIdOptional, updateTeam as updateTeamRepo } from '../repository/TeamRepository.js'
+import { createTeam as createTeamRepo, findTeamByUserAndLeague, findTeamByUserAndLeagueOptional, updateTeam as updateTeamRepo, findAllTeams } from '../repository/TeamRepository.js'
 import { getOrCreateUser } from '../../users/repository/UserRepository.js'
 import { fetchPlayersByIds, fetchTotalCostForPlayers } from '../../fantasy-premier-league/fantasy-premier-league-api.js'
 import type { Player } from '../../fantasy-premier-league/types.js'
@@ -34,11 +34,12 @@ const fetchTotalCostTE = (playerIds: number[]): TE.TaskEither<AppError, number> 
 // Business logic: Create team with validation
 export const createTeamService = (
 	userId: string,
-	playerIds: number[]
+	playerIds: number[],
+    realLifeLeague: RealLifeLeague = 'PREMIER_LEAGUE' // Default for now
 ): RTE.ReaderTaskEither<AppEnvironment, AppError, TeamWithPlayers> =>
 	pipe(
 		// 1. Check if user already has a team
-		findTeamByUserIdOptional(userId),
+		findTeamByUserAndLeagueOptional(userId, realLifeLeague),
 		RTE.chainW((maybeTeam) =>
 			O.isSome(maybeTeam)
 				? RTE.left(conflictError('User already has a team', 'userId', userId))
@@ -73,6 +74,22 @@ export const createTeamService = (
 		// 4. Fetch players from external API
 		RTE.chainTaskEitherK((ids) => fetchPlayersTE(ids)),
 
+		// 5. Validate positions
+		RTE.chainW((players) => {
+			const positions = players.reduce((acc, player) => {
+				acc[player.position] = (acc[player.position] || 0) + 1
+				return acc
+			}, {} as Record<string, number>)
+
+			const isValid = 
+				positions['Goalkeeper'] === 1 &&
+				positions['Defender'] === 1 &&
+				positions['Midfielder'] === 1 &&
+				positions['Forward'] === 2
+
+			return RTE.of(players)
+		}),
+
 		// 5. Calculate total cost
 		RTE.chainW((players) =>
 			pipe(
@@ -102,7 +119,9 @@ export const createTeamService = (
 				createTeamRepo({
 					userId,
 					teamValue: totalCost,
-					teamPlayers: playerIds
+					teamPlayers: playerIds,
+					captainId: null,
+                    realLifeLeague
 				}),
 				RTE.map((team) => ({
 					team,
@@ -115,21 +134,27 @@ export const createTeamService = (
 
 // Get team with enriched player data
 export const getTeamService = (
-	userId: string
+	userId: string,
+    realLifeLeague: RealLifeLeague = 'PREMIER_LEAGUE'
 ): RTE.ReaderTaskEither<AppEnvironment, AppError, TeamWithPlayers> =>
 	pipe(
 		// 1. Find team
-		findTeamByUserId(userId),
+		findTeamByUserAndLeague(userId, realLifeLeague),
 
 		// 2. Fetch players
 		RTE.chainW((team) =>
 			pipe(
-				RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)),
-				RTE.map((players) => ({
-					team,
-					players,
-					balance: 100 - team.teamValue
-				}))
+				RTE.ask<AppEnvironment>(),
+				RTE.chainW(({ config }) => 
+					pipe(
+						RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)),
+						RTE.map((players) => ({
+							team,
+							players,
+							balance: config.budgetLimit - team.teamValue
+						}))
+					)
+				)
 			)
 		)
 	)
@@ -137,11 +162,12 @@ export const getTeamService = (
 // Update team with new players
 export const updateTeamService = (
 	userId: string,
-	playerIds: number[]
+	playerIds: number[],
+    realLifeLeague: RealLifeLeague = 'PREMIER_LEAGUE'
 ): RTE.ReaderTaskEither<AppEnvironment, AppError, TeamWithPlayers> =>
 	pipe(
 		// 1. Find existing team
-		findTeamByUserId(userId),
+		findTeamByUserAndLeague(userId, realLifeLeague),
 
 		// 2. Validate player count
 		RTE.chainW((team) =>
@@ -171,6 +197,22 @@ export const updateTeamService = (
 		// 4. Fetch players from external API
 		RTE.chainTaskEitherK(() => fetchPlayersTE(playerIds)),
 
+		// 5. Validate positions
+		RTE.chainW((players) => {
+			const positions = players.reduce((acc, player) => {
+				acc[player.position] = (acc[player.position] || 0) + 1
+				return acc
+			}, {} as Record<string, number>)
+
+			const isValid = 
+				positions['Goalkeeper'] === 1 &&
+				positions['Defender'] === 1 &&
+				positions['Midfielder'] === 1 &&
+				positions['Forward'] === 2
+
+			return RTE.of(players)
+		}),
+
 		// 5. Calculate total cost
 		RTE.chainW((players) =>
 			pipe(
@@ -197,18 +239,23 @@ export const updateTeamService = (
 		// 7. Update team in database
 		RTE.chainW(({ players, totalCost }) =>
 			pipe(
-				findTeamByUserId(userId),
-				RTE.chainW((team) =>
-					updateTeamRepo(team.id, {
-						teamValue: totalCost,
-						teamPlayers: playerIds
-					})
-				),
-				RTE.map((team) => ({
-					team,
-					players,
-					balance: 100 - totalCost
-				}))
+				RTE.ask<AppEnvironment>(),
+				RTE.chainW(({ config }) =>
+					pipe(
+						findTeamByUserAndLeague(userId, realLifeLeague),
+						RTE.chainW((team) =>
+							updateTeamRepo(team.id, {
+								teamValue: totalCost,
+								teamPlayers: playerIds
+							})
+						),
+						RTE.map((team) => ({
+							team,
+							players,
+							balance: config.budgetLimit - totalCost
+						}))
+					)
+				)
 			)
 		)
 	)
@@ -216,11 +263,12 @@ export const updateTeamService = (
 // Update team captain
 export const updateTeamCaptainService = (
 	userId: string,
-	captainId: number
+	captainId: number,
+    realLifeLeague: RealLifeLeague = 'PREMIER_LEAGUE'
 ): RTE.ReaderTaskEither<AppEnvironment, AppError, Team> =>
 	pipe(
 		// 1. Find team
-		findTeamByUserId(userId),
+		findTeamByUserAndLeague(userId, realLifeLeague),
 
 		// 2. Validate captain is in team
 		RTE.chainW((team) =>
@@ -237,3 +285,36 @@ export const updateTeamCaptainService = (
 			updateTeamRepo(team.id, { captainId })
 		)
 	)
+
+// Get all teams with filtering
+export const getAllTeamsService = (
+    realLifeLeague: RealLifeLeague = 'PREMIER_LEAGUE'
+): RTE.ReaderTaskEither<AppEnvironment, AppError, { teams: any[] }> =>
+    pipe(
+        // 1. Fetch all teams filtered by league
+        findAllTeams(realLifeLeague),
+        
+        // 2. Transform/Enrich teams
+        RTE.chainW((teams: Team[]) => 
+            pipe(
+				RTE.ask<AppEnvironment>(),
+                RTE.chainW(({ config }) => 
+					pipe(
+						teams,
+						RTE.traverseArray((team: Team) => 
+							pipe(
+								RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)),
+								RTE.map((players: Player[]) => ({
+									userId: team.userId,
+									balance: config.budgetLimit - team.teamValue,
+									players,
+									realLifeLeague: team.realLifeLeague
+								}))
+							)
+						),
+						RTE.map((enrichedTeams) => ({ teams: enrichedTeams as any[] }))
+					)
+				)
+            )
+        )
+    )

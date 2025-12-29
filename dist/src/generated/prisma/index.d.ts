@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model Wallet
+ * 
+ */
+export type Wallet = $Result.DefaultSelection<Prisma.$WalletPayload>
+/**
  * Model Team
  * 
  */
@@ -39,25 +44,26 @@ export type FantasyLeagueMembership = $Result.DefaultSelection<Prisma.$FantasyLe
  */
 export type Gameweek = $Result.DefaultSelection<Prisma.$GameweekPayload>
 /**
- * Model PowerUp
+ * Model Transaction
  * 
  */
-export type PowerUp = $Result.DefaultSelection<Prisma.$PowerUpPayload>
+export type Transaction = $Result.DefaultSelection<Prisma.$TransactionPayload>
+
 /**
- * Model PowerUpCategory
- * 
+ * Enums
  */
-export type PowerUpCategory = $Result.DefaultSelection<Prisma.$PowerUpCategoryPayload>
-/**
- * Model PowerUpUsage
- * 
- */
-export type PowerUpUsage = $Result.DefaultSelection<Prisma.$PowerUpUsagePayload>
-/**
- * Model FantasyLeagueMembershipPowerUp
- * 
- */
-export type FantasyLeagueMembershipPowerUp = $Result.DefaultSelection<Prisma.$FantasyLeagueMembershipPowerUpPayload>
+export namespace $Enums {
+  export const RealLifeLeague: {
+  PREMIER_LEAGUE: 'PREMIER_LEAGUE'
+};
+
+export type RealLifeLeague = (typeof RealLifeLeague)[keyof typeof RealLifeLeague]
+
+}
+
+export type RealLifeLeague = $Enums.RealLifeLeague
+
+export const RealLifeLeague: typeof $Enums.RealLifeLeague
 
 /**
  * ##  Prisma Client ʲˢ
@@ -188,6 +194,16 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.wallet`: Exposes CRUD operations for the **Wallet** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Wallets
+    * const wallets = await prisma.wallet.findMany()
+    * ```
+    */
+  get wallet(): Prisma.WalletDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.team`: Exposes CRUD operations for the **Team** model.
     * Example usage:
     * ```ts
@@ -228,44 +244,14 @@ export class PrismaClient<
   get gameweek(): Prisma.GameweekDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.powerUp`: Exposes CRUD operations for the **PowerUp** model.
+   * `prisma.transaction`: Exposes CRUD operations for the **Transaction** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more PowerUps
-    * const powerUps = await prisma.powerUp.findMany()
+    * // Fetch zero or more Transactions
+    * const transactions = await prisma.transaction.findMany()
     * ```
     */
-  get powerUp(): Prisma.PowerUpDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.powerUpCategory`: Exposes CRUD operations for the **PowerUpCategory** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more PowerUpCategories
-    * const powerUpCategories = await prisma.powerUpCategory.findMany()
-    * ```
-    */
-  get powerUpCategory(): Prisma.PowerUpCategoryDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.powerUpUsage`: Exposes CRUD operations for the **PowerUpUsage** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more PowerUpUsages
-    * const powerUpUsages = await prisma.powerUpUsage.findMany()
-    * ```
-    */
-  get powerUpUsage(): Prisma.PowerUpUsageDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.fantasyLeagueMembershipPowerUp`: Exposes CRUD operations for the **FantasyLeagueMembershipPowerUp** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more FantasyLeagueMembershipPowerUps
-    * const fantasyLeagueMembershipPowerUps = await prisma.fantasyLeagueMembershipPowerUp.findMany()
-    * ```
-    */
-  get fantasyLeagueMembershipPowerUp(): Prisma.FantasyLeagueMembershipPowerUpDelegate<ExtArgs, ClientOptions>;
+  get transaction(): Prisma.TransactionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -707,14 +693,12 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
+    Wallet: 'Wallet',
     Team: 'Team',
     FantasyLeague: 'FantasyLeague',
     FantasyLeagueMembership: 'FantasyLeagueMembership',
     Gameweek: 'Gameweek',
-    PowerUp: 'PowerUp',
-    PowerUpCategory: 'PowerUpCategory',
-    PowerUpUsage: 'PowerUpUsage',
-    FantasyLeagueMembershipPowerUp: 'FantasyLeagueMembershipPowerUp'
+    Transaction: 'Transaction'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -733,7 +717,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "team" | "fantasyLeague" | "fantasyLeagueMembership" | "gameweek" | "powerUp" | "powerUpCategory" | "powerUpUsage" | "fantasyLeagueMembershipPowerUp"
+      modelProps: "user" | "wallet" | "team" | "fantasyLeague" | "fantasyLeagueMembership" | "gameweek" | "transaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -808,6 +792,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      Wallet: {
+        payload: Prisma.$WalletPayload<ExtArgs>
+        fields: Prisma.WalletFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WalletFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WalletFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>
+          }
+          findFirst: {
+            args: Prisma.WalletFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WalletFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>
+          }
+          findMany: {
+            args: Prisma.WalletFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>[]
+          }
+          create: {
+            args: Prisma.WalletCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>
+          }
+          createMany: {
+            args: Prisma.WalletCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WalletCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>[]
+          }
+          delete: {
+            args: Prisma.WalletDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>
+          }
+          update: {
+            args: Prisma.WalletUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>
+          }
+          deleteMany: {
+            args: Prisma.WalletDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WalletUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WalletUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>[]
+          }
+          upsert: {
+            args: Prisma.WalletUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WalletPayload>
+          }
+          aggregate: {
+            args: Prisma.WalletAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWallet>
+          }
+          groupBy: {
+            args: Prisma.WalletGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WalletGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WalletCountArgs<ExtArgs>
+            result: $Utils.Optional<WalletCountAggregateOutputType> | number
           }
         }
       }
@@ -1107,299 +1165,77 @@ export namespace Prisma {
           }
         }
       }
-      PowerUp: {
-        payload: Prisma.$PowerUpPayload<ExtArgs>
-        fields: Prisma.PowerUpFieldRefs
+      Transaction: {
+        payload: Prisma.$TransactionPayload<ExtArgs>
+        fields: Prisma.TransactionFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.PowerUpFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload> | null
+            args: Prisma.TransactionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.PowerUpFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>
+            args: Prisma.TransactionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>
           }
           findFirst: {
-            args: Prisma.PowerUpFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload> | null
+            args: Prisma.TransactionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.PowerUpFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>
+            args: Prisma.TransactionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>
           }
           findMany: {
-            args: Prisma.PowerUpFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>[]
+            args: Prisma.TransactionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>[]
           }
           create: {
-            args: Prisma.PowerUpCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>
+            args: Prisma.TransactionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>
           }
           createMany: {
-            args: Prisma.PowerUpCreateManyArgs<ExtArgs>
+            args: Prisma.TransactionCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.PowerUpCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>[]
+            args: Prisma.TransactionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>[]
           }
           delete: {
-            args: Prisma.PowerUpDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>
+            args: Prisma.TransactionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>
           }
           update: {
-            args: Prisma.PowerUpUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>
+            args: Prisma.TransactionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>
           }
           deleteMany: {
-            args: Prisma.PowerUpDeleteManyArgs<ExtArgs>
+            args: Prisma.TransactionDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.PowerUpUpdateManyArgs<ExtArgs>
+            args: Prisma.TransactionUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.PowerUpUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>[]
+            args: Prisma.TransactionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>[]
           }
           upsert: {
-            args: Prisma.PowerUpUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpPayload>
+            args: Prisma.TransactionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TransactionPayload>
           }
           aggregate: {
-            args: Prisma.PowerUpAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePowerUp>
+            args: Prisma.TransactionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTransaction>
           }
           groupBy: {
-            args: Prisma.PowerUpGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PowerUpGroupByOutputType>[]
+            args: Prisma.TransactionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TransactionGroupByOutputType>[]
           }
           count: {
-            args: Prisma.PowerUpCountArgs<ExtArgs>
-            result: $Utils.Optional<PowerUpCountAggregateOutputType> | number
-          }
-        }
-      }
-      PowerUpCategory: {
-        payload: Prisma.$PowerUpCategoryPayload<ExtArgs>
-        fields: Prisma.PowerUpCategoryFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.PowerUpCategoryFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.PowerUpCategoryFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>
-          }
-          findFirst: {
-            args: Prisma.PowerUpCategoryFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.PowerUpCategoryFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>
-          }
-          findMany: {
-            args: Prisma.PowerUpCategoryFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>[]
-          }
-          create: {
-            args: Prisma.PowerUpCategoryCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>
-          }
-          createMany: {
-            args: Prisma.PowerUpCategoryCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.PowerUpCategoryCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>[]
-          }
-          delete: {
-            args: Prisma.PowerUpCategoryDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>
-          }
-          update: {
-            args: Prisma.PowerUpCategoryUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>
-          }
-          deleteMany: {
-            args: Prisma.PowerUpCategoryDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.PowerUpCategoryUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.PowerUpCategoryUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>[]
-          }
-          upsert: {
-            args: Prisma.PowerUpCategoryUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpCategoryPayload>
-          }
-          aggregate: {
-            args: Prisma.PowerUpCategoryAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePowerUpCategory>
-          }
-          groupBy: {
-            args: Prisma.PowerUpCategoryGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PowerUpCategoryGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.PowerUpCategoryCountArgs<ExtArgs>
-            result: $Utils.Optional<PowerUpCategoryCountAggregateOutputType> | number
-          }
-        }
-      }
-      PowerUpUsage: {
-        payload: Prisma.$PowerUpUsagePayload<ExtArgs>
-        fields: Prisma.PowerUpUsageFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.PowerUpUsageFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.PowerUpUsageFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>
-          }
-          findFirst: {
-            args: Prisma.PowerUpUsageFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.PowerUpUsageFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>
-          }
-          findMany: {
-            args: Prisma.PowerUpUsageFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>[]
-          }
-          create: {
-            args: Prisma.PowerUpUsageCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>
-          }
-          createMany: {
-            args: Prisma.PowerUpUsageCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.PowerUpUsageCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>[]
-          }
-          delete: {
-            args: Prisma.PowerUpUsageDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>
-          }
-          update: {
-            args: Prisma.PowerUpUsageUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>
-          }
-          deleteMany: {
-            args: Prisma.PowerUpUsageDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.PowerUpUsageUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.PowerUpUsageUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>[]
-          }
-          upsert: {
-            args: Prisma.PowerUpUsageUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PowerUpUsagePayload>
-          }
-          aggregate: {
-            args: Prisma.PowerUpUsageAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePowerUpUsage>
-          }
-          groupBy: {
-            args: Prisma.PowerUpUsageGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PowerUpUsageGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.PowerUpUsageCountArgs<ExtArgs>
-            result: $Utils.Optional<PowerUpUsageCountAggregateOutputType> | number
-          }
-        }
-      }
-      FantasyLeagueMembershipPowerUp: {
-        payload: Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>
-        fields: Prisma.FantasyLeagueMembershipPowerUpFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.FantasyLeagueMembershipPowerUpFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.FantasyLeagueMembershipPowerUpFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>
-          }
-          findFirst: {
-            args: Prisma.FantasyLeagueMembershipPowerUpFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.FantasyLeagueMembershipPowerUpFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>
-          }
-          findMany: {
-            args: Prisma.FantasyLeagueMembershipPowerUpFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>[]
-          }
-          create: {
-            args: Prisma.FantasyLeagueMembershipPowerUpCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>
-          }
-          createMany: {
-            args: Prisma.FantasyLeagueMembershipPowerUpCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.FantasyLeagueMembershipPowerUpCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>[]
-          }
-          delete: {
-            args: Prisma.FantasyLeagueMembershipPowerUpDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>
-          }
-          update: {
-            args: Prisma.FantasyLeagueMembershipPowerUpUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>
-          }
-          deleteMany: {
-            args: Prisma.FantasyLeagueMembershipPowerUpDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.FantasyLeagueMembershipPowerUpUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.FantasyLeagueMembershipPowerUpUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>[]
-          }
-          upsert: {
-            args: Prisma.FantasyLeagueMembershipPowerUpUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$FantasyLeagueMembershipPowerUpPayload>
-          }
-          aggregate: {
-            args: Prisma.FantasyLeagueMembershipPowerUpAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateFantasyLeagueMembershipPowerUp>
-          }
-          groupBy: {
-            args: Prisma.FantasyLeagueMembershipPowerUpGroupByArgs<ExtArgs>
-            result: $Utils.Optional<FantasyLeagueMembershipPowerUpGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.FantasyLeagueMembershipPowerUpCountArgs<ExtArgs>
-            result: $Utils.Optional<FantasyLeagueMembershipPowerUpCountAggregateOutputType> | number
+            args: Prisma.TransactionCountArgs<ExtArgs>
+            result: $Utils.Optional<TransactionCountAggregateOutputType> | number
           }
         }
       }
@@ -1496,14 +1332,12 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit
+    wallet?: WalletOmit
     team?: TeamOmit
     fantasyLeague?: FantasyLeagueOmit
     fantasyLeagueMembership?: FantasyLeagueMembershipOmit
     gameweek?: GameweekOmit
-    powerUp?: PowerUpOmit
-    powerUpCategory?: PowerUpCategoryOmit
-    powerUpUsage?: PowerUpUsageOmit
-    fantasyLeagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpOmit
+    transaction?: TransactionOmit
   }
 
   /* Types for Logging */
@@ -1584,15 +1418,15 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
+    teams: number
     leagues: number
     ownedLeagues: number
-    powerUpUsages: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    teams?: boolean | UserCountOutputTypeCountTeamsArgs
     leagues?: boolean | UserCountOutputTypeCountLeaguesArgs
     ownedLeagues?: boolean | UserCountOutputTypeCountOwnedLeaguesArgs
-    powerUpUsages?: boolean | UserCountOutputTypeCountPowerUpUsagesArgs
   }
 
   // Custom InputTypes
@@ -1609,6 +1443,13 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountTeamsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TeamWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountLeaguesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FantasyLeagueMembershipWhereInput
   }
@@ -1620,13 +1461,6 @@ export namespace Prisma {
     where?: FantasyLeagueWhereInput
   }
 
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountPowerUpUsagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PowerUpUsageWhereInput
-  }
-
 
   /**
    * Count Type FantasyLeagueCountOutputType
@@ -1634,10 +1468,12 @@ export namespace Prisma {
 
   export type FantasyLeagueCountOutputType = {
     members: number
+    transactions: number
   }
 
   export type FantasyLeagueCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | FantasyLeagueCountOutputTypeCountMembersArgs
+    transactions?: boolean | FantasyLeagueCountOutputTypeCountTransactionsArgs
   }
 
   // Custom InputTypes
@@ -1658,35 +1494,11 @@ export namespace Prisma {
     where?: FantasyLeagueMembershipWhereInput
   }
 
-
   /**
-   * Count Type FantasyLeagueMembershipCountOutputType
+   * FantasyLeagueCountOutputType without action
    */
-
-  export type FantasyLeagueMembershipCountOutputType = {
-    powerUps: number
-  }
-
-  export type FantasyLeagueMembershipCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    powerUps?: boolean | FantasyLeagueMembershipCountOutputTypeCountPowerUpsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * FantasyLeagueMembershipCountOutputType without action
-   */
-  export type FantasyLeagueMembershipCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipCountOutputType
-     */
-    select?: FantasyLeagueMembershipCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * FantasyLeagueMembershipCountOutputType without action
-   */
-  export type FantasyLeagueMembershipCountOutputTypeCountPowerUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: FantasyLeagueMembershipPowerUpWhereInput
+  export type FantasyLeagueCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TransactionWhereInput
   }
 
 
@@ -1722,68 +1534,6 @@ export namespace Prisma {
 
 
   /**
-   * Count Type PowerUpCountOutputType
-   */
-
-  export type PowerUpCountOutputType = {
-    powerUpUsages: number
-  }
-
-  export type PowerUpCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    powerUpUsages?: boolean | PowerUpCountOutputTypeCountPowerUpUsagesArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * PowerUpCountOutputType without action
-   */
-  export type PowerUpCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCountOutputType
-     */
-    select?: PowerUpCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * PowerUpCountOutputType without action
-   */
-  export type PowerUpCountOutputTypeCountPowerUpUsagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PowerUpUsageWhereInput
-  }
-
-
-  /**
-   * Count Type PowerUpCategoryCountOutputType
-   */
-
-  export type PowerUpCategoryCountOutputType = {
-    powerUps: number
-  }
-
-  export type PowerUpCategoryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    powerUps?: boolean | PowerUpCategoryCountOutputTypeCountPowerUpsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * PowerUpCategoryCountOutputType without action
-   */
-  export type PowerUpCategoryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategoryCountOutputType
-     */
-    select?: PowerUpCategoryCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * PowerUpCategoryCountOutputType without action
-   */
-  export type PowerUpCategoryCountOutputTypeCountPowerUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PowerUpWhereInput
-  }
-
-
-  /**
    * Models
    */
 
@@ -1793,13 +1543,38 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserAvgAggregateOutputType = {
+    balanceUsd: Decimal | null
+    totalDeposited: Decimal | null
+    totalWithdrawn: Decimal | null
+  }
+
+  export type UserSumAggregateOutputType = {
+    balanceUsd: Decimal | null
+    totalDeposited: Decimal | null
+    totalWithdrawn: Decimal | null
   }
 
   export type UserMinAggregateOutputType = {
     id: string | null
     email: string | null
+    name: string | null
+    image: string | null
+    password: string | null
+    country: string | null
+    currency: string | null
+    balanceUsd: Decimal | null
+    totalDeposited: Decimal | null
+    totalWithdrawn: Decimal | null
+    walletAddress: string | null
+    kycStatus: string | null
+    mobileMoneyNumber: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1807,6 +1582,17 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     email: string | null
+    name: string | null
+    image: string | null
+    password: string | null
+    country: string | null
+    currency: string | null
+    balanceUsd: Decimal | null
+    totalDeposited: Decimal | null
+    totalWithdrawn: Decimal | null
+    walletAddress: string | null
+    kycStatus: string | null
+    mobileMoneyNumber: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1814,15 +1600,49 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     email: number
+    name: number
+    image: number
+    password: number
+    country: number
+    currency: number
+    balanceUsd: number
+    totalDeposited: number
+    totalWithdrawn: number
+    walletAddress: number
+    kycStatus: number
+    mobileMoneyNumber: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
 
+  export type UserAvgAggregateInputType = {
+    balanceUsd?: true
+    totalDeposited?: true
+    totalWithdrawn?: true
+  }
+
+  export type UserSumAggregateInputType = {
+    balanceUsd?: true
+    totalDeposited?: true
+    totalWithdrawn?: true
+  }
+
   export type UserMinAggregateInputType = {
     id?: true
     email?: true
+    name?: true
+    image?: true
+    password?: true
+    country?: true
+    currency?: true
+    balanceUsd?: true
+    totalDeposited?: true
+    totalWithdrawn?: true
+    walletAddress?: true
+    kycStatus?: true
+    mobileMoneyNumber?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1830,6 +1650,17 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     email?: true
+    name?: true
+    image?: true
+    password?: true
+    country?: true
+    currency?: true
+    balanceUsd?: true
+    totalDeposited?: true
+    totalWithdrawn?: true
+    walletAddress?: true
+    kycStatus?: true
+    mobileMoneyNumber?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1837,6 +1668,17 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     email?: true
+    name?: true
+    image?: true
+    password?: true
+    country?: true
+    currency?: true
+    balanceUsd?: true
+    totalDeposited?: true
+    totalWithdrawn?: true
+    walletAddress?: true
+    kycStatus?: true
+    mobileMoneyNumber?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1880,6 +1722,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -1910,6 +1764,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
+    _avg?: UserAvgAggregateInputType
+    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -1917,9 +1773,22 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     email: string
+    name: string | null
+    image: string | null
+    password: string | null
+    country: string | null
+    currency: string | null
+    balanceUsd: Decimal
+    totalDeposited: Decimal
+    totalWithdrawn: Decimal
+    walletAddress: string | null
+    kycStatus: string
+    mobileMoneyNumber: string | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -1941,18 +1810,40 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     email?: boolean
+    name?: boolean
+    image?: boolean
+    password?: boolean
+    country?: boolean
+    currency?: boolean
+    balanceUsd?: boolean
+    totalDeposited?: boolean
+    totalWithdrawn?: boolean
+    walletAddress?: boolean
+    kycStatus?: boolean
+    mobileMoneyNumber?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    team?: boolean | User$teamArgs<ExtArgs>
+    teams?: boolean | User$teamsArgs<ExtArgs>
     leagues?: boolean | User$leaguesArgs<ExtArgs>
     ownedLeagues?: boolean | User$ownedLeaguesArgs<ExtArgs>
-    powerUpUsages?: boolean | User$powerUpUsagesArgs<ExtArgs>
+    wallet?: boolean | User$walletArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     email?: boolean
+    name?: boolean
+    image?: boolean
+    password?: boolean
+    country?: boolean
+    currency?: boolean
+    balanceUsd?: boolean
+    totalDeposited?: boolean
+    totalWithdrawn?: boolean
+    walletAddress?: boolean
+    kycStatus?: boolean
+    mobileMoneyNumber?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -1960,6 +1851,17 @@ export namespace Prisma {
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     email?: boolean
+    name?: boolean
+    image?: boolean
+    password?: boolean
+    country?: boolean
+    currency?: boolean
+    balanceUsd?: boolean
+    totalDeposited?: boolean
+    totalWithdrawn?: boolean
+    walletAddress?: boolean
+    kycStatus?: boolean
+    mobileMoneyNumber?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -1967,16 +1869,27 @@ export namespace Prisma {
   export type UserSelectScalar = {
     id?: boolean
     email?: boolean
+    name?: boolean
+    image?: boolean
+    password?: boolean
+    country?: boolean
+    currency?: boolean
+    balanceUsd?: boolean
+    totalDeposited?: boolean
+    totalWithdrawn?: boolean
+    walletAddress?: boolean
+    kycStatus?: boolean
+    mobileMoneyNumber?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "image" | "password" | "country" | "currency" | "balanceUsd" | "totalDeposited" | "totalWithdrawn" | "walletAddress" | "kycStatus" | "mobileMoneyNumber" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    team?: boolean | User$teamArgs<ExtArgs>
+    teams?: boolean | User$teamsArgs<ExtArgs>
     leagues?: boolean | User$leaguesArgs<ExtArgs>
     ownedLeagues?: boolean | User$ownedLeaguesArgs<ExtArgs>
-    powerUpUsages?: boolean | User$powerUpUsagesArgs<ExtArgs>
+    wallet?: boolean | User$walletArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1985,14 +1898,25 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      team: Prisma.$TeamPayload<ExtArgs> | null
+      teams: Prisma.$TeamPayload<ExtArgs>[]
       leagues: Prisma.$FantasyLeagueMembershipPayload<ExtArgs>[]
       ownedLeagues: Prisma.$FantasyLeaguePayload<ExtArgs>[]
-      powerUpUsages: Prisma.$PowerUpUsagePayload<ExtArgs>[]
+      wallet: Prisma.$WalletPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       email: string
+      name: string | null
+      image: string | null
+      password: string | null
+      country: string | null
+      currency: string | null
+      balanceUsd: Prisma.Decimal
+      totalDeposited: Prisma.Decimal
+      totalWithdrawn: Prisma.Decimal
+      walletAddress: string | null
+      kycStatus: string
+      mobileMoneyNumber: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -2389,10 +2313,10 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    team<T extends User$teamArgs<ExtArgs> = {}>(args?: Subset<T, User$teamArgs<ExtArgs>>): Prisma__TeamClient<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    teams<T extends User$teamsArgs<ExtArgs> = {}>(args?: Subset<T, User$teamsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     leagues<T extends User$leaguesArgs<ExtArgs> = {}>(args?: Subset<T, User$leaguesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ownedLeagues<T extends User$ownedLeaguesArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedLeaguesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeaguePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    powerUpUsages<T extends User$powerUpUsagesArgs<ExtArgs> = {}>(args?: Subset<T, User$powerUpUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    wallet<T extends User$walletArgs<ExtArgs> = {}>(args?: Subset<T, User$walletArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2424,6 +2348,17 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
+    readonly name: FieldRef<"User", 'String'>
+    readonly image: FieldRef<"User", 'String'>
+    readonly password: FieldRef<"User", 'String'>
+    readonly country: FieldRef<"User", 'String'>
+    readonly currency: FieldRef<"User", 'String'>
+    readonly balanceUsd: FieldRef<"User", 'Decimal'>
+    readonly totalDeposited: FieldRef<"User", 'Decimal'>
+    readonly totalWithdrawn: FieldRef<"User", 'Decimal'>
+    readonly walletAddress: FieldRef<"User", 'String'>
+    readonly kycStatus: FieldRef<"User", 'String'>
+    readonly mobileMoneyNumber: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -2814,9 +2749,9 @@ export namespace Prisma {
   }
 
   /**
-   * User.team
+   * User.teams
    */
-  export type User$teamArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$teamsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Team
      */
@@ -2830,6 +2765,11 @@ export namespace Prisma {
      */
     include?: TeamInclude<ExtArgs> | null
     where?: TeamWhereInput
+    orderBy?: TeamOrderByWithRelationInput | TeamOrderByWithRelationInput[]
+    cursor?: TeamWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TeamScalarFieldEnum | TeamScalarFieldEnum[]
   }
 
   /**
@@ -2881,27 +2821,22 @@ export namespace Prisma {
   }
 
   /**
-   * User.powerUpUsages
+   * User.wallet
    */
-  export type User$powerUpUsagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$walletArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Wallet
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: WalletSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Wallet
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: WalletOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
-    where?: PowerUpUsageWhereInput
-    orderBy?: PowerUpUsageOrderByWithRelationInput | PowerUpUsageOrderByWithRelationInput[]
-    cursor?: PowerUpUsageWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PowerUpUsageScalarFieldEnum | PowerUpUsageScalarFieldEnum[]
+    include?: WalletInclude<ExtArgs> | null
+    where?: WalletWhereInput
   }
 
   /**
@@ -2920,6 +2855,1124 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Wallet
+   */
+
+  export type AggregateWallet = {
+    _count: WalletCountAggregateOutputType | null
+    _avg: WalletAvgAggregateOutputType | null
+    _sum: WalletSumAggregateOutputType | null
+    _min: WalletMinAggregateOutputType | null
+    _max: WalletMaxAggregateOutputType | null
+  }
+
+  export type WalletAvgAggregateOutputType = {
+    balance: Decimal | null
+  }
+
+  export type WalletSumAggregateOutputType = {
+    balance: Decimal | null
+  }
+
+  export type WalletMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    address: string | null
+    encryptedPrivateKey: string | null
+    balance: Decimal | null
+    lastBalanceUpdate: Date | null
+    createdAt: Date | null
+  }
+
+  export type WalletMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    address: string | null
+    encryptedPrivateKey: string | null
+    balance: Decimal | null
+    lastBalanceUpdate: Date | null
+    createdAt: Date | null
+  }
+
+  export type WalletCountAggregateOutputType = {
+    id: number
+    userId: number
+    address: number
+    encryptedPrivateKey: number
+    balance: number
+    lastBalanceUpdate: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type WalletAvgAggregateInputType = {
+    balance?: true
+  }
+
+  export type WalletSumAggregateInputType = {
+    balance?: true
+  }
+
+  export type WalletMinAggregateInputType = {
+    id?: true
+    userId?: true
+    address?: true
+    encryptedPrivateKey?: true
+    balance?: true
+    lastBalanceUpdate?: true
+    createdAt?: true
+  }
+
+  export type WalletMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    address?: true
+    encryptedPrivateKey?: true
+    balance?: true
+    lastBalanceUpdate?: true
+    createdAt?: true
+  }
+
+  export type WalletCountAggregateInputType = {
+    id?: true
+    userId?: true
+    address?: true
+    encryptedPrivateKey?: true
+    balance?: true
+    lastBalanceUpdate?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type WalletAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Wallet to aggregate.
+     */
+    where?: WalletWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Wallets to fetch.
+     */
+    orderBy?: WalletOrderByWithRelationInput | WalletOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WalletWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Wallets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Wallets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Wallets
+    **/
+    _count?: true | WalletCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WalletAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WalletSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WalletMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WalletMaxAggregateInputType
+  }
+
+  export type GetWalletAggregateType<T extends WalletAggregateArgs> = {
+        [P in keyof T & keyof AggregateWallet]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWallet[P]>
+      : GetScalarType<T[P], AggregateWallet[P]>
+  }
+
+
+
+
+  export type WalletGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WalletWhereInput
+    orderBy?: WalletOrderByWithAggregationInput | WalletOrderByWithAggregationInput[]
+    by: WalletScalarFieldEnum[] | WalletScalarFieldEnum
+    having?: WalletScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WalletCountAggregateInputType | true
+    _avg?: WalletAvgAggregateInputType
+    _sum?: WalletSumAggregateInputType
+    _min?: WalletMinAggregateInputType
+    _max?: WalletMaxAggregateInputType
+  }
+
+  export type WalletGroupByOutputType = {
+    id: string
+    userId: string
+    address: string
+    encryptedPrivateKey: string
+    balance: Decimal
+    lastBalanceUpdate: Date | null
+    createdAt: Date
+    _count: WalletCountAggregateOutputType | null
+    _avg: WalletAvgAggregateOutputType | null
+    _sum: WalletSumAggregateOutputType | null
+    _min: WalletMinAggregateOutputType | null
+    _max: WalletMaxAggregateOutputType | null
+  }
+
+  type GetWalletGroupByPayload<T extends WalletGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WalletGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WalletGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WalletGroupByOutputType[P]>
+            : GetScalarType<T[P], WalletGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WalletSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    address?: boolean
+    encryptedPrivateKey?: boolean
+    balance?: boolean
+    lastBalanceUpdate?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["wallet"]>
+
+  export type WalletSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    address?: boolean
+    encryptedPrivateKey?: boolean
+    balance?: boolean
+    lastBalanceUpdate?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["wallet"]>
+
+  export type WalletSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    address?: boolean
+    encryptedPrivateKey?: boolean
+    balance?: boolean
+    lastBalanceUpdate?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["wallet"]>
+
+  export type WalletSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    address?: boolean
+    encryptedPrivateKey?: boolean
+    balance?: boolean
+    lastBalanceUpdate?: boolean
+    createdAt?: boolean
+  }
+
+  export type WalletOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "address" | "encryptedPrivateKey" | "balance" | "lastBalanceUpdate" | "createdAt", ExtArgs["result"]["wallet"]>
+  export type WalletInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type WalletIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type WalletIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $WalletPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Wallet"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      address: string
+      encryptedPrivateKey: string
+      balance: Prisma.Decimal
+      lastBalanceUpdate: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["wallet"]>
+    composites: {}
+  }
+
+  type WalletGetPayload<S extends boolean | null | undefined | WalletDefaultArgs> = $Result.GetResult<Prisma.$WalletPayload, S>
+
+  type WalletCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WalletFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WalletCountAggregateInputType | true
+    }
+
+  export interface WalletDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Wallet'], meta: { name: 'Wallet' } }
+    /**
+     * Find zero or one Wallet that matches the filter.
+     * @param {WalletFindUniqueArgs} args - Arguments to find a Wallet
+     * @example
+     * // Get one Wallet
+     * const wallet = await prisma.wallet.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WalletFindUniqueArgs>(args: SelectSubset<T, WalletFindUniqueArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Wallet that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WalletFindUniqueOrThrowArgs} args - Arguments to find a Wallet
+     * @example
+     * // Get one Wallet
+     * const wallet = await prisma.wallet.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WalletFindUniqueOrThrowArgs>(args: SelectSubset<T, WalletFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Wallet that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletFindFirstArgs} args - Arguments to find a Wallet
+     * @example
+     * // Get one Wallet
+     * const wallet = await prisma.wallet.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WalletFindFirstArgs>(args?: SelectSubset<T, WalletFindFirstArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Wallet that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletFindFirstOrThrowArgs} args - Arguments to find a Wallet
+     * @example
+     * // Get one Wallet
+     * const wallet = await prisma.wallet.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WalletFindFirstOrThrowArgs>(args?: SelectSubset<T, WalletFindFirstOrThrowArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Wallets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Wallets
+     * const wallets = await prisma.wallet.findMany()
+     * 
+     * // Get first 10 Wallets
+     * const wallets = await prisma.wallet.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const walletWithIdOnly = await prisma.wallet.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WalletFindManyArgs>(args?: SelectSubset<T, WalletFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Wallet.
+     * @param {WalletCreateArgs} args - Arguments to create a Wallet.
+     * @example
+     * // Create one Wallet
+     * const Wallet = await prisma.wallet.create({
+     *   data: {
+     *     // ... data to create a Wallet
+     *   }
+     * })
+     * 
+     */
+    create<T extends WalletCreateArgs>(args: SelectSubset<T, WalletCreateArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Wallets.
+     * @param {WalletCreateManyArgs} args - Arguments to create many Wallets.
+     * @example
+     * // Create many Wallets
+     * const wallet = await prisma.wallet.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WalletCreateManyArgs>(args?: SelectSubset<T, WalletCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Wallets and returns the data saved in the database.
+     * @param {WalletCreateManyAndReturnArgs} args - Arguments to create many Wallets.
+     * @example
+     * // Create many Wallets
+     * const wallet = await prisma.wallet.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Wallets and only return the `id`
+     * const walletWithIdOnly = await prisma.wallet.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WalletCreateManyAndReturnArgs>(args?: SelectSubset<T, WalletCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Wallet.
+     * @param {WalletDeleteArgs} args - Arguments to delete one Wallet.
+     * @example
+     * // Delete one Wallet
+     * const Wallet = await prisma.wallet.delete({
+     *   where: {
+     *     // ... filter to delete one Wallet
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WalletDeleteArgs>(args: SelectSubset<T, WalletDeleteArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Wallet.
+     * @param {WalletUpdateArgs} args - Arguments to update one Wallet.
+     * @example
+     * // Update one Wallet
+     * const wallet = await prisma.wallet.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WalletUpdateArgs>(args: SelectSubset<T, WalletUpdateArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Wallets.
+     * @param {WalletDeleteManyArgs} args - Arguments to filter Wallets to delete.
+     * @example
+     * // Delete a few Wallets
+     * const { count } = await prisma.wallet.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WalletDeleteManyArgs>(args?: SelectSubset<T, WalletDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Wallets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Wallets
+     * const wallet = await prisma.wallet.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WalletUpdateManyArgs>(args: SelectSubset<T, WalletUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Wallets and returns the data updated in the database.
+     * @param {WalletUpdateManyAndReturnArgs} args - Arguments to update many Wallets.
+     * @example
+     * // Update many Wallets
+     * const wallet = await prisma.wallet.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Wallets and only return the `id`
+     * const walletWithIdOnly = await prisma.wallet.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WalletUpdateManyAndReturnArgs>(args: SelectSubset<T, WalletUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Wallet.
+     * @param {WalletUpsertArgs} args - Arguments to update or create a Wallet.
+     * @example
+     * // Update or create a Wallet
+     * const wallet = await prisma.wallet.upsert({
+     *   create: {
+     *     // ... data to create a Wallet
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Wallet we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WalletUpsertArgs>(args: SelectSubset<T, WalletUpsertArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Wallets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletCountArgs} args - Arguments to filter Wallets to count.
+     * @example
+     * // Count the number of Wallets
+     * const count = await prisma.wallet.count({
+     *   where: {
+     *     // ... the filter for the Wallets we want to count
+     *   }
+     * })
+    **/
+    count<T extends WalletCountArgs>(
+      args?: Subset<T, WalletCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WalletCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Wallet.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WalletAggregateArgs>(args: Subset<T, WalletAggregateArgs>): Prisma.PrismaPromise<GetWalletAggregateType<T>>
+
+    /**
+     * Group by Wallet.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WalletGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WalletGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WalletGroupByArgs['orderBy'] }
+        : { orderBy?: WalletGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WalletGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWalletGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Wallet model
+   */
+  readonly fields: WalletFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Wallet.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WalletClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Wallet model
+   */
+  interface WalletFieldRefs {
+    readonly id: FieldRef<"Wallet", 'String'>
+    readonly userId: FieldRef<"Wallet", 'String'>
+    readonly address: FieldRef<"Wallet", 'String'>
+    readonly encryptedPrivateKey: FieldRef<"Wallet", 'String'>
+    readonly balance: FieldRef<"Wallet", 'Decimal'>
+    readonly lastBalanceUpdate: FieldRef<"Wallet", 'DateTime'>
+    readonly createdAt: FieldRef<"Wallet", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Wallet findUnique
+   */
+  export type WalletFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * Filter, which Wallet to fetch.
+     */
+    where: WalletWhereUniqueInput
+  }
+
+  /**
+   * Wallet findUniqueOrThrow
+   */
+  export type WalletFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * Filter, which Wallet to fetch.
+     */
+    where: WalletWhereUniqueInput
+  }
+
+  /**
+   * Wallet findFirst
+   */
+  export type WalletFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * Filter, which Wallet to fetch.
+     */
+    where?: WalletWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Wallets to fetch.
+     */
+    orderBy?: WalletOrderByWithRelationInput | WalletOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Wallets.
+     */
+    cursor?: WalletWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Wallets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Wallets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Wallets.
+     */
+    distinct?: WalletScalarFieldEnum | WalletScalarFieldEnum[]
+  }
+
+  /**
+   * Wallet findFirstOrThrow
+   */
+  export type WalletFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * Filter, which Wallet to fetch.
+     */
+    where?: WalletWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Wallets to fetch.
+     */
+    orderBy?: WalletOrderByWithRelationInput | WalletOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Wallets.
+     */
+    cursor?: WalletWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Wallets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Wallets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Wallets.
+     */
+    distinct?: WalletScalarFieldEnum | WalletScalarFieldEnum[]
+  }
+
+  /**
+   * Wallet findMany
+   */
+  export type WalletFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * Filter, which Wallets to fetch.
+     */
+    where?: WalletWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Wallets to fetch.
+     */
+    orderBy?: WalletOrderByWithRelationInput | WalletOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Wallets.
+     */
+    cursor?: WalletWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Wallets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Wallets.
+     */
+    skip?: number
+    distinct?: WalletScalarFieldEnum | WalletScalarFieldEnum[]
+  }
+
+  /**
+   * Wallet create
+   */
+  export type WalletCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Wallet.
+     */
+    data: XOR<WalletCreateInput, WalletUncheckedCreateInput>
+  }
+
+  /**
+   * Wallet createMany
+   */
+  export type WalletCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Wallets.
+     */
+    data: WalletCreateManyInput | WalletCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Wallet createManyAndReturn
+   */
+  export type WalletCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * The data used to create many Wallets.
+     */
+    data: WalletCreateManyInput | WalletCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Wallet update
+   */
+  export type WalletUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Wallet.
+     */
+    data: XOR<WalletUpdateInput, WalletUncheckedUpdateInput>
+    /**
+     * Choose, which Wallet to update.
+     */
+    where: WalletWhereUniqueInput
+  }
+
+  /**
+   * Wallet updateMany
+   */
+  export type WalletUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Wallets.
+     */
+    data: XOR<WalletUpdateManyMutationInput, WalletUncheckedUpdateManyInput>
+    /**
+     * Filter which Wallets to update
+     */
+    where?: WalletWhereInput
+    /**
+     * Limit how many Wallets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Wallet updateManyAndReturn
+   */
+  export type WalletUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * The data used to update Wallets.
+     */
+    data: XOR<WalletUpdateManyMutationInput, WalletUncheckedUpdateManyInput>
+    /**
+     * Filter which Wallets to update
+     */
+    where?: WalletWhereInput
+    /**
+     * Limit how many Wallets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Wallet upsert
+   */
+  export type WalletUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Wallet to update in case it exists.
+     */
+    where: WalletWhereUniqueInput
+    /**
+     * In case the Wallet found by the `where` argument doesn't exist, create a new Wallet with this data.
+     */
+    create: XOR<WalletCreateInput, WalletUncheckedCreateInput>
+    /**
+     * In case the Wallet was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WalletUpdateInput, WalletUncheckedUpdateInput>
+  }
+
+  /**
+   * Wallet delete
+   */
+  export type WalletDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
+    /**
+     * Filter which Wallet to delete.
+     */
+    where: WalletWhereUniqueInput
+  }
+
+  /**
+   * Wallet deleteMany
+   */
+  export type WalletDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Wallets to delete
+     */
+    where?: WalletWhereInput
+    /**
+     * Limit how many Wallets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Wallet without action
+   */
+  export type WalletDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Wallet
+     */
+    select?: WalletSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Wallet
+     */
+    omit?: WalletOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletInclude<ExtArgs> | null
   }
 
 
@@ -2950,6 +4003,7 @@ export namespace Prisma {
   export type TeamMinAggregateOutputType = {
     id: string | null
     userId: string | null
+    realLifeLeague: $Enums.RealLifeLeague | null
     teamValue: number | null
     captainId: number | null
     createdAt: Date | null
@@ -2959,6 +4013,7 @@ export namespace Prisma {
   export type TeamMaxAggregateOutputType = {
     id: string | null
     userId: string | null
+    realLifeLeague: $Enums.RealLifeLeague | null
     teamValue: number | null
     captainId: number | null
     createdAt: Date | null
@@ -2968,6 +4023,7 @@ export namespace Prisma {
   export type TeamCountAggregateOutputType = {
     id: number
     userId: number
+    realLifeLeague: number
     teamValue: number
     teamPlayers: number
     captainId: number
@@ -2992,6 +4048,7 @@ export namespace Prisma {
   export type TeamMinAggregateInputType = {
     id?: true
     userId?: true
+    realLifeLeague?: true
     teamValue?: true
     captainId?: true
     createdAt?: true
@@ -3001,6 +4058,7 @@ export namespace Prisma {
   export type TeamMaxAggregateInputType = {
     id?: true
     userId?: true
+    realLifeLeague?: true
     teamValue?: true
     captainId?: true
     createdAt?: true
@@ -3010,6 +4068,7 @@ export namespace Prisma {
   export type TeamCountAggregateInputType = {
     id?: true
     userId?: true
+    realLifeLeague?: true
     teamValue?: true
     teamPlayers?: true
     captainId?: true
@@ -3107,6 +4166,7 @@ export namespace Prisma {
   export type TeamGroupByOutputType = {
     id: string
     userId: string
+    realLifeLeague: $Enums.RealLifeLeague
     teamValue: number
     teamPlayers: number[]
     captainId: number | null
@@ -3136,6 +4196,7 @@ export namespace Prisma {
   export type TeamSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    realLifeLeague?: boolean
     teamValue?: boolean
     teamPlayers?: boolean
     captainId?: boolean
@@ -3147,6 +4208,7 @@ export namespace Prisma {
   export type TeamSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    realLifeLeague?: boolean
     teamValue?: boolean
     teamPlayers?: boolean
     captainId?: boolean
@@ -3158,6 +4220,7 @@ export namespace Prisma {
   export type TeamSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    realLifeLeague?: boolean
     teamValue?: boolean
     teamPlayers?: boolean
     captainId?: boolean
@@ -3169,6 +4232,7 @@ export namespace Prisma {
   export type TeamSelectScalar = {
     id?: boolean
     userId?: boolean
+    realLifeLeague?: boolean
     teamValue?: boolean
     teamPlayers?: boolean
     captainId?: boolean
@@ -3176,7 +4240,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type TeamOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "teamValue" | "teamPlayers" | "captainId" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
+  export type TeamOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "realLifeLeague" | "teamValue" | "teamPlayers" | "captainId" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
   export type TeamInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -3195,6 +4259,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
+      realLifeLeague: $Enums.RealLifeLeague
       teamValue: number
       teamPlayers: number[]
       captainId: number | null
@@ -3626,6 +4691,7 @@ export namespace Prisma {
   interface TeamFieldRefs {
     readonly id: FieldRef<"Team", 'String'>
     readonly userId: FieldRef<"Team", 'String'>
+    readonly realLifeLeague: FieldRef<"Team", 'RealLifeLeague'>
     readonly teamValue: FieldRef<"Team", 'Int'>
     readonly teamPlayers: FieldRef<"Team", 'Int[]'>
     readonly captainId: FieldRef<"Team", 'Int'>
@@ -4060,28 +5126,38 @@ export namespace Prisma {
   export type FantasyLeagueAvgAggregateOutputType = {
     limit: number | null
     winners: number | null
+    entryFeeUsd: Decimal | null
+    totalPoolUsd: Decimal | null
+    currentParticipants: number | null
     gameweekId: number | null
   }
 
   export type FantasyLeagueSumAggregateOutputType = {
     limit: number | null
     winners: number | null
+    entryFeeUsd: Decimal | null
+    totalPoolUsd: Decimal | null
+    currentParticipants: number | null
     gameweekId: number | null
   }
 
   export type FantasyLeagueMinAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
     stake: string | null
     limit: number | null
     leagueType: string | null
     leagueMode: string | null
     winners: number | null
-    allowPowerUps: boolean | null
-    description: string | null
     code: string | null
     ownerId: string | null
+    realLifeLeague: $Enums.RealLifeLeague | null
     status: string | null
+    entryFeeUsd: Decimal | null
+    totalPoolUsd: Decimal | null
+    currentParticipants: number | null
+    blockchainTxHash: string | null
     gameweekId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4090,16 +5166,20 @@ export namespace Prisma {
   export type FantasyLeagueMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
     stake: string | null
     limit: number | null
     leagueType: string | null
     leagueMode: string | null
     winners: number | null
-    allowPowerUps: boolean | null
-    description: string | null
     code: string | null
     ownerId: string | null
+    realLifeLeague: $Enums.RealLifeLeague | null
     status: string | null
+    entryFeeUsd: Decimal | null
+    totalPoolUsd: Decimal | null
+    currentParticipants: number | null
+    blockchainTxHash: string | null
     gameweekId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4108,17 +5188,22 @@ export namespace Prisma {
   export type FantasyLeagueCountAggregateOutputType = {
     id: number
     name: number
+    description: number
     stake: number
     limit: number
     leagueType: number
     leagueMode: number
     winners: number
-    allowPowerUps: number
-    description: number
     code: number
     ownerId: number
+    realLifeLeague: number
     status: number
     winnersArray: number
+    entryFeeUsd: number
+    totalPoolUsd: number
+    currentParticipants: number
+    blockchainTxHash: number
+    prizeDistribution: number
     gameweekId: number
     createdAt: number
     updatedAt: number
@@ -4129,28 +5214,38 @@ export namespace Prisma {
   export type FantasyLeagueAvgAggregateInputType = {
     limit?: true
     winners?: true
+    entryFeeUsd?: true
+    totalPoolUsd?: true
+    currentParticipants?: true
     gameweekId?: true
   }
 
   export type FantasyLeagueSumAggregateInputType = {
     limit?: true
     winners?: true
+    entryFeeUsd?: true
+    totalPoolUsd?: true
+    currentParticipants?: true
     gameweekId?: true
   }
 
   export type FantasyLeagueMinAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     stake?: true
     limit?: true
     leagueType?: true
     leagueMode?: true
     winners?: true
-    allowPowerUps?: true
-    description?: true
     code?: true
     ownerId?: true
+    realLifeLeague?: true
     status?: true
+    entryFeeUsd?: true
+    totalPoolUsd?: true
+    currentParticipants?: true
+    blockchainTxHash?: true
     gameweekId?: true
     createdAt?: true
     updatedAt?: true
@@ -4159,16 +5254,20 @@ export namespace Prisma {
   export type FantasyLeagueMaxAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     stake?: true
     limit?: true
     leagueType?: true
     leagueMode?: true
     winners?: true
-    allowPowerUps?: true
-    description?: true
     code?: true
     ownerId?: true
+    realLifeLeague?: true
     status?: true
+    entryFeeUsd?: true
+    totalPoolUsd?: true
+    currentParticipants?: true
+    blockchainTxHash?: true
     gameweekId?: true
     createdAt?: true
     updatedAt?: true
@@ -4177,17 +5276,22 @@ export namespace Prisma {
   export type FantasyLeagueCountAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     stake?: true
     limit?: true
     leagueType?: true
     leagueMode?: true
     winners?: true
-    allowPowerUps?: true
-    description?: true
     code?: true
     ownerId?: true
+    realLifeLeague?: true
     status?: true
     winnersArray?: true
+    entryFeeUsd?: true
+    totalPoolUsd?: true
+    currentParticipants?: true
+    blockchainTxHash?: true
+    prizeDistribution?: true
     gameweekId?: true
     createdAt?: true
     updatedAt?: true
@@ -4283,17 +5387,22 @@ export namespace Prisma {
   export type FantasyLeagueGroupByOutputType = {
     id: string
     name: string
-    stake: string
+    description: string | null
+    stake: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description: string | null
     code: string
     ownerId: string
+    realLifeLeague: $Enums.RealLifeLeague
     status: string
     winnersArray: string[]
+    entryFeeUsd: Decimal
+    totalPoolUsd: Decimal
+    currentParticipants: number
+    blockchainTxHash: string | null
+    prizeDistribution: JsonValue | null
     gameweekId: number
     createdAt: Date
     updatedAt: Date
@@ -4321,40 +5430,51 @@ export namespace Prisma {
   export type FantasyLeagueSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     stake?: boolean
     limit?: boolean
     leagueType?: boolean
     leagueMode?: boolean
     winners?: boolean
-    allowPowerUps?: boolean
-    description?: boolean
     code?: boolean
     ownerId?: boolean
+    realLifeLeague?: boolean
     status?: boolean
     winnersArray?: boolean
+    entryFeeUsd?: boolean
+    totalPoolUsd?: boolean
+    currentParticipants?: boolean
+    blockchainTxHash?: boolean
+    prizeDistribution?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | FantasyLeague$membersArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
+    transactions?: boolean | FantasyLeague$transactionsArgs<ExtArgs>
     _count?: boolean | FantasyLeagueCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fantasyLeague"]>
 
   export type FantasyLeagueSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     stake?: boolean
     limit?: boolean
     leagueType?: boolean
     leagueMode?: boolean
     winners?: boolean
-    allowPowerUps?: boolean
-    description?: boolean
     code?: boolean
     ownerId?: boolean
+    realLifeLeague?: boolean
     status?: boolean
     winnersArray?: boolean
+    entryFeeUsd?: boolean
+    totalPoolUsd?: boolean
+    currentParticipants?: boolean
+    blockchainTxHash?: boolean
+    prizeDistribution?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -4365,17 +5485,22 @@ export namespace Prisma {
   export type FantasyLeagueSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     stake?: boolean
     limit?: boolean
     leagueType?: boolean
     leagueMode?: boolean
     winners?: boolean
-    allowPowerUps?: boolean
-    description?: boolean
     code?: boolean
     ownerId?: boolean
+    realLifeLeague?: boolean
     status?: boolean
     winnersArray?: boolean
+    entryFeeUsd?: boolean
+    totalPoolUsd?: boolean
+    currentParticipants?: boolean
+    blockchainTxHash?: boolean
+    prizeDistribution?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -4386,27 +5511,33 @@ export namespace Prisma {
   export type FantasyLeagueSelectScalar = {
     id?: boolean
     name?: boolean
+    description?: boolean
     stake?: boolean
     limit?: boolean
     leagueType?: boolean
     leagueMode?: boolean
     winners?: boolean
-    allowPowerUps?: boolean
-    description?: boolean
     code?: boolean
     ownerId?: boolean
+    realLifeLeague?: boolean
     status?: boolean
     winnersArray?: boolean
+    entryFeeUsd?: boolean
+    totalPoolUsd?: boolean
+    currentParticipants?: boolean
+    blockchainTxHash?: boolean
+    prizeDistribution?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FantasyLeagueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stake" | "limit" | "leagueType" | "leagueMode" | "winners" | "allowPowerUps" | "description" | "code" | "ownerId" | "status" | "winnersArray" | "gameweekId" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeague"]>
+  export type FantasyLeagueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "stake" | "limit" | "leagueType" | "leagueMode" | "winners" | "code" | "ownerId" | "realLifeLeague" | "status" | "winnersArray" | "entryFeeUsd" | "totalPoolUsd" | "currentParticipants" | "blockchainTxHash" | "prizeDistribution" | "gameweekId" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeague"]>
   export type FantasyLeagueInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | FantasyLeague$membersArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
+    transactions?: boolean | FantasyLeague$transactionsArgs<ExtArgs>
     _count?: boolean | FantasyLeagueCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FantasyLeagueIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4424,21 +5555,27 @@ export namespace Prisma {
       owner: Prisma.$UserPayload<ExtArgs>
       members: Prisma.$FantasyLeagueMembershipPayload<ExtArgs>[]
       gameweek: Prisma.$GameweekPayload<ExtArgs>
+      transactions: Prisma.$TransactionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      stake: string
+      description: string | null
+      stake: string | null
       limit: number
       leagueType: string
       leagueMode: string
       winners: number
-      allowPowerUps: boolean
-      description: string | null
       code: string
       ownerId: string
+      realLifeLeague: $Enums.RealLifeLeague
       status: string
       winnersArray: string[]
+      entryFeeUsd: Prisma.Decimal
+      totalPoolUsd: Prisma.Decimal
+      currentParticipants: number
+      blockchainTxHash: string | null
+      prizeDistribution: Prisma.JsonValue | null
       gameweekId: number
       createdAt: Date
       updatedAt: Date
@@ -4839,6 +5976,7 @@ export namespace Prisma {
     owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     members<T extends FantasyLeague$membersArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeague$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     gameweek<T extends GameweekDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GameweekDefaultArgs<ExtArgs>>): Prisma__GameweekClient<$Result.GetResult<Prisma.$GameweekPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    transactions<T extends FantasyLeague$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeague$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4870,17 +6008,22 @@ export namespace Prisma {
   interface FantasyLeagueFieldRefs {
     readonly id: FieldRef<"FantasyLeague", 'String'>
     readonly name: FieldRef<"FantasyLeague", 'String'>
+    readonly description: FieldRef<"FantasyLeague", 'String'>
     readonly stake: FieldRef<"FantasyLeague", 'String'>
     readonly limit: FieldRef<"FantasyLeague", 'Int'>
     readonly leagueType: FieldRef<"FantasyLeague", 'String'>
     readonly leagueMode: FieldRef<"FantasyLeague", 'String'>
     readonly winners: FieldRef<"FantasyLeague", 'Int'>
-    readonly allowPowerUps: FieldRef<"FantasyLeague", 'Boolean'>
-    readonly description: FieldRef<"FantasyLeague", 'String'>
     readonly code: FieldRef<"FantasyLeague", 'String'>
     readonly ownerId: FieldRef<"FantasyLeague", 'String'>
+    readonly realLifeLeague: FieldRef<"FantasyLeague", 'RealLifeLeague'>
     readonly status: FieldRef<"FantasyLeague", 'String'>
     readonly winnersArray: FieldRef<"FantasyLeague", 'String[]'>
+    readonly entryFeeUsd: FieldRef<"FantasyLeague", 'Decimal'>
+    readonly totalPoolUsd: FieldRef<"FantasyLeague", 'Decimal'>
+    readonly currentParticipants: FieldRef<"FantasyLeague", 'Int'>
+    readonly blockchainTxHash: FieldRef<"FantasyLeague", 'String'>
+    readonly prizeDistribution: FieldRef<"FantasyLeague", 'Json'>
     readonly gameweekId: FieldRef<"FantasyLeague", 'Int'>
     readonly createdAt: FieldRef<"FantasyLeague", 'DateTime'>
     readonly updatedAt: FieldRef<"FantasyLeague", 'DateTime'>
@@ -5304,6 +6447,30 @@ export namespace Prisma {
   }
 
   /**
+   * FantasyLeague.transactions
+   */
+  export type FantasyLeague$transactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transaction
+     */
+    select?: TransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transaction
+     */
+    omit?: TransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TransactionInclude<ExtArgs> | null
+    where?: TransactionWhereInput
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
+    cursor?: TransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
    * FantasyLeague without action
    */
   export type FantasyLeagueDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5328,8 +6495,24 @@ export namespace Prisma {
 
   export type AggregateFantasyLeagueMembership = {
     _count: FantasyLeagueMembershipCountAggregateOutputType | null
+    _avg: FantasyLeagueMembershipAvgAggregateOutputType | null
+    _sum: FantasyLeagueMembershipSumAggregateOutputType | null
     _min: FantasyLeagueMembershipMinAggregateOutputType | null
     _max: FantasyLeagueMembershipMaxAggregateOutputType | null
+  }
+
+  export type FantasyLeagueMembershipAvgAggregateOutputType = {
+    stakeAmount: Decimal | null
+    position: number | null
+    score: Decimal | null
+    payoutAmount: Decimal | null
+  }
+
+  export type FantasyLeagueMembershipSumAggregateOutputType = {
+    stakeAmount: Decimal | null
+    position: number | null
+    score: Decimal | null
+    payoutAmount: Decimal | null
   }
 
   export type FantasyLeagueMembershipMinAggregateOutputType = {
@@ -5337,6 +6520,13 @@ export namespace Prisma {
     userId: string | null
     leagueId: string | null
     teamName: string | null
+    stakeAmount: Decimal | null
+    position: number | null
+    score: Decimal | null
+    payoutAmount: Decimal | null
+    payoutStatus: string | null
+    blockchainTxHash: string | null
+    joinedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5346,6 +6536,13 @@ export namespace Prisma {
     userId: string | null
     leagueId: string | null
     teamName: string | null
+    stakeAmount: Decimal | null
+    position: number | null
+    score: Decimal | null
+    payoutAmount: Decimal | null
+    payoutStatus: string | null
+    blockchainTxHash: string | null
+    joinedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5355,17 +6552,45 @@ export namespace Prisma {
     userId: number
     leagueId: number
     teamName: number
+    stakeAmount: number
+    position: number
+    score: number
+    payoutAmount: number
+    payoutStatus: number
+    blockchainTxHash: number
+    joinedAt: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
 
+  export type FantasyLeagueMembershipAvgAggregateInputType = {
+    stakeAmount?: true
+    position?: true
+    score?: true
+    payoutAmount?: true
+  }
+
+  export type FantasyLeagueMembershipSumAggregateInputType = {
+    stakeAmount?: true
+    position?: true
+    score?: true
+    payoutAmount?: true
+  }
+
   export type FantasyLeagueMembershipMinAggregateInputType = {
     id?: true
     userId?: true
     leagueId?: true
     teamName?: true
+    stakeAmount?: true
+    position?: true
+    score?: true
+    payoutAmount?: true
+    payoutStatus?: true
+    blockchainTxHash?: true
+    joinedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5375,6 +6600,13 @@ export namespace Prisma {
     userId?: true
     leagueId?: true
     teamName?: true
+    stakeAmount?: true
+    position?: true
+    score?: true
+    payoutAmount?: true
+    payoutStatus?: true
+    blockchainTxHash?: true
+    joinedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5384,6 +6616,13 @@ export namespace Prisma {
     userId?: true
     leagueId?: true
     teamName?: true
+    stakeAmount?: true
+    position?: true
+    score?: true
+    payoutAmount?: true
+    payoutStatus?: true
+    blockchainTxHash?: true
+    joinedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5427,6 +6666,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: FantasyLeagueMembershipAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FantasyLeagueMembershipSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: FantasyLeagueMembershipMinAggregateInputType
@@ -5457,6 +6708,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: FantasyLeagueMembershipCountAggregateInputType | true
+    _avg?: FantasyLeagueMembershipAvgAggregateInputType
+    _sum?: FantasyLeagueMembershipSumAggregateInputType
     _min?: FantasyLeagueMembershipMinAggregateInputType
     _max?: FantasyLeagueMembershipMaxAggregateInputType
   }
@@ -5466,9 +6719,18 @@ export namespace Prisma {
     userId: string
     leagueId: string
     teamName: string | null
+    stakeAmount: Decimal | null
+    position: number | null
+    score: Decimal | null
+    payoutAmount: Decimal | null
+    payoutStatus: string
+    blockchainTxHash: string | null
+    joinedAt: Date
     createdAt: Date
     updatedAt: Date
     _count: FantasyLeagueMembershipCountAggregateOutputType | null
+    _avg: FantasyLeagueMembershipAvgAggregateOutputType | null
+    _sum: FantasyLeagueMembershipSumAggregateOutputType | null
     _min: FantasyLeagueMembershipMinAggregateOutputType | null
     _max: FantasyLeagueMembershipMaxAggregateOutputType | null
   }
@@ -5492,12 +6754,17 @@ export namespace Prisma {
     userId?: boolean
     leagueId?: boolean
     teamName?: boolean
+    stakeAmount?: boolean
+    position?: boolean
+    score?: boolean
+    payoutAmount?: boolean
+    payoutStatus?: boolean
+    blockchainTxHash?: boolean
+    joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    powerUps?: boolean | FantasyLeagueMembership$powerUpsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     league?: boolean | FantasyLeagueDefaultArgs<ExtArgs>
-    _count?: boolean | FantasyLeagueMembershipCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fantasyLeagueMembership"]>
 
   export type FantasyLeagueMembershipSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -5505,6 +6772,13 @@ export namespace Prisma {
     userId?: boolean
     leagueId?: boolean
     teamName?: boolean
+    stakeAmount?: boolean
+    position?: boolean
+    score?: boolean
+    payoutAmount?: boolean
+    payoutStatus?: boolean
+    blockchainTxHash?: boolean
+    joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5516,6 +6790,13 @@ export namespace Prisma {
     userId?: boolean
     leagueId?: boolean
     teamName?: boolean
+    stakeAmount?: boolean
+    position?: boolean
+    score?: boolean
+    payoutAmount?: boolean
+    payoutStatus?: boolean
+    blockchainTxHash?: boolean
+    joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5527,16 +6808,21 @@ export namespace Prisma {
     userId?: boolean
     leagueId?: boolean
     teamName?: boolean
+    stakeAmount?: boolean
+    position?: boolean
+    score?: boolean
+    payoutAmount?: boolean
+    payoutStatus?: boolean
+    blockchainTxHash?: boolean
+    joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FantasyLeagueMembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "leagueId" | "teamName" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeagueMembership"]>
+  export type FantasyLeagueMembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "leagueId" | "teamName" | "stakeAmount" | "position" | "score" | "payoutAmount" | "payoutStatus" | "blockchainTxHash" | "joinedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeagueMembership"]>
   export type FantasyLeagueMembershipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    powerUps?: boolean | FantasyLeagueMembership$powerUpsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     league?: boolean | FantasyLeagueDefaultArgs<ExtArgs>
-    _count?: boolean | FantasyLeagueMembershipCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FantasyLeagueMembershipIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5550,7 +6836,6 @@ export namespace Prisma {
   export type $FantasyLeagueMembershipPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FantasyLeagueMembership"
     objects: {
-      powerUps: Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>[]
       user: Prisma.$UserPayload<ExtArgs>
       league: Prisma.$FantasyLeaguePayload<ExtArgs>
     }
@@ -5559,6 +6844,13 @@ export namespace Prisma {
       userId: string
       leagueId: string
       teamName: string | null
+      stakeAmount: Prisma.Decimal | null
+      position: number | null
+      score: Prisma.Decimal | null
+      payoutAmount: Prisma.Decimal | null
+      payoutStatus: string
+      blockchainTxHash: string | null
+      joinedAt: Date
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["fantasyLeagueMembership"]>
@@ -5955,7 +7247,6 @@ export namespace Prisma {
    */
   export interface Prisma__FantasyLeagueMembershipClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    powerUps<T extends FantasyLeagueMembership$powerUpsArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeagueMembership$powerUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     league<T extends FantasyLeagueDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeagueDefaultArgs<ExtArgs>>): Prisma__FantasyLeagueClient<$Result.GetResult<Prisma.$FantasyLeaguePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -5991,6 +7282,13 @@ export namespace Prisma {
     readonly userId: FieldRef<"FantasyLeagueMembership", 'String'>
     readonly leagueId: FieldRef<"FantasyLeagueMembership", 'String'>
     readonly teamName: FieldRef<"FantasyLeagueMembership", 'String'>
+    readonly stakeAmount: FieldRef<"FantasyLeagueMembership", 'Decimal'>
+    readonly position: FieldRef<"FantasyLeagueMembership", 'Int'>
+    readonly score: FieldRef<"FantasyLeagueMembership", 'Decimal'>
+    readonly payoutAmount: FieldRef<"FantasyLeagueMembership", 'Decimal'>
+    readonly payoutStatus: FieldRef<"FantasyLeagueMembership", 'String'>
+    readonly blockchainTxHash: FieldRef<"FantasyLeagueMembership", 'String'>
+    readonly joinedAt: FieldRef<"FantasyLeagueMembership", 'DateTime'>
     readonly createdAt: FieldRef<"FantasyLeagueMembership", 'DateTime'>
     readonly updatedAt: FieldRef<"FantasyLeagueMembership", 'DateTime'>
   }
@@ -6389,30 +7687,6 @@ export namespace Prisma {
   }
 
   /**
-   * FantasyLeagueMembership.powerUps
-   */
-  export type FantasyLeagueMembership$powerUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    orderBy?: FantasyLeagueMembershipPowerUpOrderByWithRelationInput | FantasyLeagueMembershipPowerUpOrderByWithRelationInput[]
-    cursor?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: FantasyLeagueMembershipPowerUpScalarFieldEnum | FantasyLeagueMembershipPowerUpScalarFieldEnum[]
-  }
-
-  /**
    * FantasyLeagueMembership without action
    */
   export type FantasyLeagueMembershipDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6455,18 +7729,21 @@ export namespace Prisma {
     id: number | null
     deadline: Date | null
     isActive: boolean | null
+    realLifeLeague: $Enums.RealLifeLeague | null
   }
 
   export type GameweekMaxAggregateOutputType = {
     id: number | null
     deadline: Date | null
     isActive: boolean | null
+    realLifeLeague: $Enums.RealLifeLeague | null
   }
 
   export type GameweekCountAggregateOutputType = {
     id: number
     deadline: number
     isActive: number
+    realLifeLeague: number
     _all: number
   }
 
@@ -6483,18 +7760,21 @@ export namespace Prisma {
     id?: true
     deadline?: true
     isActive?: true
+    realLifeLeague?: true
   }
 
   export type GameweekMaxAggregateInputType = {
     id?: true
     deadline?: true
     isActive?: true
+    realLifeLeague?: true
   }
 
   export type GameweekCountAggregateInputType = {
     id?: true
     deadline?: true
     isActive?: true
+    realLifeLeague?: true
     _all?: true
   }
 
@@ -6588,6 +7868,7 @@ export namespace Prisma {
     id: number
     deadline: Date
     isActive: boolean
+    realLifeLeague: $Enums.RealLifeLeague
     _count: GameweekCountAggregateOutputType | null
     _avg: GameweekAvgAggregateOutputType | null
     _sum: GameweekSumAggregateOutputType | null
@@ -6613,6 +7894,7 @@ export namespace Prisma {
     id?: boolean
     deadline?: boolean
     isActive?: boolean
+    realLifeLeague?: boolean
     leagues?: boolean | Gameweek$leaguesArgs<ExtArgs>
     _count?: boolean | GameweekCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["gameweek"]>
@@ -6621,21 +7903,24 @@ export namespace Prisma {
     id?: boolean
     deadline?: boolean
     isActive?: boolean
+    realLifeLeague?: boolean
   }, ExtArgs["result"]["gameweek"]>
 
   export type GameweekSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     deadline?: boolean
     isActive?: boolean
+    realLifeLeague?: boolean
   }, ExtArgs["result"]["gameweek"]>
 
   export type GameweekSelectScalar = {
     id?: boolean
     deadline?: boolean
     isActive?: boolean
+    realLifeLeague?: boolean
   }
 
-  export type GameweekOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "deadline" | "isActive", ExtArgs["result"]["gameweek"]>
+  export type GameweekOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "deadline" | "isActive" | "realLifeLeague", ExtArgs["result"]["gameweek"]>
   export type GameweekInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     leagues?: boolean | Gameweek$leaguesArgs<ExtArgs>
     _count?: boolean | GameweekCountOutputTypeDefaultArgs<ExtArgs>
@@ -6652,6 +7937,7 @@ export namespace Prisma {
       id: number
       deadline: Date
       isActive: boolean
+      realLifeLeague: $Enums.RealLifeLeague
     }, ExtArgs["result"]["gameweek"]>
     composites: {}
   }
@@ -7079,6 +8365,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Gameweek", 'Int'>
     readonly deadline: FieldRef<"Gameweek", 'DateTime'>
     readonly isActive: FieldRef<"Gameweek", 'Boolean'>
+    readonly realLifeLeague: FieldRef<"Gameweek", 'RealLifeLeague'>
   }
     
 
@@ -7510,2574 +8797,480 @@ export namespace Prisma {
 
 
   /**
-   * Model PowerUp
+   * Model Transaction
    */
 
-  export type AggregatePowerUp = {
-    _count: PowerUpCountAggregateOutputType | null
-    _min: PowerUpMinAggregateOutputType | null
-    _max: PowerUpMaxAggregateOutputType | null
+  export type AggregateTransaction = {
+    _count: TransactionCountAggregateOutputType | null
+    _avg: TransactionAvgAggregateOutputType | null
+    _sum: TransactionSumAggregateOutputType | null
+    _min: TransactionMinAggregateOutputType | null
+    _max: TransactionMaxAggregateOutputType | null
   }
 
-  export type PowerUpMinAggregateOutputType = {
+  export type TransactionAvgAggregateOutputType = {
+    amount: Decimal | null
+    blockNumber: number | null
+  }
+
+  export type TransactionSumAggregateOutputType = {
+    amount: Decimal | null
+    blockNumber: number | null
+  }
+
+  export type TransactionMinAggregateOutputType = {
     id: string | null
-    name: string | null
-    description: string | null
-    categoryId: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PowerUpMaxAggregateOutputType = {
-    id: string | null
-    name: string | null
-    description: string | null
-    categoryId: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PowerUpCountAggregateOutputType = {
-    id: number
-    name: number
-    description: number
-    categoryId: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type PowerUpMinAggregateInputType = {
-    id?: true
-    name?: true
-    description?: true
-    categoryId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PowerUpMaxAggregateInputType = {
-    id?: true
-    name?: true
-    description?: true
-    categoryId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PowerUpCountAggregateInputType = {
-    id?: true
-    name?: true
-    description?: true
-    categoryId?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type PowerUpAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PowerUp to aggregate.
-     */
-    where?: PowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUps to fetch.
-     */
-    orderBy?: PowerUpOrderByWithRelationInput | PowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: PowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned PowerUps
-    **/
-    _count?: true | PowerUpCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: PowerUpMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: PowerUpMaxAggregateInputType
-  }
-
-  export type GetPowerUpAggregateType<T extends PowerUpAggregateArgs> = {
-        [P in keyof T & keyof AggregatePowerUp]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregatePowerUp[P]>
-      : GetScalarType<T[P], AggregatePowerUp[P]>
-  }
-
-
-
-
-  export type PowerUpGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PowerUpWhereInput
-    orderBy?: PowerUpOrderByWithAggregationInput | PowerUpOrderByWithAggregationInput[]
-    by: PowerUpScalarFieldEnum[] | PowerUpScalarFieldEnum
-    having?: PowerUpScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: PowerUpCountAggregateInputType | true
-    _min?: PowerUpMinAggregateInputType
-    _max?: PowerUpMaxAggregateInputType
-  }
-
-  export type PowerUpGroupByOutputType = {
-    id: string
-    name: string
-    description: string
-    categoryId: string | null
-    createdAt: Date
-    updatedAt: Date
-    _count: PowerUpCountAggregateOutputType | null
-    _min: PowerUpMinAggregateOutputType | null
-    _max: PowerUpMaxAggregateOutputType | null
-  }
-
-  type GetPowerUpGroupByPayload<T extends PowerUpGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<PowerUpGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof PowerUpGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], PowerUpGroupByOutputType[P]>
-            : GetScalarType<T[P], PowerUpGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type PowerUpSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    categoryId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    category?: boolean | PowerUp$categoryArgs<ExtArgs>
-    powerUpUsages?: boolean | PowerUp$powerUpUsagesArgs<ExtArgs>
-    _count?: boolean | PowerUpCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUp"]>
-
-  export type PowerUpSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    categoryId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    category?: boolean | PowerUp$categoryArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUp"]>
-
-  export type PowerUpSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    categoryId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    category?: boolean | PowerUp$categoryArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUp"]>
-
-  export type PowerUpSelectScalar = {
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    categoryId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type PowerUpOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["powerUp"]>
-  export type PowerUpInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    category?: boolean | PowerUp$categoryArgs<ExtArgs>
-    powerUpUsages?: boolean | PowerUp$powerUpUsagesArgs<ExtArgs>
-    _count?: boolean | PowerUpCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type PowerUpIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    category?: boolean | PowerUp$categoryArgs<ExtArgs>
-  }
-  export type PowerUpIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    category?: boolean | PowerUp$categoryArgs<ExtArgs>
-  }
-
-  export type $PowerUpPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PowerUp"
-    objects: {
-      category: Prisma.$PowerUpCategoryPayload<ExtArgs> | null
-      powerUpUsages: Prisma.$PowerUpUsagePayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      name: string
-      description: string
-      categoryId: string | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["powerUp"]>
-    composites: {}
-  }
-
-  type PowerUpGetPayload<S extends boolean | null | undefined | PowerUpDefaultArgs> = $Result.GetResult<Prisma.$PowerUpPayload, S>
-
-  type PowerUpCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PowerUpFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PowerUpCountAggregateInputType | true
-    }
-
-  export interface PowerUpDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PowerUp'], meta: { name: 'PowerUp' } }
-    /**
-     * Find zero or one PowerUp that matches the filter.
-     * @param {PowerUpFindUniqueArgs} args - Arguments to find a PowerUp
-     * @example
-     * // Get one PowerUp
-     * const powerUp = await prisma.powerUp.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends PowerUpFindUniqueArgs>(args: SelectSubset<T, PowerUpFindUniqueArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one PowerUp that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {PowerUpFindUniqueOrThrowArgs} args - Arguments to find a PowerUp
-     * @example
-     * // Get one PowerUp
-     * const powerUp = await prisma.powerUp.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends PowerUpFindUniqueOrThrowArgs>(args: SelectSubset<T, PowerUpFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PowerUp that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpFindFirstArgs} args - Arguments to find a PowerUp
-     * @example
-     * // Get one PowerUp
-     * const powerUp = await prisma.powerUp.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends PowerUpFindFirstArgs>(args?: SelectSubset<T, PowerUpFindFirstArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PowerUp that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpFindFirstOrThrowArgs} args - Arguments to find a PowerUp
-     * @example
-     * // Get one PowerUp
-     * const powerUp = await prisma.powerUp.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends PowerUpFindFirstOrThrowArgs>(args?: SelectSubset<T, PowerUpFindFirstOrThrowArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more PowerUps that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all PowerUps
-     * const powerUps = await prisma.powerUp.findMany()
-     * 
-     * // Get first 10 PowerUps
-     * const powerUps = await prisma.powerUp.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const powerUpWithIdOnly = await prisma.powerUp.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends PowerUpFindManyArgs>(args?: SelectSubset<T, PowerUpFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a PowerUp.
-     * @param {PowerUpCreateArgs} args - Arguments to create a PowerUp.
-     * @example
-     * // Create one PowerUp
-     * const PowerUp = await prisma.powerUp.create({
-     *   data: {
-     *     // ... data to create a PowerUp
-     *   }
-     * })
-     * 
-     */
-    create<T extends PowerUpCreateArgs>(args: SelectSubset<T, PowerUpCreateArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many PowerUps.
-     * @param {PowerUpCreateManyArgs} args - Arguments to create many PowerUps.
-     * @example
-     * // Create many PowerUps
-     * const powerUp = await prisma.powerUp.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends PowerUpCreateManyArgs>(args?: SelectSubset<T, PowerUpCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many PowerUps and returns the data saved in the database.
-     * @param {PowerUpCreateManyAndReturnArgs} args - Arguments to create many PowerUps.
-     * @example
-     * // Create many PowerUps
-     * const powerUp = await prisma.powerUp.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many PowerUps and only return the `id`
-     * const powerUpWithIdOnly = await prisma.powerUp.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends PowerUpCreateManyAndReturnArgs>(args?: SelectSubset<T, PowerUpCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a PowerUp.
-     * @param {PowerUpDeleteArgs} args - Arguments to delete one PowerUp.
-     * @example
-     * // Delete one PowerUp
-     * const PowerUp = await prisma.powerUp.delete({
-     *   where: {
-     *     // ... filter to delete one PowerUp
-     *   }
-     * })
-     * 
-     */
-    delete<T extends PowerUpDeleteArgs>(args: SelectSubset<T, PowerUpDeleteArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one PowerUp.
-     * @param {PowerUpUpdateArgs} args - Arguments to update one PowerUp.
-     * @example
-     * // Update one PowerUp
-     * const powerUp = await prisma.powerUp.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends PowerUpUpdateArgs>(args: SelectSubset<T, PowerUpUpdateArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more PowerUps.
-     * @param {PowerUpDeleteManyArgs} args - Arguments to filter PowerUps to delete.
-     * @example
-     * // Delete a few PowerUps
-     * const { count } = await prisma.powerUp.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends PowerUpDeleteManyArgs>(args?: SelectSubset<T, PowerUpDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PowerUps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many PowerUps
-     * const powerUp = await prisma.powerUp.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends PowerUpUpdateManyArgs>(args: SelectSubset<T, PowerUpUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PowerUps and returns the data updated in the database.
-     * @param {PowerUpUpdateManyAndReturnArgs} args - Arguments to update many PowerUps.
-     * @example
-     * // Update many PowerUps
-     * const powerUp = await prisma.powerUp.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more PowerUps and only return the `id`
-     * const powerUpWithIdOnly = await prisma.powerUp.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends PowerUpUpdateManyAndReturnArgs>(args: SelectSubset<T, PowerUpUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one PowerUp.
-     * @param {PowerUpUpsertArgs} args - Arguments to update or create a PowerUp.
-     * @example
-     * // Update or create a PowerUp
-     * const powerUp = await prisma.powerUp.upsert({
-     *   create: {
-     *     // ... data to create a PowerUp
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the PowerUp we want to update
-     *   }
-     * })
-     */
-    upsert<T extends PowerUpUpsertArgs>(args: SelectSubset<T, PowerUpUpsertArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of PowerUps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCountArgs} args - Arguments to filter PowerUps to count.
-     * @example
-     * // Count the number of PowerUps
-     * const count = await prisma.powerUp.count({
-     *   where: {
-     *     // ... the filter for the PowerUps we want to count
-     *   }
-     * })
-    **/
-    count<T extends PowerUpCountArgs>(
-      args?: Subset<T, PowerUpCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], PowerUpCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a PowerUp.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends PowerUpAggregateArgs>(args: Subset<T, PowerUpAggregateArgs>): Prisma.PrismaPromise<GetPowerUpAggregateType<T>>
-
-    /**
-     * Group by PowerUp.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends PowerUpGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PowerUpGroupByArgs['orderBy'] }
-        : { orderBy?: PowerUpGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, PowerUpGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPowerUpGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the PowerUp model
-   */
-  readonly fields: PowerUpFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for PowerUp.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__PowerUpClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    category<T extends PowerUp$categoryArgs<ExtArgs> = {}>(args?: Subset<T, PowerUp$categoryArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    powerUpUsages<T extends PowerUp$powerUpUsagesArgs<ExtArgs> = {}>(args?: Subset<T, PowerUp$powerUpUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the PowerUp model
-   */
-  interface PowerUpFieldRefs {
-    readonly id: FieldRef<"PowerUp", 'String'>
-    readonly name: FieldRef<"PowerUp", 'String'>
-    readonly description: FieldRef<"PowerUp", 'String'>
-    readonly categoryId: FieldRef<"PowerUp", 'String'>
-    readonly createdAt: FieldRef<"PowerUp", 'DateTime'>
-    readonly updatedAt: FieldRef<"PowerUp", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * PowerUp findUnique
-   */
-  export type PowerUpFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUp to fetch.
-     */
-    where: PowerUpWhereUniqueInput
-  }
-
-  /**
-   * PowerUp findUniqueOrThrow
-   */
-  export type PowerUpFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUp to fetch.
-     */
-    where: PowerUpWhereUniqueInput
-  }
-
-  /**
-   * PowerUp findFirst
-   */
-  export type PowerUpFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUp to fetch.
-     */
-    where?: PowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUps to fetch.
-     */
-    orderBy?: PowerUpOrderByWithRelationInput | PowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PowerUps.
-     */
-    cursor?: PowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PowerUps.
-     */
-    distinct?: PowerUpScalarFieldEnum | PowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUp findFirstOrThrow
-   */
-  export type PowerUpFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUp to fetch.
-     */
-    where?: PowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUps to fetch.
-     */
-    orderBy?: PowerUpOrderByWithRelationInput | PowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PowerUps.
-     */
-    cursor?: PowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PowerUps.
-     */
-    distinct?: PowerUpScalarFieldEnum | PowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUp findMany
-   */
-  export type PowerUpFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUps to fetch.
-     */
-    where?: PowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUps to fetch.
-     */
-    orderBy?: PowerUpOrderByWithRelationInput | PowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing PowerUps.
-     */
-    cursor?: PowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUps.
-     */
-    skip?: number
-    distinct?: PowerUpScalarFieldEnum | PowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUp create
-   */
-  export type PowerUpCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * The data needed to create a PowerUp.
-     */
-    data: XOR<PowerUpCreateInput, PowerUpUncheckedCreateInput>
-  }
-
-  /**
-   * PowerUp createMany
-   */
-  export type PowerUpCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many PowerUps.
-     */
-    data: PowerUpCreateManyInput | PowerUpCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * PowerUp createManyAndReturn
-   */
-  export type PowerUpCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * The data used to create many PowerUps.
-     */
-    data: PowerUpCreateManyInput | PowerUpCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * PowerUp update
-   */
-  export type PowerUpUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * The data needed to update a PowerUp.
-     */
-    data: XOR<PowerUpUpdateInput, PowerUpUncheckedUpdateInput>
-    /**
-     * Choose, which PowerUp to update.
-     */
-    where: PowerUpWhereUniqueInput
-  }
-
-  /**
-   * PowerUp updateMany
-   */
-  export type PowerUpUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update PowerUps.
-     */
-    data: XOR<PowerUpUpdateManyMutationInput, PowerUpUncheckedUpdateManyInput>
-    /**
-     * Filter which PowerUps to update
-     */
-    where?: PowerUpWhereInput
-    /**
-     * Limit how many PowerUps to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * PowerUp updateManyAndReturn
-   */
-  export type PowerUpUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * The data used to update PowerUps.
-     */
-    data: XOR<PowerUpUpdateManyMutationInput, PowerUpUncheckedUpdateManyInput>
-    /**
-     * Filter which PowerUps to update
-     */
-    where?: PowerUpWhereInput
-    /**
-     * Limit how many PowerUps to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * PowerUp upsert
-   */
-  export type PowerUpUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * The filter to search for the PowerUp to update in case it exists.
-     */
-    where: PowerUpWhereUniqueInput
-    /**
-     * In case the PowerUp found by the `where` argument doesn't exist, create a new PowerUp with this data.
-     */
-    create: XOR<PowerUpCreateInput, PowerUpUncheckedCreateInput>
-    /**
-     * In case the PowerUp was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<PowerUpUpdateInput, PowerUpUncheckedUpdateInput>
-  }
-
-  /**
-   * PowerUp delete
-   */
-  export type PowerUpDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    /**
-     * Filter which PowerUp to delete.
-     */
-    where: PowerUpWhereUniqueInput
-  }
-
-  /**
-   * PowerUp deleteMany
-   */
-  export type PowerUpDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PowerUps to delete
-     */
-    where?: PowerUpWhereInput
-    /**
-     * Limit how many PowerUps to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * PowerUp.category
-   */
-  export type PowerUp$categoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    where?: PowerUpCategoryWhereInput
-  }
-
-  /**
-   * PowerUp.powerUpUsages
-   */
-  export type PowerUp$powerUpUsagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpUsage
-     */
-    select?: PowerUpUsageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpUsage
-     */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpUsageInclude<ExtArgs> | null
-    where?: PowerUpUsageWhereInput
-    orderBy?: PowerUpUsageOrderByWithRelationInput | PowerUpUsageOrderByWithRelationInput[]
-    cursor?: PowerUpUsageWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PowerUpUsageScalarFieldEnum | PowerUpUsageScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUp without action
-   */
-  export type PowerUpDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model PowerUpCategory
-   */
-
-  export type AggregatePowerUpCategory = {
-    _count: PowerUpCategoryCountAggregateOutputType | null
-    _min: PowerUpCategoryMinAggregateOutputType | null
-    _max: PowerUpCategoryMaxAggregateOutputType | null
-  }
-
-  export type PowerUpCategoryMinAggregateOutputType = {
-    id: string | null
-    name: string | null
-    description: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PowerUpCategoryMaxAggregateOutputType = {
-    id: string | null
-    name: string | null
-    description: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PowerUpCategoryCountAggregateOutputType = {
-    id: number
-    name: number
-    description: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type PowerUpCategoryMinAggregateInputType = {
-    id?: true
-    name?: true
-    description?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PowerUpCategoryMaxAggregateInputType = {
-    id?: true
-    name?: true
-    description?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PowerUpCategoryCountAggregateInputType = {
-    id?: true
-    name?: true
-    description?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type PowerUpCategoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PowerUpCategory to aggregate.
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUpCategories to fetch.
-     */
-    orderBy?: PowerUpCategoryOrderByWithRelationInput | PowerUpCategoryOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: PowerUpCategoryWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUpCategories from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUpCategories.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned PowerUpCategories
-    **/
-    _count?: true | PowerUpCategoryCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: PowerUpCategoryMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: PowerUpCategoryMaxAggregateInputType
-  }
-
-  export type GetPowerUpCategoryAggregateType<T extends PowerUpCategoryAggregateArgs> = {
-        [P in keyof T & keyof AggregatePowerUpCategory]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregatePowerUpCategory[P]>
-      : GetScalarType<T[P], AggregatePowerUpCategory[P]>
-  }
-
-
-
-
-  export type PowerUpCategoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PowerUpCategoryWhereInput
-    orderBy?: PowerUpCategoryOrderByWithAggregationInput | PowerUpCategoryOrderByWithAggregationInput[]
-    by: PowerUpCategoryScalarFieldEnum[] | PowerUpCategoryScalarFieldEnum
-    having?: PowerUpCategoryScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: PowerUpCategoryCountAggregateInputType | true
-    _min?: PowerUpCategoryMinAggregateInputType
-    _max?: PowerUpCategoryMaxAggregateInputType
-  }
-
-  export type PowerUpCategoryGroupByOutputType = {
-    id: string
-    name: string
-    description: string
-    createdAt: Date
-    updatedAt: Date
-    _count: PowerUpCategoryCountAggregateOutputType | null
-    _min: PowerUpCategoryMinAggregateOutputType | null
-    _max: PowerUpCategoryMaxAggregateOutputType | null
-  }
-
-  type GetPowerUpCategoryGroupByPayload<T extends PowerUpCategoryGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<PowerUpCategoryGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof PowerUpCategoryGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], PowerUpCategoryGroupByOutputType[P]>
-            : GetScalarType<T[P], PowerUpCategoryGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type PowerUpCategorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    powerUps?: boolean | PowerUpCategory$powerUpsArgs<ExtArgs>
-    _count?: boolean | PowerUpCategoryCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUpCategory"]>
-
-  export type PowerUpCategorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["powerUpCategory"]>
-
-  export type PowerUpCategorySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["powerUpCategory"]>
-
-  export type PowerUpCategorySelectScalar = {
-    id?: boolean
-    name?: boolean
-    description?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type PowerUpCategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["powerUpCategory"]>
-  export type PowerUpCategoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    powerUps?: boolean | PowerUpCategory$powerUpsArgs<ExtArgs>
-    _count?: boolean | PowerUpCategoryCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type PowerUpCategoryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type PowerUpCategoryIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-
-  export type $PowerUpCategoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PowerUpCategory"
-    objects: {
-      powerUps: Prisma.$PowerUpPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      name: string
-      description: string
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["powerUpCategory"]>
-    composites: {}
-  }
-
-  type PowerUpCategoryGetPayload<S extends boolean | null | undefined | PowerUpCategoryDefaultArgs> = $Result.GetResult<Prisma.$PowerUpCategoryPayload, S>
-
-  type PowerUpCategoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PowerUpCategoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PowerUpCategoryCountAggregateInputType | true
-    }
-
-  export interface PowerUpCategoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PowerUpCategory'], meta: { name: 'PowerUpCategory' } }
-    /**
-     * Find zero or one PowerUpCategory that matches the filter.
-     * @param {PowerUpCategoryFindUniqueArgs} args - Arguments to find a PowerUpCategory
-     * @example
-     * // Get one PowerUpCategory
-     * const powerUpCategory = await prisma.powerUpCategory.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends PowerUpCategoryFindUniqueArgs>(args: SelectSubset<T, PowerUpCategoryFindUniqueArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one PowerUpCategory that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {PowerUpCategoryFindUniqueOrThrowArgs} args - Arguments to find a PowerUpCategory
-     * @example
-     * // Get one PowerUpCategory
-     * const powerUpCategory = await prisma.powerUpCategory.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends PowerUpCategoryFindUniqueOrThrowArgs>(args: SelectSubset<T, PowerUpCategoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PowerUpCategory that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryFindFirstArgs} args - Arguments to find a PowerUpCategory
-     * @example
-     * // Get one PowerUpCategory
-     * const powerUpCategory = await prisma.powerUpCategory.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends PowerUpCategoryFindFirstArgs>(args?: SelectSubset<T, PowerUpCategoryFindFirstArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PowerUpCategory that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryFindFirstOrThrowArgs} args - Arguments to find a PowerUpCategory
-     * @example
-     * // Get one PowerUpCategory
-     * const powerUpCategory = await prisma.powerUpCategory.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends PowerUpCategoryFindFirstOrThrowArgs>(args?: SelectSubset<T, PowerUpCategoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more PowerUpCategories that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all PowerUpCategories
-     * const powerUpCategories = await prisma.powerUpCategory.findMany()
-     * 
-     * // Get first 10 PowerUpCategories
-     * const powerUpCategories = await prisma.powerUpCategory.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const powerUpCategoryWithIdOnly = await prisma.powerUpCategory.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends PowerUpCategoryFindManyArgs>(args?: SelectSubset<T, PowerUpCategoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a PowerUpCategory.
-     * @param {PowerUpCategoryCreateArgs} args - Arguments to create a PowerUpCategory.
-     * @example
-     * // Create one PowerUpCategory
-     * const PowerUpCategory = await prisma.powerUpCategory.create({
-     *   data: {
-     *     // ... data to create a PowerUpCategory
-     *   }
-     * })
-     * 
-     */
-    create<T extends PowerUpCategoryCreateArgs>(args: SelectSubset<T, PowerUpCategoryCreateArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many PowerUpCategories.
-     * @param {PowerUpCategoryCreateManyArgs} args - Arguments to create many PowerUpCategories.
-     * @example
-     * // Create many PowerUpCategories
-     * const powerUpCategory = await prisma.powerUpCategory.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends PowerUpCategoryCreateManyArgs>(args?: SelectSubset<T, PowerUpCategoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many PowerUpCategories and returns the data saved in the database.
-     * @param {PowerUpCategoryCreateManyAndReturnArgs} args - Arguments to create many PowerUpCategories.
-     * @example
-     * // Create many PowerUpCategories
-     * const powerUpCategory = await prisma.powerUpCategory.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many PowerUpCategories and only return the `id`
-     * const powerUpCategoryWithIdOnly = await prisma.powerUpCategory.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends PowerUpCategoryCreateManyAndReturnArgs>(args?: SelectSubset<T, PowerUpCategoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a PowerUpCategory.
-     * @param {PowerUpCategoryDeleteArgs} args - Arguments to delete one PowerUpCategory.
-     * @example
-     * // Delete one PowerUpCategory
-     * const PowerUpCategory = await prisma.powerUpCategory.delete({
-     *   where: {
-     *     // ... filter to delete one PowerUpCategory
-     *   }
-     * })
-     * 
-     */
-    delete<T extends PowerUpCategoryDeleteArgs>(args: SelectSubset<T, PowerUpCategoryDeleteArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one PowerUpCategory.
-     * @param {PowerUpCategoryUpdateArgs} args - Arguments to update one PowerUpCategory.
-     * @example
-     * // Update one PowerUpCategory
-     * const powerUpCategory = await prisma.powerUpCategory.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends PowerUpCategoryUpdateArgs>(args: SelectSubset<T, PowerUpCategoryUpdateArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more PowerUpCategories.
-     * @param {PowerUpCategoryDeleteManyArgs} args - Arguments to filter PowerUpCategories to delete.
-     * @example
-     * // Delete a few PowerUpCategories
-     * const { count } = await prisma.powerUpCategory.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends PowerUpCategoryDeleteManyArgs>(args?: SelectSubset<T, PowerUpCategoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PowerUpCategories.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many PowerUpCategories
-     * const powerUpCategory = await prisma.powerUpCategory.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends PowerUpCategoryUpdateManyArgs>(args: SelectSubset<T, PowerUpCategoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PowerUpCategories and returns the data updated in the database.
-     * @param {PowerUpCategoryUpdateManyAndReturnArgs} args - Arguments to update many PowerUpCategories.
-     * @example
-     * // Update many PowerUpCategories
-     * const powerUpCategory = await prisma.powerUpCategory.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more PowerUpCategories and only return the `id`
-     * const powerUpCategoryWithIdOnly = await prisma.powerUpCategory.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends PowerUpCategoryUpdateManyAndReturnArgs>(args: SelectSubset<T, PowerUpCategoryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one PowerUpCategory.
-     * @param {PowerUpCategoryUpsertArgs} args - Arguments to update or create a PowerUpCategory.
-     * @example
-     * // Update or create a PowerUpCategory
-     * const powerUpCategory = await prisma.powerUpCategory.upsert({
-     *   create: {
-     *     // ... data to create a PowerUpCategory
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the PowerUpCategory we want to update
-     *   }
-     * })
-     */
-    upsert<T extends PowerUpCategoryUpsertArgs>(args: SelectSubset<T, PowerUpCategoryUpsertArgs<ExtArgs>>): Prisma__PowerUpCategoryClient<$Result.GetResult<Prisma.$PowerUpCategoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of PowerUpCategories.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryCountArgs} args - Arguments to filter PowerUpCategories to count.
-     * @example
-     * // Count the number of PowerUpCategories
-     * const count = await prisma.powerUpCategory.count({
-     *   where: {
-     *     // ... the filter for the PowerUpCategories we want to count
-     *   }
-     * })
-    **/
-    count<T extends PowerUpCategoryCountArgs>(
-      args?: Subset<T, PowerUpCategoryCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], PowerUpCategoryCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a PowerUpCategory.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends PowerUpCategoryAggregateArgs>(args: Subset<T, PowerUpCategoryAggregateArgs>): Prisma.PrismaPromise<GetPowerUpCategoryAggregateType<T>>
-
-    /**
-     * Group by PowerUpCategory.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpCategoryGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends PowerUpCategoryGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PowerUpCategoryGroupByArgs['orderBy'] }
-        : { orderBy?: PowerUpCategoryGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, PowerUpCategoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPowerUpCategoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the PowerUpCategory model
-   */
-  readonly fields: PowerUpCategoryFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for PowerUpCategory.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__PowerUpCategoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    powerUps<T extends PowerUpCategory$powerUpsArgs<ExtArgs> = {}>(args?: Subset<T, PowerUpCategory$powerUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the PowerUpCategory model
-   */
-  interface PowerUpCategoryFieldRefs {
-    readonly id: FieldRef<"PowerUpCategory", 'String'>
-    readonly name: FieldRef<"PowerUpCategory", 'String'>
-    readonly description: FieldRef<"PowerUpCategory", 'String'>
-    readonly createdAt: FieldRef<"PowerUpCategory", 'DateTime'>
-    readonly updatedAt: FieldRef<"PowerUpCategory", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * PowerUpCategory findUnique
-   */
-  export type PowerUpCategoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUpCategory to fetch.
-     */
-    where: PowerUpCategoryWhereUniqueInput
-  }
-
-  /**
-   * PowerUpCategory findUniqueOrThrow
-   */
-  export type PowerUpCategoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUpCategory to fetch.
-     */
-    where: PowerUpCategoryWhereUniqueInput
-  }
-
-  /**
-   * PowerUpCategory findFirst
-   */
-  export type PowerUpCategoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUpCategory to fetch.
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUpCategories to fetch.
-     */
-    orderBy?: PowerUpCategoryOrderByWithRelationInput | PowerUpCategoryOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PowerUpCategories.
-     */
-    cursor?: PowerUpCategoryWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUpCategories from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUpCategories.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PowerUpCategories.
-     */
-    distinct?: PowerUpCategoryScalarFieldEnum | PowerUpCategoryScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUpCategory findFirstOrThrow
-   */
-  export type PowerUpCategoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUpCategory to fetch.
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUpCategories to fetch.
-     */
-    orderBy?: PowerUpCategoryOrderByWithRelationInput | PowerUpCategoryOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PowerUpCategories.
-     */
-    cursor?: PowerUpCategoryWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUpCategories from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUpCategories.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PowerUpCategories.
-     */
-    distinct?: PowerUpCategoryScalarFieldEnum | PowerUpCategoryScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUpCategory findMany
-   */
-  export type PowerUpCategoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * Filter, which PowerUpCategories to fetch.
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PowerUpCategories to fetch.
-     */
-    orderBy?: PowerUpCategoryOrderByWithRelationInput | PowerUpCategoryOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing PowerUpCategories.
-     */
-    cursor?: PowerUpCategoryWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PowerUpCategories from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PowerUpCategories.
-     */
-    skip?: number
-    distinct?: PowerUpCategoryScalarFieldEnum | PowerUpCategoryScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUpCategory create
-   */
-  export type PowerUpCategoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * The data needed to create a PowerUpCategory.
-     */
-    data: XOR<PowerUpCategoryCreateInput, PowerUpCategoryUncheckedCreateInput>
-  }
-
-  /**
-   * PowerUpCategory createMany
-   */
-  export type PowerUpCategoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many PowerUpCategories.
-     */
-    data: PowerUpCategoryCreateManyInput | PowerUpCategoryCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * PowerUpCategory createManyAndReturn
-   */
-  export type PowerUpCategoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * The data used to create many PowerUpCategories.
-     */
-    data: PowerUpCategoryCreateManyInput | PowerUpCategoryCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * PowerUpCategory update
-   */
-  export type PowerUpCategoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * The data needed to update a PowerUpCategory.
-     */
-    data: XOR<PowerUpCategoryUpdateInput, PowerUpCategoryUncheckedUpdateInput>
-    /**
-     * Choose, which PowerUpCategory to update.
-     */
-    where: PowerUpCategoryWhereUniqueInput
-  }
-
-  /**
-   * PowerUpCategory updateMany
-   */
-  export type PowerUpCategoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update PowerUpCategories.
-     */
-    data: XOR<PowerUpCategoryUpdateManyMutationInput, PowerUpCategoryUncheckedUpdateManyInput>
-    /**
-     * Filter which PowerUpCategories to update
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * Limit how many PowerUpCategories to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * PowerUpCategory updateManyAndReturn
-   */
-  export type PowerUpCategoryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * The data used to update PowerUpCategories.
-     */
-    data: XOR<PowerUpCategoryUpdateManyMutationInput, PowerUpCategoryUncheckedUpdateManyInput>
-    /**
-     * Filter which PowerUpCategories to update
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * Limit how many PowerUpCategories to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * PowerUpCategory upsert
-   */
-  export type PowerUpCategoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * The filter to search for the PowerUpCategory to update in case it exists.
-     */
-    where: PowerUpCategoryWhereUniqueInput
-    /**
-     * In case the PowerUpCategory found by the `where` argument doesn't exist, create a new PowerUpCategory with this data.
-     */
-    create: XOR<PowerUpCategoryCreateInput, PowerUpCategoryUncheckedCreateInput>
-    /**
-     * In case the PowerUpCategory was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<PowerUpCategoryUpdateInput, PowerUpCategoryUncheckedUpdateInput>
-  }
-
-  /**
-   * PowerUpCategory delete
-   */
-  export type PowerUpCategoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-    /**
-     * Filter which PowerUpCategory to delete.
-     */
-    where: PowerUpCategoryWhereUniqueInput
-  }
-
-  /**
-   * PowerUpCategory deleteMany
-   */
-  export type PowerUpCategoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PowerUpCategories to delete
-     */
-    where?: PowerUpCategoryWhereInput
-    /**
-     * Limit how many PowerUpCategories to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * PowerUpCategory.powerUps
-   */
-  export type PowerUpCategory$powerUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUp
-     */
-    select?: PowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUp
-     */
-    omit?: PowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpInclude<ExtArgs> | null
-    where?: PowerUpWhereInput
-    orderBy?: PowerUpOrderByWithRelationInput | PowerUpOrderByWithRelationInput[]
-    cursor?: PowerUpWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PowerUpScalarFieldEnum | PowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * PowerUpCategory without action
-   */
-  export type PowerUpCategoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PowerUpCategory
-     */
-    select?: PowerUpCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PowerUpCategory
-     */
-    omit?: PowerUpCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PowerUpCategoryInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model PowerUpUsage
-   */
-
-  export type AggregatePowerUpUsage = {
-    _count: PowerUpUsageCountAggregateOutputType | null
-    _min: PowerUpUsageMinAggregateOutputType | null
-    _max: PowerUpUsageMaxAggregateOutputType | null
-  }
-
-  export type PowerUpUsageMinAggregateOutputType = {
-    id: string | null
+    txHash: string | null
+    type: string | null
+    leagueId: string | null
     userId: string | null
-    powerUpId: string | null
-    transactionId: string | null
-    isVerified: boolean | null
+    amount: Decimal | null
+    status: string | null
+    blockNumber: number | null
+    gasUsed: string | null
+    errorMessage: string | null
     createdAt: Date | null
-    updatedAt: Date | null
+    confirmedAt: Date | null
   }
 
-  export type PowerUpUsageMaxAggregateOutputType = {
+  export type TransactionMaxAggregateOutputType = {
     id: string | null
+    txHash: string | null
+    type: string | null
+    leagueId: string | null
     userId: string | null
-    powerUpId: string | null
-    transactionId: string | null
-    isVerified: boolean | null
+    amount: Decimal | null
+    status: string | null
+    blockNumber: number | null
+    gasUsed: string | null
+    errorMessage: string | null
     createdAt: Date | null
-    updatedAt: Date | null
+    confirmedAt: Date | null
   }
 
-  export type PowerUpUsageCountAggregateOutputType = {
+  export type TransactionCountAggregateOutputType = {
     id: number
+    txHash: number
+    type: number
+    leagueId: number
     userId: number
-    powerUpId: number
-    transactionId: number
-    isVerified: number
+    amount: number
+    status: number
+    blockNumber: number
+    gasUsed: number
+    errorMessage: number
+    metadata: number
     createdAt: number
-    updatedAt: number
+    confirmedAt: number
     _all: number
   }
 
 
-  export type PowerUpUsageMinAggregateInputType = {
-    id?: true
-    userId?: true
-    powerUpId?: true
-    transactionId?: true
-    isVerified?: true
-    createdAt?: true
-    updatedAt?: true
+  export type TransactionAvgAggregateInputType = {
+    amount?: true
+    blockNumber?: true
   }
 
-  export type PowerUpUsageMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    powerUpId?: true
-    transactionId?: true
-    isVerified?: true
-    createdAt?: true
-    updatedAt?: true
+  export type TransactionSumAggregateInputType = {
+    amount?: true
+    blockNumber?: true
   }
 
-  export type PowerUpUsageCountAggregateInputType = {
+  export type TransactionMinAggregateInputType = {
     id?: true
+    txHash?: true
+    type?: true
+    leagueId?: true
     userId?: true
-    powerUpId?: true
-    transactionId?: true
-    isVerified?: true
+    amount?: true
+    status?: true
+    blockNumber?: true
+    gasUsed?: true
+    errorMessage?: true
     createdAt?: true
-    updatedAt?: true
+    confirmedAt?: true
+  }
+
+  export type TransactionMaxAggregateInputType = {
+    id?: true
+    txHash?: true
+    type?: true
+    leagueId?: true
+    userId?: true
+    amount?: true
+    status?: true
+    blockNumber?: true
+    gasUsed?: true
+    errorMessage?: true
+    createdAt?: true
+    confirmedAt?: true
+  }
+
+  export type TransactionCountAggregateInputType = {
+    id?: true
+    txHash?: true
+    type?: true
+    leagueId?: true
+    userId?: true
+    amount?: true
+    status?: true
+    blockNumber?: true
+    gasUsed?: true
+    errorMessage?: true
+    metadata?: true
+    createdAt?: true
+    confirmedAt?: true
     _all?: true
   }
 
-  export type PowerUpUsageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which PowerUpUsage to aggregate.
+     * Filter which Transaction to aggregate.
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PowerUpUsages to fetch.
+     * Determine the order of Transactions to fetch.
      */
-    orderBy?: PowerUpUsageOrderByWithRelationInput | PowerUpUsageOrderByWithRelationInput[]
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: PowerUpUsageWhereUniqueInput
+    cursor?: TransactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PowerUpUsages from the position of the cursor.
+     * Take `±n` Transactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PowerUpUsages.
+     * Skip the first `n` Transactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned PowerUpUsages
+     * Count returned Transactions
     **/
-    _count?: true | PowerUpUsageCountAggregateInputType
+    _count?: true | TransactionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TransactionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TransactionSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: PowerUpUsageMinAggregateInputType
+    _min?: TransactionMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: PowerUpUsageMaxAggregateInputType
+    _max?: TransactionMaxAggregateInputType
   }
 
-  export type GetPowerUpUsageAggregateType<T extends PowerUpUsageAggregateArgs> = {
-        [P in keyof T & keyof AggregatePowerUpUsage]: P extends '_count' | 'count'
+  export type GetTransactionAggregateType<T extends TransactionAggregateArgs> = {
+        [P in keyof T & keyof AggregateTransaction]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregatePowerUpUsage[P]>
-      : GetScalarType<T[P], AggregatePowerUpUsage[P]>
+        : GetScalarType<T[P], AggregateTransaction[P]>
+      : GetScalarType<T[P], AggregateTransaction[P]>
   }
 
 
 
 
-  export type PowerUpUsageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PowerUpUsageWhereInput
-    orderBy?: PowerUpUsageOrderByWithAggregationInput | PowerUpUsageOrderByWithAggregationInput[]
-    by: PowerUpUsageScalarFieldEnum[] | PowerUpUsageScalarFieldEnum
-    having?: PowerUpUsageScalarWhereWithAggregatesInput
+  export type TransactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TransactionWhereInput
+    orderBy?: TransactionOrderByWithAggregationInput | TransactionOrderByWithAggregationInput[]
+    by: TransactionScalarFieldEnum[] | TransactionScalarFieldEnum
+    having?: TransactionScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: PowerUpUsageCountAggregateInputType | true
-    _min?: PowerUpUsageMinAggregateInputType
-    _max?: PowerUpUsageMaxAggregateInputType
+    _count?: TransactionCountAggregateInputType | true
+    _avg?: TransactionAvgAggregateInputType
+    _sum?: TransactionSumAggregateInputType
+    _min?: TransactionMinAggregateInputType
+    _max?: TransactionMaxAggregateInputType
   }
 
-  export type PowerUpUsageGroupByOutputType = {
+  export type TransactionGroupByOutputType = {
     id: string
-    userId: string
-    powerUpId: string
-    transactionId: string
-    isVerified: boolean
+    txHash: string
+    type: string
+    leagueId: string | null
+    userId: string | null
+    amount: Decimal | null
+    status: string
+    blockNumber: number | null
+    gasUsed: string | null
+    errorMessage: string | null
+    metadata: JsonValue | null
     createdAt: Date
-    updatedAt: Date
-    _count: PowerUpUsageCountAggregateOutputType | null
-    _min: PowerUpUsageMinAggregateOutputType | null
-    _max: PowerUpUsageMaxAggregateOutputType | null
+    confirmedAt: Date | null
+    _count: TransactionCountAggregateOutputType | null
+    _avg: TransactionAvgAggregateOutputType | null
+    _sum: TransactionSumAggregateOutputType | null
+    _min: TransactionMinAggregateOutputType | null
+    _max: TransactionMaxAggregateOutputType | null
   }
 
-  type GetPowerUpUsageGroupByPayload<T extends PowerUpUsageGroupByArgs> = Prisma.PrismaPromise<
+  type GetTransactionGroupByPayload<T extends TransactionGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<PowerUpUsageGroupByOutputType, T['by']> &
+      PickEnumerable<TransactionGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof PowerUpUsageGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof TransactionGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], PowerUpUsageGroupByOutputType[P]>
-            : GetScalarType<T[P], PowerUpUsageGroupByOutputType[P]>
+              : GetScalarType<T[P], TransactionGroupByOutputType[P]>
+            : GetScalarType<T[P], TransactionGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type PowerUpUsageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type TransactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    txHash?: boolean
+    type?: boolean
+    leagueId?: boolean
     userId?: boolean
-    powerUpId?: boolean
-    transactionId?: boolean
-    isVerified?: boolean
+    amount?: boolean
+    status?: boolean
+    blockNumber?: boolean
+    gasUsed?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
     createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    powerUp?: boolean | PowerUpDefaultArgs<ExtArgs>
-    leagueMembershipPowerUp?: boolean | PowerUpUsage$leagueMembershipPowerUpArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUpUsage"]>
+    confirmedAt?: boolean
+    league?: boolean | Transaction$leagueArgs<ExtArgs>
+  }, ExtArgs["result"]["transaction"]>
 
-  export type PowerUpUsageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type TransactionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    txHash?: boolean
+    type?: boolean
+    leagueId?: boolean
     userId?: boolean
-    powerUpId?: boolean
-    transactionId?: boolean
-    isVerified?: boolean
+    amount?: boolean
+    status?: boolean
+    blockNumber?: boolean
+    gasUsed?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
     createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    powerUp?: boolean | PowerUpDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUpUsage"]>
+    confirmedAt?: boolean
+    league?: boolean | Transaction$leagueArgs<ExtArgs>
+  }, ExtArgs["result"]["transaction"]>
 
-  export type PowerUpUsageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type TransactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    txHash?: boolean
+    type?: boolean
+    leagueId?: boolean
     userId?: boolean
-    powerUpId?: boolean
-    transactionId?: boolean
-    isVerified?: boolean
+    amount?: boolean
+    status?: boolean
+    blockNumber?: boolean
+    gasUsed?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
     createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    powerUp?: boolean | PowerUpDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["powerUpUsage"]>
+    confirmedAt?: boolean
+    league?: boolean | Transaction$leagueArgs<ExtArgs>
+  }, ExtArgs["result"]["transaction"]>
 
-  export type PowerUpUsageSelectScalar = {
+  export type TransactionSelectScalar = {
     id?: boolean
+    txHash?: boolean
+    type?: boolean
+    leagueId?: boolean
     userId?: boolean
-    powerUpId?: boolean
-    transactionId?: boolean
-    isVerified?: boolean
+    amount?: boolean
+    status?: boolean
+    blockNumber?: boolean
+    gasUsed?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
     createdAt?: boolean
-    updatedAt?: boolean
+    confirmedAt?: boolean
   }
 
-  export type PowerUpUsageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "powerUpId" | "transactionId" | "isVerified" | "createdAt" | "updatedAt", ExtArgs["result"]["powerUpUsage"]>
-  export type PowerUpUsageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    powerUp?: boolean | PowerUpDefaultArgs<ExtArgs>
-    leagueMembershipPowerUp?: boolean | PowerUpUsage$leagueMembershipPowerUpArgs<ExtArgs>
+  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "txHash" | "type" | "leagueId" | "userId" | "amount" | "status" | "blockNumber" | "gasUsed" | "errorMessage" | "metadata" | "createdAt" | "confirmedAt", ExtArgs["result"]["transaction"]>
+  export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    league?: boolean | Transaction$leagueArgs<ExtArgs>
   }
-  export type PowerUpUsageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    powerUp?: boolean | PowerUpDefaultArgs<ExtArgs>
+  export type TransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    league?: boolean | Transaction$leagueArgs<ExtArgs>
   }
-  export type PowerUpUsageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    powerUp?: boolean | PowerUpDefaultArgs<ExtArgs>
+  export type TransactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    league?: boolean | Transaction$leagueArgs<ExtArgs>
   }
 
-  export type $PowerUpUsagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PowerUpUsage"
+  export type $TransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Transaction"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      powerUp: Prisma.$PowerUpPayload<ExtArgs>
-      leagueMembershipPowerUp: Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs> | null
+      league: Prisma.$FantasyLeaguePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      userId: string
-      powerUpId: string
-      transactionId: string
-      isVerified: boolean
+      txHash: string
+      type: string
+      leagueId: string | null
+      userId: string | null
+      amount: Prisma.Decimal | null
+      status: string
+      blockNumber: number | null
+      gasUsed: string | null
+      errorMessage: string | null
+      metadata: Prisma.JsonValue | null
       createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["powerUpUsage"]>
+      confirmedAt: Date | null
+    }, ExtArgs["result"]["transaction"]>
     composites: {}
   }
 
-  type PowerUpUsageGetPayload<S extends boolean | null | undefined | PowerUpUsageDefaultArgs> = $Result.GetResult<Prisma.$PowerUpUsagePayload, S>
+  type TransactionGetPayload<S extends boolean | null | undefined | TransactionDefaultArgs> = $Result.GetResult<Prisma.$TransactionPayload, S>
 
-  type PowerUpUsageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PowerUpUsageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PowerUpUsageCountAggregateInputType | true
+  type TransactionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TransactionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TransactionCountAggregateInputType | true
     }
 
-  export interface PowerUpUsageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PowerUpUsage'], meta: { name: 'PowerUpUsage' } }
+  export interface TransactionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Transaction'], meta: { name: 'Transaction' } }
     /**
-     * Find zero or one PowerUpUsage that matches the filter.
-     * @param {PowerUpUsageFindUniqueArgs} args - Arguments to find a PowerUpUsage
+     * Find zero or one Transaction that matches the filter.
+     * @param {TransactionFindUniqueArgs} args - Arguments to find a Transaction
      * @example
-     * // Get one PowerUpUsage
-     * const powerUpUsage = await prisma.powerUpUsage.findUnique({
+     * // Get one Transaction
+     * const transaction = await prisma.transaction.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends PowerUpUsageFindUniqueArgs>(args: SelectSubset<T, PowerUpUsageFindUniqueArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends TransactionFindUniqueArgs>(args: SelectSubset<T, TransactionFindUniqueArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one PowerUpUsage that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Transaction that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {PowerUpUsageFindUniqueOrThrowArgs} args - Arguments to find a PowerUpUsage
+     * @param {TransactionFindUniqueOrThrowArgs} args - Arguments to find a Transaction
      * @example
-     * // Get one PowerUpUsage
-     * const powerUpUsage = await prisma.powerUpUsage.findUniqueOrThrow({
+     * // Get one Transaction
+     * const transaction = await prisma.transaction.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends PowerUpUsageFindUniqueOrThrowArgs>(args: SelectSubset<T, PowerUpUsageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends TransactionFindUniqueOrThrowArgs>(args: SelectSubset<T, TransactionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first PowerUpUsage that matches the filter.
+     * Find the first Transaction that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageFindFirstArgs} args - Arguments to find a PowerUpUsage
+     * @param {TransactionFindFirstArgs} args - Arguments to find a Transaction
      * @example
-     * // Get one PowerUpUsage
-     * const powerUpUsage = await prisma.powerUpUsage.findFirst({
+     * // Get one Transaction
+     * const transaction = await prisma.transaction.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends PowerUpUsageFindFirstArgs>(args?: SelectSubset<T, PowerUpUsageFindFirstArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends TransactionFindFirstArgs>(args?: SelectSubset<T, TransactionFindFirstArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first PowerUpUsage that matches the filter or
+     * Find the first Transaction that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageFindFirstOrThrowArgs} args - Arguments to find a PowerUpUsage
+     * @param {TransactionFindFirstOrThrowArgs} args - Arguments to find a Transaction
      * @example
-     * // Get one PowerUpUsage
-     * const powerUpUsage = await prisma.powerUpUsage.findFirstOrThrow({
+     * // Get one Transaction
+     * const transaction = await prisma.transaction.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends PowerUpUsageFindFirstOrThrowArgs>(args?: SelectSubset<T, PowerUpUsageFindFirstOrThrowArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends TransactionFindFirstOrThrowArgs>(args?: SelectSubset<T, TransactionFindFirstOrThrowArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more PowerUpUsages that matches the filter.
+     * Find zero or more Transactions that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {TransactionFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all PowerUpUsages
-     * const powerUpUsages = await prisma.powerUpUsage.findMany()
+     * // Get all Transactions
+     * const transactions = await prisma.transaction.findMany()
      * 
-     * // Get first 10 PowerUpUsages
-     * const powerUpUsages = await prisma.powerUpUsage.findMany({ take: 10 })
+     * // Get first 10 Transactions
+     * const transactions = await prisma.transaction.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const powerUpUsageWithIdOnly = await prisma.powerUpUsage.findMany({ select: { id: true } })
+     * const transactionWithIdOnly = await prisma.transaction.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends PowerUpUsageFindManyArgs>(args?: SelectSubset<T, PowerUpUsageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends TransactionFindManyArgs>(args?: SelectSubset<T, TransactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a PowerUpUsage.
-     * @param {PowerUpUsageCreateArgs} args - Arguments to create a PowerUpUsage.
+     * Create a Transaction.
+     * @param {TransactionCreateArgs} args - Arguments to create a Transaction.
      * @example
-     * // Create one PowerUpUsage
-     * const PowerUpUsage = await prisma.powerUpUsage.create({
+     * // Create one Transaction
+     * const Transaction = await prisma.transaction.create({
      *   data: {
-     *     // ... data to create a PowerUpUsage
+     *     // ... data to create a Transaction
      *   }
      * })
      * 
      */
-    create<T extends PowerUpUsageCreateArgs>(args: SelectSubset<T, PowerUpUsageCreateArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends TransactionCreateArgs>(args: SelectSubset<T, TransactionCreateArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many PowerUpUsages.
-     * @param {PowerUpUsageCreateManyArgs} args - Arguments to create many PowerUpUsages.
+     * Create many Transactions.
+     * @param {TransactionCreateManyArgs} args - Arguments to create many Transactions.
      * @example
-     * // Create many PowerUpUsages
-     * const powerUpUsage = await prisma.powerUpUsage.createMany({
+     * // Create many Transactions
+     * const transaction = await prisma.transaction.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends PowerUpUsageCreateManyArgs>(args?: SelectSubset<T, PowerUpUsageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends TransactionCreateManyArgs>(args?: SelectSubset<T, TransactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many PowerUpUsages and returns the data saved in the database.
-     * @param {PowerUpUsageCreateManyAndReturnArgs} args - Arguments to create many PowerUpUsages.
+     * Create many Transactions and returns the data saved in the database.
+     * @param {TransactionCreateManyAndReturnArgs} args - Arguments to create many Transactions.
      * @example
-     * // Create many PowerUpUsages
-     * const powerUpUsage = await prisma.powerUpUsage.createManyAndReturn({
+     * // Create many Transactions
+     * const transaction = await prisma.transaction.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many PowerUpUsages and only return the `id`
-     * const powerUpUsageWithIdOnly = await prisma.powerUpUsage.createManyAndReturn({
+     * // Create many Transactions and only return the `id`
+     * const transactionWithIdOnly = await prisma.transaction.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -10087,28 +9280,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends PowerUpUsageCreateManyAndReturnArgs>(args?: SelectSubset<T, PowerUpUsageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends TransactionCreateManyAndReturnArgs>(args?: SelectSubset<T, TransactionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a PowerUpUsage.
-     * @param {PowerUpUsageDeleteArgs} args - Arguments to delete one PowerUpUsage.
+     * Delete a Transaction.
+     * @param {TransactionDeleteArgs} args - Arguments to delete one Transaction.
      * @example
-     * // Delete one PowerUpUsage
-     * const PowerUpUsage = await prisma.powerUpUsage.delete({
+     * // Delete one Transaction
+     * const Transaction = await prisma.transaction.delete({
      *   where: {
-     *     // ... filter to delete one PowerUpUsage
+     *     // ... filter to delete one Transaction
      *   }
      * })
      * 
      */
-    delete<T extends PowerUpUsageDeleteArgs>(args: SelectSubset<T, PowerUpUsageDeleteArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends TransactionDeleteArgs>(args: SelectSubset<T, TransactionDeleteArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one PowerUpUsage.
-     * @param {PowerUpUsageUpdateArgs} args - Arguments to update one PowerUpUsage.
+     * Update one Transaction.
+     * @param {TransactionUpdateArgs} args - Arguments to update one Transaction.
      * @example
-     * // Update one PowerUpUsage
-     * const powerUpUsage = await prisma.powerUpUsage.update({
+     * // Update one Transaction
+     * const transaction = await prisma.transaction.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -10118,30 +9311,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends PowerUpUsageUpdateArgs>(args: SelectSubset<T, PowerUpUsageUpdateArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends TransactionUpdateArgs>(args: SelectSubset<T, TransactionUpdateArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more PowerUpUsages.
-     * @param {PowerUpUsageDeleteManyArgs} args - Arguments to filter PowerUpUsages to delete.
+     * Delete zero or more Transactions.
+     * @param {TransactionDeleteManyArgs} args - Arguments to filter Transactions to delete.
      * @example
-     * // Delete a few PowerUpUsages
-     * const { count } = await prisma.powerUpUsage.deleteMany({
+     * // Delete a few Transactions
+     * const { count } = await prisma.transaction.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends PowerUpUsageDeleteManyArgs>(args?: SelectSubset<T, PowerUpUsageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends TransactionDeleteManyArgs>(args?: SelectSubset<T, TransactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more PowerUpUsages.
+     * Update zero or more Transactions.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {TransactionUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many PowerUpUsages
-     * const powerUpUsage = await prisma.powerUpUsage.updateMany({
+     * // Update many Transactions
+     * const transaction = await prisma.transaction.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -10151,14 +9344,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends PowerUpUsageUpdateManyArgs>(args: SelectSubset<T, PowerUpUsageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends TransactionUpdateManyArgs>(args: SelectSubset<T, TransactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more PowerUpUsages and returns the data updated in the database.
-     * @param {PowerUpUsageUpdateManyAndReturnArgs} args - Arguments to update many PowerUpUsages.
+     * Update zero or more Transactions and returns the data updated in the database.
+     * @param {TransactionUpdateManyAndReturnArgs} args - Arguments to update many Transactions.
      * @example
-     * // Update many PowerUpUsages
-     * const powerUpUsage = await prisma.powerUpUsage.updateManyAndReturn({
+     * // Update many Transactions
+     * const transaction = await prisma.transaction.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -10167,8 +9360,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more PowerUpUsages and only return the `id`
-     * const powerUpUsageWithIdOnly = await prisma.powerUpUsage.updateManyAndReturn({
+     * // Update zero or more Transactions and only return the `id`
+     * const transactionWithIdOnly = await prisma.transaction.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -10181,56 +9374,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends PowerUpUsageUpdateManyAndReturnArgs>(args: SelectSubset<T, PowerUpUsageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends TransactionUpdateManyAndReturnArgs>(args: SelectSubset<T, TransactionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one PowerUpUsage.
-     * @param {PowerUpUsageUpsertArgs} args - Arguments to update or create a PowerUpUsage.
+     * Create or update one Transaction.
+     * @param {TransactionUpsertArgs} args - Arguments to update or create a Transaction.
      * @example
-     * // Update or create a PowerUpUsage
-     * const powerUpUsage = await prisma.powerUpUsage.upsert({
+     * // Update or create a Transaction
+     * const transaction = await prisma.transaction.upsert({
      *   create: {
-     *     // ... data to create a PowerUpUsage
+     *     // ... data to create a Transaction
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the PowerUpUsage we want to update
+     *     // ... the filter for the Transaction we want to update
      *   }
      * })
      */
-    upsert<T extends PowerUpUsageUpsertArgs>(args: SelectSubset<T, PowerUpUsageUpsertArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends TransactionUpsertArgs>(args: SelectSubset<T, TransactionUpsertArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of PowerUpUsages.
+     * Count the number of Transactions.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageCountArgs} args - Arguments to filter PowerUpUsages to count.
+     * @param {TransactionCountArgs} args - Arguments to filter Transactions to count.
      * @example
-     * // Count the number of PowerUpUsages
-     * const count = await prisma.powerUpUsage.count({
+     * // Count the number of Transactions
+     * const count = await prisma.transaction.count({
      *   where: {
-     *     // ... the filter for the PowerUpUsages we want to count
+     *     // ... the filter for the Transactions we want to count
      *   }
      * })
     **/
-    count<T extends PowerUpUsageCountArgs>(
-      args?: Subset<T, PowerUpUsageCountArgs>,
+    count<T extends TransactionCountArgs>(
+      args?: Subset<T, TransactionCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], PowerUpUsageCountAggregateOutputType>
+          : GetScalarType<T['select'], TransactionCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a PowerUpUsage.
+     * Allows you to perform aggregations operations on a Transaction.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {TransactionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -10250,13 +9443,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends PowerUpUsageAggregateArgs>(args: Subset<T, PowerUpUsageAggregateArgs>): Prisma.PrismaPromise<GetPowerUpUsageAggregateType<T>>
+    aggregate<T extends TransactionAggregateArgs>(args: Subset<T, TransactionAggregateArgs>): Prisma.PrismaPromise<GetTransactionAggregateType<T>>
 
     /**
-     * Group by PowerUpUsage.
+     * Group by Transaction.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PowerUpUsageGroupByArgs} args - Group by arguments.
+     * @param {TransactionGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -10271,14 +9464,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends PowerUpUsageGroupByArgs,
+      T extends TransactionGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PowerUpUsageGroupByArgs['orderBy'] }
-        : { orderBy?: PowerUpUsageGroupByArgs['orderBy'] },
+        ? { orderBy: TransactionGroupByArgs['orderBy'] }
+        : { orderBy?: TransactionGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -10327,24 +9520,22 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, PowerUpUsageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPowerUpUsageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, TransactionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTransactionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the PowerUpUsage model
+   * Fields of the Transaction model
    */
-  readonly fields: PowerUpUsageFieldRefs;
+  readonly fields: TransactionFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for PowerUpUsage.
+   * The delegate class that acts as a "Promise-like" for Transaction.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__PowerUpUsageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__TransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    powerUp<T extends PowerUpDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PowerUpDefaultArgs<ExtArgs>>): Prisma__PowerUpClient<$Result.GetResult<Prisma.$PowerUpPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    leagueMembershipPowerUp<T extends PowerUpUsage$leagueMembershipPowerUpArgs<ExtArgs> = {}>(args?: Subset<T, PowerUpUsage$leagueMembershipPowerUpArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    league<T extends Transaction$leagueArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$leagueArgs<ExtArgs>>): Prisma__FantasyLeagueClient<$Result.GetResult<Prisma.$FantasyLeaguePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10371,1512 +9562,452 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the PowerUpUsage model
+   * Fields of the Transaction model
    */
-  interface PowerUpUsageFieldRefs {
-    readonly id: FieldRef<"PowerUpUsage", 'String'>
-    readonly userId: FieldRef<"PowerUpUsage", 'String'>
-    readonly powerUpId: FieldRef<"PowerUpUsage", 'String'>
-    readonly transactionId: FieldRef<"PowerUpUsage", 'String'>
-    readonly isVerified: FieldRef<"PowerUpUsage", 'Boolean'>
-    readonly createdAt: FieldRef<"PowerUpUsage", 'DateTime'>
-    readonly updatedAt: FieldRef<"PowerUpUsage", 'DateTime'>
+  interface TransactionFieldRefs {
+    readonly id: FieldRef<"Transaction", 'String'>
+    readonly txHash: FieldRef<"Transaction", 'String'>
+    readonly type: FieldRef<"Transaction", 'String'>
+    readonly leagueId: FieldRef<"Transaction", 'String'>
+    readonly userId: FieldRef<"Transaction", 'String'>
+    readonly amount: FieldRef<"Transaction", 'Decimal'>
+    readonly status: FieldRef<"Transaction", 'String'>
+    readonly blockNumber: FieldRef<"Transaction", 'Int'>
+    readonly gasUsed: FieldRef<"Transaction", 'String'>
+    readonly errorMessage: FieldRef<"Transaction", 'String'>
+    readonly metadata: FieldRef<"Transaction", 'Json'>
+    readonly createdAt: FieldRef<"Transaction", 'DateTime'>
+    readonly confirmedAt: FieldRef<"Transaction", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * PowerUpUsage findUnique
+   * Transaction findUnique
    */
-  export type PowerUpUsageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * Filter, which PowerUpUsage to fetch.
+     * Filter, which Transaction to fetch.
      */
-    where: PowerUpUsageWhereUniqueInput
+    where: TransactionWhereUniqueInput
   }
 
   /**
-   * PowerUpUsage findUniqueOrThrow
+   * Transaction findUniqueOrThrow
    */
-  export type PowerUpUsageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * Filter, which PowerUpUsage to fetch.
+     * Filter, which Transaction to fetch.
      */
-    where: PowerUpUsageWhereUniqueInput
+    where: TransactionWhereUniqueInput
   }
 
   /**
-   * PowerUpUsage findFirst
+   * Transaction findFirst
    */
-  export type PowerUpUsageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * Filter, which PowerUpUsage to fetch.
+     * Filter, which Transaction to fetch.
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PowerUpUsages to fetch.
+     * Determine the order of Transactions to fetch.
      */
-    orderBy?: PowerUpUsageOrderByWithRelationInput | PowerUpUsageOrderByWithRelationInput[]
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for PowerUpUsages.
+     * Sets the position for searching for Transactions.
      */
-    cursor?: PowerUpUsageWhereUniqueInput
+    cursor?: TransactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PowerUpUsages from the position of the cursor.
+     * Take `±n` Transactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PowerUpUsages.
+     * Skip the first `n` Transactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of PowerUpUsages.
+     * Filter by unique combinations of Transactions.
      */
-    distinct?: PowerUpUsageScalarFieldEnum | PowerUpUsageScalarFieldEnum[]
+    distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
   }
 
   /**
-   * PowerUpUsage findFirstOrThrow
+   * Transaction findFirstOrThrow
    */
-  export type PowerUpUsageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * Filter, which PowerUpUsage to fetch.
+     * Filter, which Transaction to fetch.
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PowerUpUsages to fetch.
+     * Determine the order of Transactions to fetch.
      */
-    orderBy?: PowerUpUsageOrderByWithRelationInput | PowerUpUsageOrderByWithRelationInput[]
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for PowerUpUsages.
+     * Sets the position for searching for Transactions.
      */
-    cursor?: PowerUpUsageWhereUniqueInput
+    cursor?: TransactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PowerUpUsages from the position of the cursor.
+     * Take `±n` Transactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PowerUpUsages.
+     * Skip the first `n` Transactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of PowerUpUsages.
+     * Filter by unique combinations of Transactions.
      */
-    distinct?: PowerUpUsageScalarFieldEnum | PowerUpUsageScalarFieldEnum[]
+    distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
   }
 
   /**
-   * PowerUpUsage findMany
+   * Transaction findMany
    */
-  export type PowerUpUsageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * Filter, which PowerUpUsages to fetch.
+     * Filter, which Transactions to fetch.
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PowerUpUsages to fetch.
+     * Determine the order of Transactions to fetch.
      */
-    orderBy?: PowerUpUsageOrderByWithRelationInput | PowerUpUsageOrderByWithRelationInput[]
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing PowerUpUsages.
+     * Sets the position for listing Transactions.
      */
-    cursor?: PowerUpUsageWhereUniqueInput
+    cursor?: TransactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PowerUpUsages from the position of the cursor.
+     * Take `±n` Transactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PowerUpUsages.
+     * Skip the first `n` Transactions.
      */
     skip?: number
-    distinct?: PowerUpUsageScalarFieldEnum | PowerUpUsageScalarFieldEnum[]
+    distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
   }
 
   /**
-   * PowerUpUsage create
+   * Transaction create
    */
-  export type PowerUpUsageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * The data needed to create a PowerUpUsage.
+     * The data needed to create a Transaction.
      */
-    data: XOR<PowerUpUsageCreateInput, PowerUpUsageUncheckedCreateInput>
+    data: XOR<TransactionCreateInput, TransactionUncheckedCreateInput>
   }
 
   /**
-   * PowerUpUsage createMany
+   * Transaction createMany
    */
-  export type PowerUpUsageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many PowerUpUsages.
+     * The data used to create many Transactions.
      */
-    data: PowerUpUsageCreateManyInput | PowerUpUsageCreateManyInput[]
+    data: TransactionCreateManyInput | TransactionCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * PowerUpUsage createManyAndReturn
+   * Transaction createManyAndReturn
    */
-  export type PowerUpUsageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelectCreateManyAndReturn<ExtArgs> | null
+    select?: TransactionSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
-     * The data used to create many PowerUpUsages.
+     * The data used to create many Transactions.
      */
-    data: PowerUpUsageCreateManyInput | PowerUpUsageCreateManyInput[]
+    data: TransactionCreateManyInput | TransactionCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: TransactionIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * PowerUpUsage update
+   * Transaction update
    */
-  export type PowerUpUsageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * The data needed to update a PowerUpUsage.
+     * The data needed to update a Transaction.
      */
-    data: XOR<PowerUpUsageUpdateInput, PowerUpUsageUncheckedUpdateInput>
+    data: XOR<TransactionUpdateInput, TransactionUncheckedUpdateInput>
     /**
-     * Choose, which PowerUpUsage to update.
+     * Choose, which Transaction to update.
      */
-    where: PowerUpUsageWhereUniqueInput
+    where: TransactionWhereUniqueInput
   }
 
   /**
-   * PowerUpUsage updateMany
+   * Transaction updateMany
    */
-  export type PowerUpUsageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update PowerUpUsages.
+     * The data used to update Transactions.
      */
-    data: XOR<PowerUpUsageUpdateManyMutationInput, PowerUpUsageUncheckedUpdateManyInput>
+    data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyInput>
     /**
-     * Filter which PowerUpUsages to update
+     * Filter which Transactions to update
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
-     * Limit how many PowerUpUsages to update.
+     * Limit how many Transactions to update.
      */
     limit?: number
   }
 
   /**
-   * PowerUpUsage updateManyAndReturn
+   * Transaction updateManyAndReturn
    */
-  export type PowerUpUsageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: TransactionSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
-     * The data used to update PowerUpUsages.
+     * The data used to update Transactions.
      */
-    data: XOR<PowerUpUsageUpdateManyMutationInput, PowerUpUsageUncheckedUpdateManyInput>
+    data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyInput>
     /**
-     * Filter which PowerUpUsages to update
+     * Filter which Transactions to update
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
-     * Limit how many PowerUpUsages to update.
+     * Limit how many Transactions to update.
      */
     limit?: number
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: TransactionIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * PowerUpUsage upsert
+   * Transaction upsert
    */
-  export type PowerUpUsageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * The filter to search for the PowerUpUsage to update in case it exists.
+     * The filter to search for the Transaction to update in case it exists.
      */
-    where: PowerUpUsageWhereUniqueInput
+    where: TransactionWhereUniqueInput
     /**
-     * In case the PowerUpUsage found by the `where` argument doesn't exist, create a new PowerUpUsage with this data.
+     * In case the Transaction found by the `where` argument doesn't exist, create a new Transaction with this data.
      */
-    create: XOR<PowerUpUsageCreateInput, PowerUpUsageUncheckedCreateInput>
+    create: XOR<TransactionCreateInput, TransactionUncheckedCreateInput>
     /**
-     * In case the PowerUpUsage was found with the provided `where` argument, update it with this data.
+     * In case the Transaction was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<PowerUpUsageUpdateInput, PowerUpUsageUncheckedUpdateInput>
+    update: XOR<TransactionUpdateInput, TransactionUncheckedUpdateInput>
   }
 
   /**
-   * PowerUpUsage delete
+   * Transaction delete
    */
-  export type PowerUpUsageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
     /**
-     * Filter which PowerUpUsage to delete.
+     * Filter which Transaction to delete.
      */
-    where: PowerUpUsageWhereUniqueInput
+    where: TransactionWhereUniqueInput
   }
 
   /**
-   * PowerUpUsage deleteMany
+   * Transaction deleteMany
    */
-  export type PowerUpUsageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which PowerUpUsages to delete
+     * Filter which Transactions to delete
      */
-    where?: PowerUpUsageWhereInput
+    where?: TransactionWhereInput
     /**
-     * Limit how many PowerUpUsages to delete.
+     * Limit how many Transactions to delete.
      */
     limit?: number
   }
 
   /**
-   * PowerUpUsage.leagueMembershipPowerUp
+   * Transaction.league
    */
-  export type PowerUpUsage$leagueMembershipPowerUpArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Transaction$leagueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
+     * Select specific fields to fetch from the FantasyLeague
      */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
+    select?: FantasyLeagueSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
+     * Omit specific fields from the FantasyLeague
      */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
+    omit?: FantasyLeagueOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    where?: FantasyLeagueMembershipPowerUpWhereInput
+    include?: FantasyLeagueInclude<ExtArgs> | null
+    where?: FantasyLeagueWhereInput
   }
 
   /**
-   * PowerUpUsage without action
+   * Transaction without action
    */
-  export type PowerUpUsageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TransactionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PowerUpUsage
+     * Select specific fields to fetch from the Transaction
      */
-    select?: PowerUpUsageSelect<ExtArgs> | null
+    select?: TransactionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PowerUpUsage
+     * Omit specific fields from the Transaction
      */
-    omit?: PowerUpUsageOmit<ExtArgs> | null
+    omit?: TransactionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PowerUpUsageInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model FantasyLeagueMembershipPowerUp
-   */
-
-  export type AggregateFantasyLeagueMembershipPowerUp = {
-    _count: FantasyLeagueMembershipPowerUpCountAggregateOutputType | null
-    _min: FantasyLeagueMembershipPowerUpMinAggregateOutputType | null
-    _max: FantasyLeagueMembershipPowerUpMaxAggregateOutputType | null
-  }
-
-  export type FantasyLeagueMembershipPowerUpMinAggregateOutputType = {
-    id: string | null
-    fantasyLeagueMembershipId: string | null
-    powerUpUsageId: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type FantasyLeagueMembershipPowerUpMaxAggregateOutputType = {
-    id: string | null
-    fantasyLeagueMembershipId: string | null
-    powerUpUsageId: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type FantasyLeagueMembershipPowerUpCountAggregateOutputType = {
-    id: number
-    fantasyLeagueMembershipId: number
-    powerUpUsageId: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type FantasyLeagueMembershipPowerUpMinAggregateInputType = {
-    id?: true
-    fantasyLeagueMembershipId?: true
-    powerUpUsageId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type FantasyLeagueMembershipPowerUpMaxAggregateInputType = {
-    id?: true
-    fantasyLeagueMembershipId?: true
-    powerUpUsageId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type FantasyLeagueMembershipPowerUpCountAggregateInputType = {
-    id?: true
-    fantasyLeagueMembershipId?: true
-    powerUpUsageId?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type FantasyLeagueMembershipPowerUpAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which FantasyLeagueMembershipPowerUp to aggregate.
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of FantasyLeagueMembershipPowerUps to fetch.
-     */
-    orderBy?: FantasyLeagueMembershipPowerUpOrderByWithRelationInput | FantasyLeagueMembershipPowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` FantasyLeagueMembershipPowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` FantasyLeagueMembershipPowerUps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned FantasyLeagueMembershipPowerUps
-    **/
-    _count?: true | FantasyLeagueMembershipPowerUpCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: FantasyLeagueMembershipPowerUpMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: FantasyLeagueMembershipPowerUpMaxAggregateInputType
-  }
-
-  export type GetFantasyLeagueMembershipPowerUpAggregateType<T extends FantasyLeagueMembershipPowerUpAggregateArgs> = {
-        [P in keyof T & keyof AggregateFantasyLeagueMembershipPowerUp]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateFantasyLeagueMembershipPowerUp[P]>
-      : GetScalarType<T[P], AggregateFantasyLeagueMembershipPowerUp[P]>
-  }
-
-
-
-
-  export type FantasyLeagueMembershipPowerUpGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    orderBy?: FantasyLeagueMembershipPowerUpOrderByWithAggregationInput | FantasyLeagueMembershipPowerUpOrderByWithAggregationInput[]
-    by: FantasyLeagueMembershipPowerUpScalarFieldEnum[] | FantasyLeagueMembershipPowerUpScalarFieldEnum
-    having?: FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: FantasyLeagueMembershipPowerUpCountAggregateInputType | true
-    _min?: FantasyLeagueMembershipPowerUpMinAggregateInputType
-    _max?: FantasyLeagueMembershipPowerUpMaxAggregateInputType
-  }
-
-  export type FantasyLeagueMembershipPowerUpGroupByOutputType = {
-    id: string
-    fantasyLeagueMembershipId: string
-    powerUpUsageId: string
-    createdAt: Date
-    updatedAt: Date
-    _count: FantasyLeagueMembershipPowerUpCountAggregateOutputType | null
-    _min: FantasyLeagueMembershipPowerUpMinAggregateOutputType | null
-    _max: FantasyLeagueMembershipPowerUpMaxAggregateOutputType | null
-  }
-
-  type GetFantasyLeagueMembershipPowerUpGroupByPayload<T extends FantasyLeagueMembershipPowerUpGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<FantasyLeagueMembershipPowerUpGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof FantasyLeagueMembershipPowerUpGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], FantasyLeagueMembershipPowerUpGroupByOutputType[P]>
-            : GetScalarType<T[P], FantasyLeagueMembershipPowerUpGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type FantasyLeagueMembershipPowerUpSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    fantasyLeagueMembershipId?: boolean
-    powerUpUsageId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    fantasyLeagueMembership?: boolean | FantasyLeagueMembershipDefaultArgs<ExtArgs>
-    powerUpUsage?: boolean | PowerUpUsageDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["fantasyLeagueMembershipPowerUp"]>
-
-  export type FantasyLeagueMembershipPowerUpSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    fantasyLeagueMembershipId?: boolean
-    powerUpUsageId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    fantasyLeagueMembership?: boolean | FantasyLeagueMembershipDefaultArgs<ExtArgs>
-    powerUpUsage?: boolean | PowerUpUsageDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["fantasyLeagueMembershipPowerUp"]>
-
-  export type FantasyLeagueMembershipPowerUpSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    fantasyLeagueMembershipId?: boolean
-    powerUpUsageId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    fantasyLeagueMembership?: boolean | FantasyLeagueMembershipDefaultArgs<ExtArgs>
-    powerUpUsage?: boolean | PowerUpUsageDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["fantasyLeagueMembershipPowerUp"]>
-
-  export type FantasyLeagueMembershipPowerUpSelectScalar = {
-    id?: boolean
-    fantasyLeagueMembershipId?: boolean
-    powerUpUsageId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type FantasyLeagueMembershipPowerUpOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "fantasyLeagueMembershipId" | "powerUpUsageId" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeagueMembershipPowerUp"]>
-  export type FantasyLeagueMembershipPowerUpInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    fantasyLeagueMembership?: boolean | FantasyLeagueMembershipDefaultArgs<ExtArgs>
-    powerUpUsage?: boolean | PowerUpUsageDefaultArgs<ExtArgs>
-  }
-  export type FantasyLeagueMembershipPowerUpIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    fantasyLeagueMembership?: boolean | FantasyLeagueMembershipDefaultArgs<ExtArgs>
-    powerUpUsage?: boolean | PowerUpUsageDefaultArgs<ExtArgs>
-  }
-  export type FantasyLeagueMembershipPowerUpIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    fantasyLeagueMembership?: boolean | FantasyLeagueMembershipDefaultArgs<ExtArgs>
-    powerUpUsage?: boolean | PowerUpUsageDefaultArgs<ExtArgs>
-  }
-
-  export type $FantasyLeagueMembershipPowerUpPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "FantasyLeagueMembershipPowerUp"
-    objects: {
-      fantasyLeagueMembership: Prisma.$FantasyLeagueMembershipPayload<ExtArgs>
-      powerUpUsage: Prisma.$PowerUpUsagePayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      fantasyLeagueMembershipId: string
-      powerUpUsageId: string
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["fantasyLeagueMembershipPowerUp"]>
-    composites: {}
-  }
-
-  type FantasyLeagueMembershipPowerUpGetPayload<S extends boolean | null | undefined | FantasyLeagueMembershipPowerUpDefaultArgs> = $Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload, S>
-
-  type FantasyLeagueMembershipPowerUpCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<FantasyLeagueMembershipPowerUpFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: FantasyLeagueMembershipPowerUpCountAggregateInputType | true
-    }
-
-  export interface FantasyLeagueMembershipPowerUpDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FantasyLeagueMembershipPowerUp'], meta: { name: 'FantasyLeagueMembershipPowerUp' } }
-    /**
-     * Find zero or one FantasyLeagueMembershipPowerUp that matches the filter.
-     * @param {FantasyLeagueMembershipPowerUpFindUniqueArgs} args - Arguments to find a FantasyLeagueMembershipPowerUp
-     * @example
-     * // Get one FantasyLeagueMembershipPowerUp
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends FantasyLeagueMembershipPowerUpFindUniqueArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpFindUniqueArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one FantasyLeagueMembershipPowerUp that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {FantasyLeagueMembershipPowerUpFindUniqueOrThrowArgs} args - Arguments to find a FantasyLeagueMembershipPowerUp
-     * @example
-     * // Get one FantasyLeagueMembershipPowerUp
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends FantasyLeagueMembershipPowerUpFindUniqueOrThrowArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first FantasyLeagueMembershipPowerUp that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpFindFirstArgs} args - Arguments to find a FantasyLeagueMembershipPowerUp
-     * @example
-     * // Get one FantasyLeagueMembershipPowerUp
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends FantasyLeagueMembershipPowerUpFindFirstArgs>(args?: SelectSubset<T, FantasyLeagueMembershipPowerUpFindFirstArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first FantasyLeagueMembershipPowerUp that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpFindFirstOrThrowArgs} args - Arguments to find a FantasyLeagueMembershipPowerUp
-     * @example
-     * // Get one FantasyLeagueMembershipPowerUp
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends FantasyLeagueMembershipPowerUpFindFirstOrThrowArgs>(args?: SelectSubset<T, FantasyLeagueMembershipPowerUpFindFirstOrThrowArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more FantasyLeagueMembershipPowerUps that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all FantasyLeagueMembershipPowerUps
-     * const fantasyLeagueMembershipPowerUps = await prisma.fantasyLeagueMembershipPowerUp.findMany()
-     * 
-     * // Get first 10 FantasyLeagueMembershipPowerUps
-     * const fantasyLeagueMembershipPowerUps = await prisma.fantasyLeagueMembershipPowerUp.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const fantasyLeagueMembershipPowerUpWithIdOnly = await prisma.fantasyLeagueMembershipPowerUp.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends FantasyLeagueMembershipPowerUpFindManyArgs>(args?: SelectSubset<T, FantasyLeagueMembershipPowerUpFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a FantasyLeagueMembershipPowerUp.
-     * @param {FantasyLeagueMembershipPowerUpCreateArgs} args - Arguments to create a FantasyLeagueMembershipPowerUp.
-     * @example
-     * // Create one FantasyLeagueMembershipPowerUp
-     * const FantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.create({
-     *   data: {
-     *     // ... data to create a FantasyLeagueMembershipPowerUp
-     *   }
-     * })
-     * 
-     */
-    create<T extends FantasyLeagueMembershipPowerUpCreateArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpCreateArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many FantasyLeagueMembershipPowerUps.
-     * @param {FantasyLeagueMembershipPowerUpCreateManyArgs} args - Arguments to create many FantasyLeagueMembershipPowerUps.
-     * @example
-     * // Create many FantasyLeagueMembershipPowerUps
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends FantasyLeagueMembershipPowerUpCreateManyArgs>(args?: SelectSubset<T, FantasyLeagueMembershipPowerUpCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many FantasyLeagueMembershipPowerUps and returns the data saved in the database.
-     * @param {FantasyLeagueMembershipPowerUpCreateManyAndReturnArgs} args - Arguments to create many FantasyLeagueMembershipPowerUps.
-     * @example
-     * // Create many FantasyLeagueMembershipPowerUps
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many FantasyLeagueMembershipPowerUps and only return the `id`
-     * const fantasyLeagueMembershipPowerUpWithIdOnly = await prisma.fantasyLeagueMembershipPowerUp.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends FantasyLeagueMembershipPowerUpCreateManyAndReturnArgs>(args?: SelectSubset<T, FantasyLeagueMembershipPowerUpCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a FantasyLeagueMembershipPowerUp.
-     * @param {FantasyLeagueMembershipPowerUpDeleteArgs} args - Arguments to delete one FantasyLeagueMembershipPowerUp.
-     * @example
-     * // Delete one FantasyLeagueMembershipPowerUp
-     * const FantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.delete({
-     *   where: {
-     *     // ... filter to delete one FantasyLeagueMembershipPowerUp
-     *   }
-     * })
-     * 
-     */
-    delete<T extends FantasyLeagueMembershipPowerUpDeleteArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpDeleteArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one FantasyLeagueMembershipPowerUp.
-     * @param {FantasyLeagueMembershipPowerUpUpdateArgs} args - Arguments to update one FantasyLeagueMembershipPowerUp.
-     * @example
-     * // Update one FantasyLeagueMembershipPowerUp
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends FantasyLeagueMembershipPowerUpUpdateArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpUpdateArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more FantasyLeagueMembershipPowerUps.
-     * @param {FantasyLeagueMembershipPowerUpDeleteManyArgs} args - Arguments to filter FantasyLeagueMembershipPowerUps to delete.
-     * @example
-     * // Delete a few FantasyLeagueMembershipPowerUps
-     * const { count } = await prisma.fantasyLeagueMembershipPowerUp.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends FantasyLeagueMembershipPowerUpDeleteManyArgs>(args?: SelectSubset<T, FantasyLeagueMembershipPowerUpDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more FantasyLeagueMembershipPowerUps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many FantasyLeagueMembershipPowerUps
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends FantasyLeagueMembershipPowerUpUpdateManyArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more FantasyLeagueMembershipPowerUps and returns the data updated in the database.
-     * @param {FantasyLeagueMembershipPowerUpUpdateManyAndReturnArgs} args - Arguments to update many FantasyLeagueMembershipPowerUps.
-     * @example
-     * // Update many FantasyLeagueMembershipPowerUps
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more FantasyLeagueMembershipPowerUps and only return the `id`
-     * const fantasyLeagueMembershipPowerUpWithIdOnly = await prisma.fantasyLeagueMembershipPowerUp.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends FantasyLeagueMembershipPowerUpUpdateManyAndReturnArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one FantasyLeagueMembershipPowerUp.
-     * @param {FantasyLeagueMembershipPowerUpUpsertArgs} args - Arguments to update or create a FantasyLeagueMembershipPowerUp.
-     * @example
-     * // Update or create a FantasyLeagueMembershipPowerUp
-     * const fantasyLeagueMembershipPowerUp = await prisma.fantasyLeagueMembershipPowerUp.upsert({
-     *   create: {
-     *     // ... data to create a FantasyLeagueMembershipPowerUp
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the FantasyLeagueMembershipPowerUp we want to update
-     *   }
-     * })
-     */
-    upsert<T extends FantasyLeagueMembershipPowerUpUpsertArgs>(args: SelectSubset<T, FantasyLeagueMembershipPowerUpUpsertArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipPowerUpClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPowerUpPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of FantasyLeagueMembershipPowerUps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpCountArgs} args - Arguments to filter FantasyLeagueMembershipPowerUps to count.
-     * @example
-     * // Count the number of FantasyLeagueMembershipPowerUps
-     * const count = await prisma.fantasyLeagueMembershipPowerUp.count({
-     *   where: {
-     *     // ... the filter for the FantasyLeagueMembershipPowerUps we want to count
-     *   }
-     * })
-    **/
-    count<T extends FantasyLeagueMembershipPowerUpCountArgs>(
-      args?: Subset<T, FantasyLeagueMembershipPowerUpCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], FantasyLeagueMembershipPowerUpCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a FantasyLeagueMembershipPowerUp.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends FantasyLeagueMembershipPowerUpAggregateArgs>(args: Subset<T, FantasyLeagueMembershipPowerUpAggregateArgs>): Prisma.PrismaPromise<GetFantasyLeagueMembershipPowerUpAggregateType<T>>
-
-    /**
-     * Group by FantasyLeagueMembershipPowerUp.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {FantasyLeagueMembershipPowerUpGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends FantasyLeagueMembershipPowerUpGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: FantasyLeagueMembershipPowerUpGroupByArgs['orderBy'] }
-        : { orderBy?: FantasyLeagueMembershipPowerUpGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, FantasyLeagueMembershipPowerUpGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFantasyLeagueMembershipPowerUpGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the FantasyLeagueMembershipPowerUp model
-   */
-  readonly fields: FantasyLeagueMembershipPowerUpFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for FantasyLeagueMembershipPowerUp.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__FantasyLeagueMembershipPowerUpClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    fantasyLeagueMembership<T extends FantasyLeagueMembershipDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeagueMembershipDefaultArgs<ExtArgs>>): Prisma__FantasyLeagueMembershipClient<$Result.GetResult<Prisma.$FantasyLeagueMembershipPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    powerUpUsage<T extends PowerUpUsageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PowerUpUsageDefaultArgs<ExtArgs>>): Prisma__PowerUpUsageClient<$Result.GetResult<Prisma.$PowerUpUsagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the FantasyLeagueMembershipPowerUp model
-   */
-  interface FantasyLeagueMembershipPowerUpFieldRefs {
-    readonly id: FieldRef<"FantasyLeagueMembershipPowerUp", 'String'>
-    readonly fantasyLeagueMembershipId: FieldRef<"FantasyLeagueMembershipPowerUp", 'String'>
-    readonly powerUpUsageId: FieldRef<"FantasyLeagueMembershipPowerUp", 'String'>
-    readonly createdAt: FieldRef<"FantasyLeagueMembershipPowerUp", 'DateTime'>
-    readonly updatedAt: FieldRef<"FantasyLeagueMembershipPowerUp", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * FantasyLeagueMembershipPowerUp findUnique
-   */
-  export type FantasyLeagueMembershipPowerUpFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which FantasyLeagueMembershipPowerUp to fetch.
-     */
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp findUniqueOrThrow
-   */
-  export type FantasyLeagueMembershipPowerUpFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which FantasyLeagueMembershipPowerUp to fetch.
-     */
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp findFirst
-   */
-  export type FantasyLeagueMembershipPowerUpFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which FantasyLeagueMembershipPowerUp to fetch.
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of FantasyLeagueMembershipPowerUps to fetch.
-     */
-    orderBy?: FantasyLeagueMembershipPowerUpOrderByWithRelationInput | FantasyLeagueMembershipPowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for FantasyLeagueMembershipPowerUps.
-     */
-    cursor?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` FantasyLeagueMembershipPowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` FantasyLeagueMembershipPowerUps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of FantasyLeagueMembershipPowerUps.
-     */
-    distinct?: FantasyLeagueMembershipPowerUpScalarFieldEnum | FantasyLeagueMembershipPowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp findFirstOrThrow
-   */
-  export type FantasyLeagueMembershipPowerUpFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which FantasyLeagueMembershipPowerUp to fetch.
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of FantasyLeagueMembershipPowerUps to fetch.
-     */
-    orderBy?: FantasyLeagueMembershipPowerUpOrderByWithRelationInput | FantasyLeagueMembershipPowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for FantasyLeagueMembershipPowerUps.
-     */
-    cursor?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` FantasyLeagueMembershipPowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` FantasyLeagueMembershipPowerUps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of FantasyLeagueMembershipPowerUps.
-     */
-    distinct?: FantasyLeagueMembershipPowerUpScalarFieldEnum | FantasyLeagueMembershipPowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp findMany
-   */
-  export type FantasyLeagueMembershipPowerUpFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * Filter, which FantasyLeagueMembershipPowerUps to fetch.
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of FantasyLeagueMembershipPowerUps to fetch.
-     */
-    orderBy?: FantasyLeagueMembershipPowerUpOrderByWithRelationInput | FantasyLeagueMembershipPowerUpOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing FantasyLeagueMembershipPowerUps.
-     */
-    cursor?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` FantasyLeagueMembershipPowerUps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` FantasyLeagueMembershipPowerUps.
-     */
-    skip?: number
-    distinct?: FantasyLeagueMembershipPowerUpScalarFieldEnum | FantasyLeagueMembershipPowerUpScalarFieldEnum[]
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp create
-   */
-  export type FantasyLeagueMembershipPowerUpCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * The data needed to create a FantasyLeagueMembershipPowerUp.
-     */
-    data: XOR<FantasyLeagueMembershipPowerUpCreateInput, FantasyLeagueMembershipPowerUpUncheckedCreateInput>
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp createMany
-   */
-  export type FantasyLeagueMembershipPowerUpCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many FantasyLeagueMembershipPowerUps.
-     */
-    data: FantasyLeagueMembershipPowerUpCreateManyInput | FantasyLeagueMembershipPowerUpCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp createManyAndReturn
-   */
-  export type FantasyLeagueMembershipPowerUpCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * The data used to create many FantasyLeagueMembershipPowerUps.
-     */
-    data: FantasyLeagueMembershipPowerUpCreateManyInput | FantasyLeagueMembershipPowerUpCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp update
-   */
-  export type FantasyLeagueMembershipPowerUpUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * The data needed to update a FantasyLeagueMembershipPowerUp.
-     */
-    data: XOR<FantasyLeagueMembershipPowerUpUpdateInput, FantasyLeagueMembershipPowerUpUncheckedUpdateInput>
-    /**
-     * Choose, which FantasyLeagueMembershipPowerUp to update.
-     */
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp updateMany
-   */
-  export type FantasyLeagueMembershipPowerUpUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update FantasyLeagueMembershipPowerUps.
-     */
-    data: XOR<FantasyLeagueMembershipPowerUpUpdateManyMutationInput, FantasyLeagueMembershipPowerUpUncheckedUpdateManyInput>
-    /**
-     * Filter which FantasyLeagueMembershipPowerUps to update
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * Limit how many FantasyLeagueMembershipPowerUps to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp updateManyAndReturn
-   */
-  export type FantasyLeagueMembershipPowerUpUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * The data used to update FantasyLeagueMembershipPowerUps.
-     */
-    data: XOR<FantasyLeagueMembershipPowerUpUpdateManyMutationInput, FantasyLeagueMembershipPowerUpUncheckedUpdateManyInput>
-    /**
-     * Filter which FantasyLeagueMembershipPowerUps to update
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * Limit how many FantasyLeagueMembershipPowerUps to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp upsert
-   */
-  export type FantasyLeagueMembershipPowerUpUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * The filter to search for the FantasyLeagueMembershipPowerUp to update in case it exists.
-     */
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    /**
-     * In case the FantasyLeagueMembershipPowerUp found by the `where` argument doesn't exist, create a new FantasyLeagueMembershipPowerUp with this data.
-     */
-    create: XOR<FantasyLeagueMembershipPowerUpCreateInput, FantasyLeagueMembershipPowerUpUncheckedCreateInput>
-    /**
-     * In case the FantasyLeagueMembershipPowerUp was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<FantasyLeagueMembershipPowerUpUpdateInput, FantasyLeagueMembershipPowerUpUncheckedUpdateInput>
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp delete
-   */
-  export type FantasyLeagueMembershipPowerUpDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
-    /**
-     * Filter which FantasyLeagueMembershipPowerUp to delete.
-     */
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp deleteMany
-   */
-  export type FantasyLeagueMembershipPowerUpDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which FantasyLeagueMembershipPowerUps to delete
-     */
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    /**
-     * Limit how many FantasyLeagueMembershipPowerUps to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * FantasyLeagueMembershipPowerUp without action
-   */
-  export type FantasyLeagueMembershipPowerUpDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FantasyLeagueMembershipPowerUp
-     */
-    select?: FantasyLeagueMembershipPowerUpSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FantasyLeagueMembershipPowerUp
-     */
-    omit?: FantasyLeagueMembershipPowerUpOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FantasyLeagueMembershipPowerUpInclude<ExtArgs> | null
+    include?: TransactionInclude<ExtArgs> | null
   }
 
 
@@ -11897,6 +10028,17 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     email: 'email',
+    name: 'name',
+    image: 'image',
+    password: 'password',
+    country: 'country',
+    currency: 'currency',
+    balanceUsd: 'balanceUsd',
+    totalDeposited: 'totalDeposited',
+    totalWithdrawn: 'totalWithdrawn',
+    walletAddress: 'walletAddress',
+    kycStatus: 'kycStatus',
+    mobileMoneyNumber: 'mobileMoneyNumber',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11904,9 +10046,23 @@ export namespace Prisma {
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+  export const WalletScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    address: 'address',
+    encryptedPrivateKey: 'encryptedPrivateKey',
+    balance: 'balance',
+    lastBalanceUpdate: 'lastBalanceUpdate',
+    createdAt: 'createdAt'
+  };
+
+  export type WalletScalarFieldEnum = (typeof WalletScalarFieldEnum)[keyof typeof WalletScalarFieldEnum]
+
+
   export const TeamScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
+    realLifeLeague: 'realLifeLeague',
     teamValue: 'teamValue',
     teamPlayers: 'teamPlayers',
     captainId: 'captainId',
@@ -11920,17 +10076,22 @@ export namespace Prisma {
   export const FantasyLeagueScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    description: 'description',
     stake: 'stake',
     limit: 'limit',
     leagueType: 'leagueType',
     leagueMode: 'leagueMode',
     winners: 'winners',
-    allowPowerUps: 'allowPowerUps',
-    description: 'description',
     code: 'code',
     ownerId: 'ownerId',
+    realLifeLeague: 'realLifeLeague',
     status: 'status',
     winnersArray: 'winnersArray',
+    entryFeeUsd: 'entryFeeUsd',
+    totalPoolUsd: 'totalPoolUsd',
+    currentParticipants: 'currentParticipants',
+    blockchainTxHash: 'blockchainTxHash',
+    prizeDistribution: 'prizeDistribution',
     gameweekId: 'gameweekId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -11944,6 +10105,13 @@ export namespace Prisma {
     userId: 'userId',
     leagueId: 'leagueId',
     teamName: 'teamName',
+    stakeAmount: 'stakeAmount',
+    position: 'position',
+    score: 'score',
+    payoutAmount: 'payoutAmount',
+    payoutStatus: 'payoutStatus',
+    blockchainTxHash: 'blockchainTxHash',
+    joinedAt: 'joinedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11954,57 +10122,30 @@ export namespace Prisma {
   export const GameweekScalarFieldEnum: {
     id: 'id',
     deadline: 'deadline',
-    isActive: 'isActive'
+    isActive: 'isActive',
+    realLifeLeague: 'realLifeLeague'
   };
 
   export type GameweekScalarFieldEnum = (typeof GameweekScalarFieldEnum)[keyof typeof GameweekScalarFieldEnum]
 
 
-  export const PowerUpScalarFieldEnum: {
+  export const TransactionScalarFieldEnum: {
     id: 'id',
-    name: 'name',
-    description: 'description',
-    categoryId: 'categoryId',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type PowerUpScalarFieldEnum = (typeof PowerUpScalarFieldEnum)[keyof typeof PowerUpScalarFieldEnum]
-
-
-  export const PowerUpCategoryScalarFieldEnum: {
-    id: 'id',
-    name: 'name',
-    description: 'description',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type PowerUpCategoryScalarFieldEnum = (typeof PowerUpCategoryScalarFieldEnum)[keyof typeof PowerUpCategoryScalarFieldEnum]
-
-
-  export const PowerUpUsageScalarFieldEnum: {
-    id: 'id',
+    txHash: 'txHash',
+    type: 'type',
+    leagueId: 'leagueId',
     userId: 'userId',
-    powerUpId: 'powerUpId',
-    transactionId: 'transactionId',
-    isVerified: 'isVerified',
+    amount: 'amount',
+    status: 'status',
+    blockNumber: 'blockNumber',
+    gasUsed: 'gasUsed',
+    errorMessage: 'errorMessage',
+    metadata: 'metadata',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    confirmedAt: 'confirmedAt'
   };
 
-  export type PowerUpUsageScalarFieldEnum = (typeof PowerUpUsageScalarFieldEnum)[keyof typeof PowerUpUsageScalarFieldEnum]
-
-
-  export const FantasyLeagueMembershipPowerUpScalarFieldEnum: {
-    id: 'id',
-    fantasyLeagueMembershipId: 'fantasyLeagueMembershipId',
-    powerUpUsageId: 'powerUpUsageId',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type FantasyLeagueMembershipPowerUpScalarFieldEnum = (typeof FantasyLeagueMembershipPowerUpScalarFieldEnum)[keyof typeof FantasyLeagueMembershipPowerUpScalarFieldEnum]
+  export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -12013,6 +10154,14 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const QueryMode: {
@@ -12029,6 +10178,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -12051,6 +10209,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -12065,6 +10237,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'RealLifeLeague'
+   */
+  export type EnumRealLifeLeagueFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RealLifeLeague'>
+    
+
+
+  /**
+   * Reference to a field of type 'RealLifeLeague[]'
+   */
+  export type ListEnumRealLifeLeagueFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RealLifeLeague[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -12075,6 +10261,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -12108,47 +10308,93 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
+    name?: StringNullableFilter<"User"> | string | null
+    image?: StringNullableFilter<"User"> | string | null
+    password?: StringNullableFilter<"User"> | string | null
+    country?: StringNullableFilter<"User"> | string | null
+    currency?: StringNullableFilter<"User"> | string | null
+    balanceUsd?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
+    walletAddress?: StringNullableFilter<"User"> | string | null
+    kycStatus?: StringFilter<"User"> | string
+    mobileMoneyNumber?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    team?: XOR<TeamNullableScalarRelationFilter, TeamWhereInput> | null
+    teams?: TeamListRelationFilter
     leagues?: FantasyLeagueMembershipListRelationFilter
     ownedLeagues?: FantasyLeagueListRelationFilter
-    powerUpUsages?: PowerUpUsageListRelationFilter
+    wallet?: XOR<WalletNullableScalarRelationFilter, WalletWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     email?: SortOrder
+    name?: SortOrderInput | SortOrder
+    image?: SortOrderInput | SortOrder
+    password?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
+    currency?: SortOrderInput | SortOrder
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
+    walletAddress?: SortOrderInput | SortOrder
+    kycStatus?: SortOrder
+    mobileMoneyNumber?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    team?: TeamOrderByWithRelationInput
+    teams?: TeamOrderByRelationAggregateInput
     leagues?: FantasyLeagueMembershipOrderByRelationAggregateInput
     ownedLeagues?: FantasyLeagueOrderByRelationAggregateInput
-    powerUpUsages?: PowerUpUsageOrderByRelationAggregateInput
+    wallet?: WalletOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     email?: string
+    walletAddress?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
+    name?: StringNullableFilter<"User"> | string | null
+    image?: StringNullableFilter<"User"> | string | null
+    password?: StringNullableFilter<"User"> | string | null
+    country?: StringNullableFilter<"User"> | string | null
+    currency?: StringNullableFilter<"User"> | string | null
+    balanceUsd?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
+    kycStatus?: StringFilter<"User"> | string
+    mobileMoneyNumber?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    team?: XOR<TeamNullableScalarRelationFilter, TeamWhereInput> | null
+    teams?: TeamListRelationFilter
     leagues?: FantasyLeagueMembershipListRelationFilter
     ownedLeagues?: FantasyLeagueListRelationFilter
-    powerUpUsages?: PowerUpUsageListRelationFilter
-  }, "id" | "email">
+    wallet?: XOR<WalletNullableScalarRelationFilter, WalletWhereInput> | null
+  }, "id" | "email" | "walletAddress">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     email?: SortOrder
+    name?: SortOrderInput | SortOrder
+    image?: SortOrderInput | SortOrder
+    password?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
+    currency?: SortOrderInput | SortOrder
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
+    walletAddress?: SortOrderInput | SortOrder
+    kycStatus?: SortOrder
+    mobileMoneyNumber?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
+    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
+    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -12157,8 +10403,86 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
+    name?: StringNullableWithAggregatesFilter<"User"> | string | null
+    image?: StringNullableWithAggregatesFilter<"User"> | string | null
+    password?: StringNullableWithAggregatesFilter<"User"> | string | null
+    country?: StringNullableWithAggregatesFilter<"User"> | string | null
+    currency?: StringNullableWithAggregatesFilter<"User"> | string | null
+    balanceUsd?: DecimalWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string
+    walletAddress?: StringNullableWithAggregatesFilter<"User"> | string | null
+    kycStatus?: StringWithAggregatesFilter<"User"> | string
+    mobileMoneyNumber?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type WalletWhereInput = {
+    AND?: WalletWhereInput | WalletWhereInput[]
+    OR?: WalletWhereInput[]
+    NOT?: WalletWhereInput | WalletWhereInput[]
+    id?: StringFilter<"Wallet"> | string
+    userId?: StringFilter<"Wallet"> | string
+    address?: StringFilter<"Wallet"> | string
+    encryptedPrivateKey?: StringFilter<"Wallet"> | string
+    balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: DateTimeNullableFilter<"Wallet"> | Date | string | null
+    createdAt?: DateTimeFilter<"Wallet"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type WalletOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    address?: SortOrder
+    encryptedPrivateKey?: SortOrder
+    balance?: SortOrder
+    lastBalanceUpdate?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type WalletWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    address?: string
+    AND?: WalletWhereInput | WalletWhereInput[]
+    OR?: WalletWhereInput[]
+    NOT?: WalletWhereInput | WalletWhereInput[]
+    encryptedPrivateKey?: StringFilter<"Wallet"> | string
+    balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: DateTimeNullableFilter<"Wallet"> | Date | string | null
+    createdAt?: DateTimeFilter<"Wallet"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId" | "address">
+
+  export type WalletOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    address?: SortOrder
+    encryptedPrivateKey?: SortOrder
+    balance?: SortOrder
+    lastBalanceUpdate?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: WalletCountOrderByAggregateInput
+    _avg?: WalletAvgOrderByAggregateInput
+    _max?: WalletMaxOrderByAggregateInput
+    _min?: WalletMinOrderByAggregateInput
+    _sum?: WalletSumOrderByAggregateInput
+  }
+
+  export type WalletScalarWhereWithAggregatesInput = {
+    AND?: WalletScalarWhereWithAggregatesInput | WalletScalarWhereWithAggregatesInput[]
+    OR?: WalletScalarWhereWithAggregatesInput[]
+    NOT?: WalletScalarWhereWithAggregatesInput | WalletScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Wallet"> | string
+    userId?: StringWithAggregatesFilter<"Wallet"> | string
+    address?: StringWithAggregatesFilter<"Wallet"> | string
+    encryptedPrivateKey?: StringWithAggregatesFilter<"Wallet"> | string
+    balance?: DecimalWithAggregatesFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: DateTimeNullableWithAggregatesFilter<"Wallet"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
   }
 
   export type TeamWhereInput = {
@@ -12167,6 +10491,7 @@ export namespace Prisma {
     NOT?: TeamWhereInput | TeamWhereInput[]
     id?: StringFilter<"Team"> | string
     userId?: StringFilter<"Team"> | string
+    realLifeLeague?: EnumRealLifeLeagueFilter<"Team"> | $Enums.RealLifeLeague
     teamValue?: IntFilter<"Team"> | number
     teamPlayers?: IntNullableListFilter<"Team">
     captainId?: IntNullableFilter<"Team"> | number | null
@@ -12178,6 +10503,7 @@ export namespace Prisma {
   export type TeamOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
+    realLifeLeague?: SortOrder
     teamValue?: SortOrder
     teamPlayers?: SortOrder
     captainId?: SortOrderInput | SortOrder
@@ -12188,21 +10514,24 @@ export namespace Prisma {
 
   export type TeamWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    userId?: string
+    userId_realLifeLeague?: TeamUserIdRealLifeLeagueCompoundUniqueInput
     AND?: TeamWhereInput | TeamWhereInput[]
     OR?: TeamWhereInput[]
     NOT?: TeamWhereInput | TeamWhereInput[]
+    userId?: StringFilter<"Team"> | string
+    realLifeLeague?: EnumRealLifeLeagueFilter<"Team"> | $Enums.RealLifeLeague
     teamValue?: IntFilter<"Team"> | number
     teamPlayers?: IntNullableListFilter<"Team">
     captainId?: IntNullableFilter<"Team"> | number | null
     createdAt?: DateTimeFilter<"Team"> | Date | string
     updatedAt?: DateTimeFilter<"Team"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "userId">
+  }, "id" | "userId_realLifeLeague">
 
   export type TeamOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
+    realLifeLeague?: SortOrder
     teamValue?: SortOrder
     teamPlayers?: SortOrder
     captainId?: SortOrderInput | SortOrder
@@ -12221,6 +10550,7 @@ export namespace Prisma {
     NOT?: TeamScalarWhereWithAggregatesInput | TeamScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Team"> | string
     userId?: StringWithAggregatesFilter<"Team"> | string
+    realLifeLeague?: EnumRealLifeLeagueWithAggregatesFilter<"Team"> | $Enums.RealLifeLeague
     teamValue?: IntWithAggregatesFilter<"Team"> | number
     teamPlayers?: IntNullableListFilter<"Team">
     captainId?: IntNullableWithAggregatesFilter<"Team"> | number | null
@@ -12234,86 +10564,109 @@ export namespace Prisma {
     NOT?: FantasyLeagueWhereInput | FantasyLeagueWhereInput[]
     id?: StringFilter<"FantasyLeague"> | string
     name?: StringFilter<"FantasyLeague"> | string
-    stake?: StringFilter<"FantasyLeague"> | string
+    description?: StringNullableFilter<"FantasyLeague"> | string | null
+    stake?: StringNullableFilter<"FantasyLeague"> | string | null
     limit?: IntFilter<"FantasyLeague"> | number
     leagueType?: StringFilter<"FantasyLeague"> | string
     leagueMode?: StringFilter<"FantasyLeague"> | string
     winners?: IntFilter<"FantasyLeague"> | number
-    allowPowerUps?: BoolFilter<"FantasyLeague"> | boolean
-    description?: StringNullableFilter<"FantasyLeague"> | string | null
     code?: StringFilter<"FantasyLeague"> | string
     ownerId?: StringFilter<"FantasyLeague"> | string
+    realLifeLeague?: EnumRealLifeLeagueFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
+    entryFeeUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFilter<"FantasyLeague"> | number
+    blockchainTxHash?: StringNullableFilter<"FantasyLeague"> | string | null
+    prizeDistribution?: JsonNullableFilter<"FantasyLeague">
     gameweekId?: IntFilter<"FantasyLeague"> | number
     createdAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: FantasyLeagueMembershipListRelationFilter
     gameweek?: XOR<GameweekScalarRelationFilter, GameweekWhereInput>
+    transactions?: TransactionListRelationFilter
   }
 
   export type FantasyLeagueOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    stake?: SortOrder
+    description?: SortOrderInput | SortOrder
+    stake?: SortOrderInput | SortOrder
     limit?: SortOrder
     leagueType?: SortOrder
     leagueMode?: SortOrder
     winners?: SortOrder
-    allowPowerUps?: SortOrder
-    description?: SortOrderInput | SortOrder
     code?: SortOrder
     ownerId?: SortOrder
+    realLifeLeague?: SortOrder
     status?: SortOrder
     winnersArray?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
+    blockchainTxHash?: SortOrderInput | SortOrder
+    prizeDistribution?: SortOrderInput | SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     owner?: UserOrderByWithRelationInput
     members?: FantasyLeagueMembershipOrderByRelationAggregateInput
     gameweek?: GameweekOrderByWithRelationInput
+    transactions?: TransactionOrderByRelationAggregateInput
   }
 
   export type FantasyLeagueWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     code?: string
+    blockchainTxHash?: string
     AND?: FantasyLeagueWhereInput | FantasyLeagueWhereInput[]
     OR?: FantasyLeagueWhereInput[]
     NOT?: FantasyLeagueWhereInput | FantasyLeagueWhereInput[]
     name?: StringFilter<"FantasyLeague"> | string
-    stake?: StringFilter<"FantasyLeague"> | string
+    description?: StringNullableFilter<"FantasyLeague"> | string | null
+    stake?: StringNullableFilter<"FantasyLeague"> | string | null
     limit?: IntFilter<"FantasyLeague"> | number
     leagueType?: StringFilter<"FantasyLeague"> | string
     leagueMode?: StringFilter<"FantasyLeague"> | string
     winners?: IntFilter<"FantasyLeague"> | number
-    allowPowerUps?: BoolFilter<"FantasyLeague"> | boolean
-    description?: StringNullableFilter<"FantasyLeague"> | string | null
     ownerId?: StringFilter<"FantasyLeague"> | string
+    realLifeLeague?: EnumRealLifeLeagueFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
+    entryFeeUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFilter<"FantasyLeague"> | number
+    prizeDistribution?: JsonNullableFilter<"FantasyLeague">
     gameweekId?: IntFilter<"FantasyLeague"> | number
     createdAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: FantasyLeagueMembershipListRelationFilter
     gameweek?: XOR<GameweekScalarRelationFilter, GameweekWhereInput>
-  }, "id" | "code">
+    transactions?: TransactionListRelationFilter
+  }, "id" | "code" | "blockchainTxHash">
 
   export type FantasyLeagueOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    stake?: SortOrder
+    description?: SortOrderInput | SortOrder
+    stake?: SortOrderInput | SortOrder
     limit?: SortOrder
     leagueType?: SortOrder
     leagueMode?: SortOrder
     winners?: SortOrder
-    allowPowerUps?: SortOrder
-    description?: SortOrderInput | SortOrder
     code?: SortOrder
     ownerId?: SortOrder
+    realLifeLeague?: SortOrder
     status?: SortOrder
     winnersArray?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
+    blockchainTxHash?: SortOrderInput | SortOrder
+    prizeDistribution?: SortOrderInput | SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12330,17 +10683,22 @@ export namespace Prisma {
     NOT?: FantasyLeagueScalarWhereWithAggregatesInput | FantasyLeagueScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"FantasyLeague"> | string
     name?: StringWithAggregatesFilter<"FantasyLeague"> | string
-    stake?: StringWithAggregatesFilter<"FantasyLeague"> | string
+    description?: StringNullableWithAggregatesFilter<"FantasyLeague"> | string | null
+    stake?: StringNullableWithAggregatesFilter<"FantasyLeague"> | string | null
     limit?: IntWithAggregatesFilter<"FantasyLeague"> | number
     leagueType?: StringWithAggregatesFilter<"FantasyLeague"> | string
     leagueMode?: StringWithAggregatesFilter<"FantasyLeague"> | string
     winners?: IntWithAggregatesFilter<"FantasyLeague"> | number
-    allowPowerUps?: BoolWithAggregatesFilter<"FantasyLeague"> | boolean
-    description?: StringNullableWithAggregatesFilter<"FantasyLeague"> | string | null
     code?: StringWithAggregatesFilter<"FantasyLeague"> | string
     ownerId?: StringWithAggregatesFilter<"FantasyLeague"> | string
+    realLifeLeague?: EnumRealLifeLeagueWithAggregatesFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringWithAggregatesFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
+    entryFeeUsd?: DecimalWithAggregatesFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalWithAggregatesFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntWithAggregatesFilter<"FantasyLeague"> | number
+    blockchainTxHash?: StringNullableWithAggregatesFilter<"FantasyLeague"> | string | null
+    prizeDistribution?: JsonNullableWithAggregatesFilter<"FantasyLeague">
     gameweekId?: IntWithAggregatesFilter<"FantasyLeague"> | number
     createdAt?: DateTimeWithAggregatesFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FantasyLeague"> | Date | string
@@ -12354,9 +10712,15 @@ export namespace Prisma {
     userId?: StringFilter<"FantasyLeagueMembership"> | string
     leagueId?: StringFilter<"FantasyLeagueMembership"> | string
     teamName?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    stakeAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    position?: IntNullableFilter<"FantasyLeagueMembership"> | number | null
+    score?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFilter<"FantasyLeagueMembership"> | string
+    blockchainTxHash?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    joinedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     league?: XOR<FantasyLeagueScalarRelationFilter, FantasyLeagueWhereInput>
   }
@@ -12366,9 +10730,15 @@ export namespace Prisma {
     userId?: SortOrder
     leagueId?: SortOrder
     teamName?: SortOrderInput | SortOrder
+    stakeAmount?: SortOrderInput | SortOrder
+    position?: SortOrderInput | SortOrder
+    score?: SortOrderInput | SortOrder
+    payoutAmount?: SortOrderInput | SortOrder
+    payoutStatus?: SortOrder
+    blockchainTxHash?: SortOrderInput | SortOrder
+    joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    powerUps?: FantasyLeagueMembershipPowerUpOrderByRelationAggregateInput
     user?: UserOrderByWithRelationInput
     league?: FantasyLeagueOrderByWithRelationInput
   }
@@ -12382,9 +10752,15 @@ export namespace Prisma {
     userId?: StringFilter<"FantasyLeagueMembership"> | string
     leagueId?: StringFilter<"FantasyLeagueMembership"> | string
     teamName?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    stakeAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    position?: IntNullableFilter<"FantasyLeagueMembership"> | number | null
+    score?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFilter<"FantasyLeagueMembership"> | string
+    blockchainTxHash?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    joinedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     league?: XOR<FantasyLeagueScalarRelationFilter, FantasyLeagueWhereInput>
   }, "id" | "userId_leagueId">
@@ -12394,11 +10770,20 @@ export namespace Prisma {
     userId?: SortOrder
     leagueId?: SortOrder
     teamName?: SortOrderInput | SortOrder
+    stakeAmount?: SortOrderInput | SortOrder
+    position?: SortOrderInput | SortOrder
+    score?: SortOrderInput | SortOrder
+    payoutAmount?: SortOrderInput | SortOrder
+    payoutStatus?: SortOrder
+    blockchainTxHash?: SortOrderInput | SortOrder
+    joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FantasyLeagueMembershipCountOrderByAggregateInput
+    _avg?: FantasyLeagueMembershipAvgOrderByAggregateInput
     _max?: FantasyLeagueMembershipMaxOrderByAggregateInput
     _min?: FantasyLeagueMembershipMinOrderByAggregateInput
+    _sum?: FantasyLeagueMembershipSumOrderByAggregateInput
   }
 
   export type FantasyLeagueMembershipScalarWhereWithAggregatesInput = {
@@ -12409,6 +10794,13 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"FantasyLeagueMembership"> | string
     leagueId?: StringWithAggregatesFilter<"FantasyLeagueMembership"> | string
     teamName?: StringNullableWithAggregatesFilter<"FantasyLeagueMembership"> | string | null
+    stakeAmount?: DecimalNullableWithAggregatesFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    position?: IntNullableWithAggregatesFilter<"FantasyLeagueMembership"> | number | null
+    score?: DecimalNullableWithAggregatesFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: DecimalNullableWithAggregatesFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringWithAggregatesFilter<"FantasyLeagueMembership"> | string
+    blockchainTxHash?: StringNullableWithAggregatesFilter<"FantasyLeagueMembership"> | string | null
+    joinedAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembership"> | Date | string
   }
@@ -12420,6 +10812,7 @@ export namespace Prisma {
     id?: IntFilter<"Gameweek"> | number
     deadline?: DateTimeFilter<"Gameweek"> | Date | string
     isActive?: BoolFilter<"Gameweek"> | boolean
+    realLifeLeague?: EnumRealLifeLeagueFilter<"Gameweek"> | $Enums.RealLifeLeague
     leagues?: FantasyLeagueListRelationFilter
   }
 
@@ -12427,6 +10820,7 @@ export namespace Prisma {
     id?: SortOrder
     deadline?: SortOrder
     isActive?: SortOrder
+    realLifeLeague?: SortOrder
     leagues?: FantasyLeagueOrderByRelationAggregateInput
   }
 
@@ -12437,6 +10831,7 @@ export namespace Prisma {
     NOT?: GameweekWhereInput | GameweekWhereInput[]
     deadline?: DateTimeFilter<"Gameweek"> | Date | string
     isActive?: BoolFilter<"Gameweek"> | boolean
+    realLifeLeague?: EnumRealLifeLeagueFilter<"Gameweek"> | $Enums.RealLifeLeague
     leagues?: FantasyLeagueListRelationFilter
   }, "id">
 
@@ -12444,6 +10839,7 @@ export namespace Prisma {
     id?: SortOrder
     deadline?: SortOrder
     isActive?: SortOrder
+    realLifeLeague?: SortOrder
     _count?: GameweekCountOrderByAggregateInput
     _avg?: GameweekAvgOrderByAggregateInput
     _max?: GameweekMaxOrderByAggregateInput
@@ -12458,302 +10854,208 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Gameweek"> | number
     deadline?: DateTimeWithAggregatesFilter<"Gameweek"> | Date | string
     isActive?: BoolWithAggregatesFilter<"Gameweek"> | boolean
+    realLifeLeague?: EnumRealLifeLeagueWithAggregatesFilter<"Gameweek"> | $Enums.RealLifeLeague
   }
 
-  export type PowerUpWhereInput = {
-    AND?: PowerUpWhereInput | PowerUpWhereInput[]
-    OR?: PowerUpWhereInput[]
-    NOT?: PowerUpWhereInput | PowerUpWhereInput[]
-    id?: StringFilter<"PowerUp"> | string
-    name?: StringFilter<"PowerUp"> | string
-    description?: StringFilter<"PowerUp"> | string
-    categoryId?: StringNullableFilter<"PowerUp"> | string | null
-    createdAt?: DateTimeFilter<"PowerUp"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUp"> | Date | string
-    category?: XOR<PowerUpCategoryNullableScalarRelationFilter, PowerUpCategoryWhereInput> | null
-    powerUpUsages?: PowerUpUsageListRelationFilter
+  export type TransactionWhereInput = {
+    AND?: TransactionWhereInput | TransactionWhereInput[]
+    OR?: TransactionWhereInput[]
+    NOT?: TransactionWhereInput | TransactionWhereInput[]
+    id?: StringFilter<"Transaction"> | string
+    txHash?: StringFilter<"Transaction"> | string
+    type?: StringFilter<"Transaction"> | string
+    leagueId?: StringNullableFilter<"Transaction"> | string | null
+    userId?: StringNullableFilter<"Transaction"> | string | null
+    amount?: DecimalNullableFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    status?: StringFilter<"Transaction"> | string
+    blockNumber?: IntNullableFilter<"Transaction"> | number | null
+    gasUsed?: StringNullableFilter<"Transaction"> | string | null
+    errorMessage?: StringNullableFilter<"Transaction"> | string | null
+    metadata?: JsonNullableFilter<"Transaction">
+    createdAt?: DateTimeFilter<"Transaction"> | Date | string
+    confirmedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
+    league?: XOR<FantasyLeagueNullableScalarRelationFilter, FantasyLeagueWhereInput> | null
   }
 
-  export type PowerUpOrderByWithRelationInput = {
+  export type TransactionOrderByWithRelationInput = {
     id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    categoryId?: SortOrderInput | SortOrder
+    txHash?: SortOrder
+    type?: SortOrder
+    leagueId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    amount?: SortOrderInput | SortOrder
+    status?: SortOrder
+    blockNumber?: SortOrderInput | SortOrder
+    gasUsed?: SortOrderInput | SortOrder
+    errorMessage?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
-    category?: PowerUpCategoryOrderByWithRelationInput
-    powerUpUsages?: PowerUpUsageOrderByRelationAggregateInput
+    confirmedAt?: SortOrderInput | SortOrder
+    league?: FantasyLeagueOrderByWithRelationInput
   }
 
-  export type PowerUpWhereUniqueInput = Prisma.AtLeast<{
+  export type TransactionWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: PowerUpWhereInput | PowerUpWhereInput[]
-    OR?: PowerUpWhereInput[]
-    NOT?: PowerUpWhereInput | PowerUpWhereInput[]
-    name?: StringFilter<"PowerUp"> | string
-    description?: StringFilter<"PowerUp"> | string
-    categoryId?: StringNullableFilter<"PowerUp"> | string | null
-    createdAt?: DateTimeFilter<"PowerUp"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUp"> | Date | string
-    category?: XOR<PowerUpCategoryNullableScalarRelationFilter, PowerUpCategoryWhereInput> | null
-    powerUpUsages?: PowerUpUsageListRelationFilter
-  }, "id">
+    txHash?: string
+    AND?: TransactionWhereInput | TransactionWhereInput[]
+    OR?: TransactionWhereInput[]
+    NOT?: TransactionWhereInput | TransactionWhereInput[]
+    type?: StringFilter<"Transaction"> | string
+    leagueId?: StringNullableFilter<"Transaction"> | string | null
+    userId?: StringNullableFilter<"Transaction"> | string | null
+    amount?: DecimalNullableFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    status?: StringFilter<"Transaction"> | string
+    blockNumber?: IntNullableFilter<"Transaction"> | number | null
+    gasUsed?: StringNullableFilter<"Transaction"> | string | null
+    errorMessage?: StringNullableFilter<"Transaction"> | string | null
+    metadata?: JsonNullableFilter<"Transaction">
+    createdAt?: DateTimeFilter<"Transaction"> | Date | string
+    confirmedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
+    league?: XOR<FantasyLeagueNullableScalarRelationFilter, FantasyLeagueWhereInput> | null
+  }, "id" | "txHash">
 
-  export type PowerUpOrderByWithAggregationInput = {
+  export type TransactionOrderByWithAggregationInput = {
     id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    categoryId?: SortOrderInput | SortOrder
+    txHash?: SortOrder
+    type?: SortOrder
+    leagueId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    amount?: SortOrderInput | SortOrder
+    status?: SortOrder
+    blockNumber?: SortOrderInput | SortOrder
+    gasUsed?: SortOrderInput | SortOrder
+    errorMessage?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: PowerUpCountOrderByAggregateInput
-    _max?: PowerUpMaxOrderByAggregateInput
-    _min?: PowerUpMinOrderByAggregateInput
+    confirmedAt?: SortOrderInput | SortOrder
+    _count?: TransactionCountOrderByAggregateInput
+    _avg?: TransactionAvgOrderByAggregateInput
+    _max?: TransactionMaxOrderByAggregateInput
+    _min?: TransactionMinOrderByAggregateInput
+    _sum?: TransactionSumOrderByAggregateInput
   }
 
-  export type PowerUpScalarWhereWithAggregatesInput = {
-    AND?: PowerUpScalarWhereWithAggregatesInput | PowerUpScalarWhereWithAggregatesInput[]
-    OR?: PowerUpScalarWhereWithAggregatesInput[]
-    NOT?: PowerUpScalarWhereWithAggregatesInput | PowerUpScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"PowerUp"> | string
-    name?: StringWithAggregatesFilter<"PowerUp"> | string
-    description?: StringWithAggregatesFilter<"PowerUp"> | string
-    categoryId?: StringNullableWithAggregatesFilter<"PowerUp"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"PowerUp"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"PowerUp"> | Date | string
-  }
-
-  export type PowerUpCategoryWhereInput = {
-    AND?: PowerUpCategoryWhereInput | PowerUpCategoryWhereInput[]
-    OR?: PowerUpCategoryWhereInput[]
-    NOT?: PowerUpCategoryWhereInput | PowerUpCategoryWhereInput[]
-    id?: StringFilter<"PowerUpCategory"> | string
-    name?: StringFilter<"PowerUpCategory"> | string
-    description?: StringFilter<"PowerUpCategory"> | string
-    createdAt?: DateTimeFilter<"PowerUpCategory"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUpCategory"> | Date | string
-    powerUps?: PowerUpListRelationFilter
-  }
-
-  export type PowerUpCategoryOrderByWithRelationInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    powerUps?: PowerUpOrderByRelationAggregateInput
-  }
-
-  export type PowerUpCategoryWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    name?: string
-    AND?: PowerUpCategoryWhereInput | PowerUpCategoryWhereInput[]
-    OR?: PowerUpCategoryWhereInput[]
-    NOT?: PowerUpCategoryWhereInput | PowerUpCategoryWhereInput[]
-    description?: StringFilter<"PowerUpCategory"> | string
-    createdAt?: DateTimeFilter<"PowerUpCategory"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUpCategory"> | Date | string
-    powerUps?: PowerUpListRelationFilter
-  }, "id" | "name">
-
-  export type PowerUpCategoryOrderByWithAggregationInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: PowerUpCategoryCountOrderByAggregateInput
-    _max?: PowerUpCategoryMaxOrderByAggregateInput
-    _min?: PowerUpCategoryMinOrderByAggregateInput
-  }
-
-  export type PowerUpCategoryScalarWhereWithAggregatesInput = {
-    AND?: PowerUpCategoryScalarWhereWithAggregatesInput | PowerUpCategoryScalarWhereWithAggregatesInput[]
-    OR?: PowerUpCategoryScalarWhereWithAggregatesInput[]
-    NOT?: PowerUpCategoryScalarWhereWithAggregatesInput | PowerUpCategoryScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"PowerUpCategory"> | string
-    name?: StringWithAggregatesFilter<"PowerUpCategory"> | string
-    description?: StringWithAggregatesFilter<"PowerUpCategory"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"PowerUpCategory"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"PowerUpCategory"> | Date | string
-  }
-
-  export type PowerUpUsageWhereInput = {
-    AND?: PowerUpUsageWhereInput | PowerUpUsageWhereInput[]
-    OR?: PowerUpUsageWhereInput[]
-    NOT?: PowerUpUsageWhereInput | PowerUpUsageWhereInput[]
-    id?: StringFilter<"PowerUpUsage"> | string
-    userId?: StringFilter<"PowerUpUsage"> | string
-    powerUpId?: StringFilter<"PowerUpUsage"> | string
-    transactionId?: StringFilter<"PowerUpUsage"> | string
-    isVerified?: BoolFilter<"PowerUpUsage"> | boolean
-    createdAt?: DateTimeFilter<"PowerUpUsage"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUpUsage"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    powerUp?: XOR<PowerUpScalarRelationFilter, PowerUpWhereInput>
-    leagueMembershipPowerUp?: XOR<FantasyLeagueMembershipPowerUpNullableScalarRelationFilter, FantasyLeagueMembershipPowerUpWhereInput> | null
-  }
-
-  export type PowerUpUsageOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    powerUpId?: SortOrder
-    transactionId?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    powerUp?: PowerUpOrderByWithRelationInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpOrderByWithRelationInput
-  }
-
-  export type PowerUpUsageWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    transactionId?: string
-    AND?: PowerUpUsageWhereInput | PowerUpUsageWhereInput[]
-    OR?: PowerUpUsageWhereInput[]
-    NOT?: PowerUpUsageWhereInput | PowerUpUsageWhereInput[]
-    userId?: StringFilter<"PowerUpUsage"> | string
-    powerUpId?: StringFilter<"PowerUpUsage"> | string
-    isVerified?: BoolFilter<"PowerUpUsage"> | boolean
-    createdAt?: DateTimeFilter<"PowerUpUsage"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUpUsage"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    powerUp?: XOR<PowerUpScalarRelationFilter, PowerUpWhereInput>
-    leagueMembershipPowerUp?: XOR<FantasyLeagueMembershipPowerUpNullableScalarRelationFilter, FantasyLeagueMembershipPowerUpWhereInput> | null
-  }, "id" | "transactionId">
-
-  export type PowerUpUsageOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    powerUpId?: SortOrder
-    transactionId?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: PowerUpUsageCountOrderByAggregateInput
-    _max?: PowerUpUsageMaxOrderByAggregateInput
-    _min?: PowerUpUsageMinOrderByAggregateInput
-  }
-
-  export type PowerUpUsageScalarWhereWithAggregatesInput = {
-    AND?: PowerUpUsageScalarWhereWithAggregatesInput | PowerUpUsageScalarWhereWithAggregatesInput[]
-    OR?: PowerUpUsageScalarWhereWithAggregatesInput[]
-    NOT?: PowerUpUsageScalarWhereWithAggregatesInput | PowerUpUsageScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"PowerUpUsage"> | string
-    userId?: StringWithAggregatesFilter<"PowerUpUsage"> | string
-    powerUpId?: StringWithAggregatesFilter<"PowerUpUsage"> | string
-    transactionId?: StringWithAggregatesFilter<"PowerUpUsage"> | string
-    isVerified?: BoolWithAggregatesFilter<"PowerUpUsage"> | boolean
-    createdAt?: DateTimeWithAggregatesFilter<"PowerUpUsage"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"PowerUpUsage"> | Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpWhereInput = {
-    AND?: FantasyLeagueMembershipPowerUpWhereInput | FantasyLeagueMembershipPowerUpWhereInput[]
-    OR?: FantasyLeagueMembershipPowerUpWhereInput[]
-    NOT?: FantasyLeagueMembershipPowerUpWhereInput | FantasyLeagueMembershipPowerUpWhereInput[]
-    id?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    fantasyLeagueMembershipId?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    powerUpUsageId?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    createdAt?: DateTimeFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
-    updatedAt?: DateTimeFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
-    fantasyLeagueMembership?: XOR<FantasyLeagueMembershipScalarRelationFilter, FantasyLeagueMembershipWhereInput>
-    powerUpUsage?: XOR<PowerUpUsageScalarRelationFilter, PowerUpUsageWhereInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpOrderByWithRelationInput = {
-    id?: SortOrder
-    fantasyLeagueMembershipId?: SortOrder
-    powerUpUsageId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    fantasyLeagueMembership?: FantasyLeagueMembershipOrderByWithRelationInput
-    powerUpUsage?: PowerUpUsageOrderByWithRelationInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    powerUpUsageId?: string
-    AND?: FantasyLeagueMembershipPowerUpWhereInput | FantasyLeagueMembershipPowerUpWhereInput[]
-    OR?: FantasyLeagueMembershipPowerUpWhereInput[]
-    NOT?: FantasyLeagueMembershipPowerUpWhereInput | FantasyLeagueMembershipPowerUpWhereInput[]
-    fantasyLeagueMembershipId?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    createdAt?: DateTimeFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
-    updatedAt?: DateTimeFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
-    fantasyLeagueMembership?: XOR<FantasyLeagueMembershipScalarRelationFilter, FantasyLeagueMembershipWhereInput>
-    powerUpUsage?: XOR<PowerUpUsageScalarRelationFilter, PowerUpUsageWhereInput>
-  }, "id" | "powerUpUsageId">
-
-  export type FantasyLeagueMembershipPowerUpOrderByWithAggregationInput = {
-    id?: SortOrder
-    fantasyLeagueMembershipId?: SortOrder
-    powerUpUsageId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: FantasyLeagueMembershipPowerUpCountOrderByAggregateInput
-    _max?: FantasyLeagueMembershipPowerUpMaxOrderByAggregateInput
-    _min?: FantasyLeagueMembershipPowerUpMinOrderByAggregateInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput = {
-    AND?: FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput | FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput[]
-    OR?: FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput[]
-    NOT?: FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput | FantasyLeagueMembershipPowerUpScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"FantasyLeagueMembershipPowerUp"> | string
-    fantasyLeagueMembershipId?: StringWithAggregatesFilter<"FantasyLeagueMembershipPowerUp"> | string
-    powerUpUsageId?: StringWithAggregatesFilter<"FantasyLeagueMembershipPowerUp"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
+  export type TransactionScalarWhereWithAggregatesInput = {
+    AND?: TransactionScalarWhereWithAggregatesInput | TransactionScalarWhereWithAggregatesInput[]
+    OR?: TransactionScalarWhereWithAggregatesInput[]
+    NOT?: TransactionScalarWhereWithAggregatesInput | TransactionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Transaction"> | string
+    txHash?: StringWithAggregatesFilter<"Transaction"> | string
+    type?: StringWithAggregatesFilter<"Transaction"> | string
+    leagueId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    amount?: DecimalNullableWithAggregatesFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    status?: StringWithAggregatesFilter<"Transaction"> | string
+    blockNumber?: IntNullableWithAggregatesFilter<"Transaction"> | number | null
+    gasUsed?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    errorMessage?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"Transaction">
+    createdAt?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
+    confirmedAt?: DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
   }
 
   export type UserCreateInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    team?: TeamCreateNestedOneWithoutUserInput
+    teams?: TeamCreateNestedManyWithoutUserInput
     leagues?: FantasyLeagueMembershipCreateNestedManyWithoutUserInput
     ownedLeagues?: FantasyLeagueCreateNestedManyWithoutOwnerInput
-    powerUpUsages?: PowerUpUsageCreateNestedManyWithoutUserInput
+    wallet?: WalletCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    team?: TeamUncheckedCreateNestedOneWithoutUserInput
+    teams?: TeamUncheckedCreateNestedManyWithoutUserInput
     leagues?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutUserInput
     ownedLeagues?: FantasyLeagueUncheckedCreateNestedManyWithoutOwnerInput
-    powerUpUsages?: PowerUpUsageUncheckedCreateNestedManyWithoutUserInput
+    wallet?: WalletUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUpdateOneWithoutUserNestedInput
+    teams?: TeamUpdateManyWithoutUserNestedInput
     leagues?: FantasyLeagueMembershipUpdateManyWithoutUserNestedInput
     ownedLeagues?: FantasyLeagueUpdateManyWithoutOwnerNestedInput
-    powerUpUsages?: PowerUpUsageUpdateManyWithoutUserNestedInput
+    wallet?: WalletUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUncheckedUpdateOneWithoutUserNestedInput
+    teams?: TeamUncheckedUpdateManyWithoutUserNestedInput
     leagues?: FantasyLeagueMembershipUncheckedUpdateManyWithoutUserNestedInput
     ownedLeagues?: FantasyLeagueUncheckedUpdateManyWithoutOwnerNestedInput
-    powerUpUsages?: PowerUpUsageUncheckedUpdateManyWithoutUserNestedInput
+    wallet?: WalletUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12761,6 +11063,17 @@ export namespace Prisma {
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12768,23 +11081,105 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WalletCreateInput = {
+    id?: string
+    address: string
+    encryptedPrivateKey: string
+    balance?: Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: Date | string | null
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutWalletInput
+  }
+
+  export type WalletUncheckedCreateInput = {
+    id?: string
+    userId: string
+    address: string
+    encryptedPrivateKey: string
+    balance?: Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type WalletUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWalletNestedInput
+  }
+
+  export type WalletUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WalletCreateManyInput = {
+    id?: string
+    userId: string
+    address: string
+    encryptedPrivateKey: string
+    balance?: Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type WalletUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WalletUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type TeamCreateInput = {
     id?: string
+    realLifeLeague?: $Enums.RealLifeLeague
     teamValue?: number
     teamPlayers?: TeamCreateteamPlayersInput | number[]
     captainId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeamInput
+    user: UserCreateNestedOneWithoutTeamsInput
   }
 
   export type TeamUncheckedCreateInput = {
     id?: string
     userId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     teamValue?: number
     teamPlayers?: TeamCreateteamPlayersInput | number[]
     captainId?: number | null
@@ -12794,17 +11189,19 @@ export namespace Prisma {
 
   export type TeamUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     teamValue?: IntFieldUpdateOperationsInput | number
     teamPlayers?: TeamUpdateteamPlayersInput | number[]
     captainId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeamNestedInput
+    user?: UserUpdateOneRequiredWithoutTeamsNestedInput
   }
 
   export type TeamUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     teamValue?: IntFieldUpdateOperationsInput | number
     teamPlayers?: TeamUpdateteamPlayersInput | number[]
     captainId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -12815,6 +11212,7 @@ export namespace Prisma {
   export type TeamCreateManyInput = {
     id?: string
     userId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     teamValue?: number
     teamPlayers?: TeamCreateteamPlayersInput | number[]
     captainId?: number | null
@@ -12824,6 +11222,7 @@ export namespace Prisma {
 
   export type TeamUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     teamValue?: IntFieldUpdateOperationsInput | number
     teamPlayers?: TeamUpdateteamPlayersInput | number[]
     captainId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -12834,6 +11233,7 @@ export namespace Prisma {
   export type TeamUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     teamValue?: IntFieldUpdateOperationsInput | number
     teamPlayers?: TeamUpdateteamPlayersInput | number[]
     captainId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -12844,97 +11244,126 @@ export namespace Prisma {
   export type FantasyLeagueCreateInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedLeaguesInput
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
     gameweek: GameweekCreateNestedOneWithoutLeaguesInput
+    transactions?: TransactionCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueUncheckedCreateInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
     ownerId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutLeagueInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
     gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
+    transactions?: TransactionUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueCreateManyInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
     ownerId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12943,16 +11372,21 @@ export namespace Prisma {
   export type FantasyLeagueUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12960,17 +11394,22 @@ export namespace Prisma {
   export type FantasyLeagueUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12979,9 +11418,15 @@ export namespace Prisma {
   export type FantasyLeagueMembershipCreateInput = {
     id?: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpCreateNestedManyWithoutFantasyLeagueMembershipInput
     user: UserCreateNestedOneWithoutLeaguesInput
     league: FantasyLeagueCreateNestedOneWithoutMembersInput
   }
@@ -12991,17 +11436,29 @@ export namespace Prisma {
     userId: string
     leagueId: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUncheckedCreateNestedManyWithoutFantasyLeagueMembershipInput
   }
 
   export type FantasyLeagueMembershipUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUpdateManyWithoutFantasyLeagueMembershipNestedInput
     user?: UserUpdateOneRequiredWithoutLeaguesNestedInput
     league?: FantasyLeagueUpdateOneRequiredWithoutMembersNestedInput
   }
@@ -13011,9 +11468,15 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     leagueId?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUncheckedUpdateManyWithoutFantasyLeagueMembershipNestedInput
   }
 
   export type FantasyLeagueMembershipCreateManyInput = {
@@ -13021,6 +11484,13 @@ export namespace Prisma {
     userId: string
     leagueId: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -13028,6 +11498,13 @@ export namespace Prisma {
   export type FantasyLeagueMembershipUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13037,6 +11514,13 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     leagueId?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13045,6 +11529,7 @@ export namespace Prisma {
     id: number
     deadline: Date | string
     isActive?: boolean
+    realLifeLeague?: $Enums.RealLifeLeague
     leagues?: FantasyLeagueCreateNestedManyWithoutGameweekInput
   }
 
@@ -13052,6 +11537,7 @@ export namespace Prisma {
     id: number
     deadline: Date | string
     isActive?: boolean
+    realLifeLeague?: $Enums.RealLifeLeague
     leagues?: FantasyLeagueUncheckedCreateNestedManyWithoutGameweekInput
   }
 
@@ -13059,6 +11545,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     leagues?: FantasyLeagueUpdateManyWithoutGameweekNestedInput
   }
 
@@ -13066,6 +11553,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     leagues?: FantasyLeagueUncheckedUpdateManyWithoutGameweekNestedInput
   }
 
@@ -13073,270 +11561,132 @@ export namespace Prisma {
     id: number
     deadline: Date | string
     isActive?: boolean
+    realLifeLeague?: $Enums.RealLifeLeague
   }
 
   export type GameweekUpdateManyMutationInput = {
     id?: IntFieldUpdateOperationsInput | number
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
   }
 
   export type GameweekUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
   }
 
-  export type PowerUpCreateInput = {
+  export type TransactionCreateInput = {
     id?: string
-    name: string
-    description: string
+    txHash: string
+    type: string
+    userId?: string | null
+    amount?: Decimal | DecimalJsLike | number | string | null
+    status?: string
+    blockNumber?: number | null
+    gasUsed?: string | null
+    errorMessage?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    updatedAt?: Date | string
-    category?: PowerUpCategoryCreateNestedOneWithoutPowerUpsInput
-    powerUpUsages?: PowerUpUsageCreateNestedManyWithoutPowerUpInput
+    confirmedAt?: Date | string | null
+    league?: FantasyLeagueCreateNestedOneWithoutTransactionsInput
   }
 
-  export type PowerUpUncheckedCreateInput = {
+  export type TransactionUncheckedCreateInput = {
     id?: string
-    name: string
-    description: string
-    categoryId?: string | null
+    txHash: string
+    type: string
+    leagueId?: string | null
+    userId?: string | null
+    amount?: Decimal | DecimalJsLike | number | string | null
+    status?: string
+    blockNumber?: number | null
+    gasUsed?: string | null
+    errorMessage?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    updatedAt?: Date | string
-    powerUpUsages?: PowerUpUsageUncheckedCreateNestedManyWithoutPowerUpInput
+    confirmedAt?: Date | string | null
   }
 
-  export type PowerUpUpdateInput = {
+  export type TransactionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: PowerUpCategoryUpdateOneWithoutPowerUpsNestedInput
-    powerUpUsages?: PowerUpUsageUpdateManyWithoutPowerUpNestedInput
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    league?: FantasyLeagueUpdateOneWithoutTransactionsNestedInput
   }
 
-  export type PowerUpUncheckedUpdateInput = {
+  export type TransactionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    leagueId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUpUsages?: PowerUpUsageUncheckedUpdateManyWithoutPowerUpNestedInput
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type PowerUpCreateManyInput = {
+  export type TransactionCreateManyInput = {
     id?: string
-    name: string
-    description: string
-    categoryId?: string | null
+    txHash: string
+    type: string
+    leagueId?: string | null
+    userId?: string | null
+    amount?: Decimal | DecimalJsLike | number | string | null
+    status?: string
+    blockNumber?: number | null
+    gasUsed?: string | null
+    errorMessage?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    updatedAt?: Date | string
+    confirmedAt?: Date | string | null
   }
 
-  export type PowerUpUpdateManyMutationInput = {
+  export type TransactionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type PowerUpUncheckedUpdateManyInput = {
+  export type TransactionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    leagueId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpCategoryCreateInput = {
-    id?: string
-    name: string
-    description: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    powerUps?: PowerUpCreateNestedManyWithoutCategoryInput
-  }
-
-  export type PowerUpCategoryUncheckedCreateInput = {
-    id?: string
-    name: string
-    description: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    powerUps?: PowerUpUncheckedCreateNestedManyWithoutCategoryInput
-  }
-
-  export type PowerUpCategoryUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: PowerUpUpdateManyWithoutCategoryNestedInput
-  }
-
-  export type PowerUpCategoryUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: PowerUpUncheckedUpdateManyWithoutCategoryNestedInput
-  }
-
-  export type PowerUpCategoryCreateManyInput = {
-    id?: string
-    name: string
-    description: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PowerUpCategoryUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpCategoryUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpUsageCreateInput = {
-    id?: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutPowerUpUsagesInput
-    powerUp: PowerUpCreateNestedOneWithoutPowerUpUsagesInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpCreateNestedOneWithoutPowerUpUsageInput
-  }
-
-  export type PowerUpUsageUncheckedCreateInput = {
-    id?: string
-    userId: string
-    powerUpId: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUncheckedCreateNestedOneWithoutPowerUpUsageInput
-  }
-
-  export type PowerUpUsageUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutPowerUpUsagesNestedInput
-    powerUp?: PowerUpUpdateOneRequiredWithoutPowerUpUsagesNestedInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUpdateOneWithoutPowerUpUsageNestedInput
-  }
-
-  export type PowerUpUsageUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    powerUpId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUncheckedUpdateOneWithoutPowerUpUsageNestedInput
-  }
-
-  export type PowerUpUsageCreateManyInput = {
-    id?: string
-    userId: string
-    powerUpId: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PowerUpUsageUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpUsageUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    powerUpId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpCreateInput = {
-    id?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    fantasyLeagueMembership: FantasyLeagueMembershipCreateNestedOneWithoutPowerUpsInput
-    powerUpUsage: PowerUpUsageCreateNestedOneWithoutLeagueMembershipPowerUpInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedCreateInput = {
-    id?: string
-    fantasyLeagueMembershipId: string
-    powerUpUsageId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fantasyLeagueMembership?: FantasyLeagueMembershipUpdateOneRequiredWithoutPowerUpsNestedInput
-    powerUpUsage?: PowerUpUsageUpdateOneRequiredWithoutLeagueMembershipPowerUpNestedInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    fantasyLeagueMembershipId?: StringFieldUpdateOperationsInput | string
-    powerUpUsageId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpCreateManyInput = {
-    id?: string
-    fantasyLeagueMembershipId: string
-    powerUpUsageId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    fantasyLeagueMembershipId?: StringFieldUpdateOperationsInput | string
-    powerUpUsageId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -13354,6 +11704,32 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -13365,9 +11741,10 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type TeamNullableScalarRelationFilter = {
-    is?: TeamWhereInput | null
-    isNot?: TeamWhereInput | null
+  export type TeamListRelationFilter = {
+    every?: TeamWhereInput
+    some?: TeamWhereInput
+    none?: TeamWhereInput
   }
 
   export type FantasyLeagueMembershipListRelationFilter = {
@@ -13382,10 +11759,18 @@ export namespace Prisma {
     none?: FantasyLeagueWhereInput
   }
 
-  export type PowerUpUsageListRelationFilter = {
-    every?: PowerUpUsageWhereInput
-    some?: PowerUpUsageWhereInput
-    none?: PowerUpUsageWhereInput
+  export type WalletNullableScalarRelationFilter = {
+    is?: WalletWhereInput | null
+    isNot?: WalletWhereInput | null
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
+  export type TeamOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type FantasyLeagueMembershipOrderByRelationAggregateInput = {
@@ -13396,20 +11781,44 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type PowerUpUsageOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
+    name?: SortOrder
+    image?: SortOrder
+    password?: SortOrder
+    country?: SortOrder
+    currency?: SortOrder
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
+    walletAddress?: SortOrder
+    kycStatus?: SortOrder
+    mobileMoneyNumber?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserAvgOrderByAggregateInput = {
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
+    name?: SortOrder
+    image?: SortOrder
+    password?: SortOrder
+    country?: SortOrder
+    currency?: SortOrder
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
+    walletAddress?: SortOrder
+    kycStatus?: SortOrder
+    mobileMoneyNumber?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13417,8 +11826,25 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
+    name?: SortOrder
+    image?: SortOrder
+    password?: SortOrder
+    country?: SortOrder
+    currency?: SortOrder
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
+    walletAddress?: SortOrder
+    kycStatus?: SortOrder
+    mobileMoneyNumber?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserSumOrderByAggregateInput = {
+    balanceUsd?: SortOrder
+    totalDeposited?: SortOrder
+    totalWithdrawn?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -13439,6 +11865,40 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -13451,6 +11911,81 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type WalletCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    address?: SortOrder
+    encryptedPrivateKey?: SortOrder
+    balance?: SortOrder
+    lastBalanceUpdate?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WalletAvgOrderByAggregateInput = {
+    balance?: SortOrder
+  }
+
+  export type WalletMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    address?: SortOrder
+    encryptedPrivateKey?: SortOrder
+    balance?: SortOrder
+    lastBalanceUpdate?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WalletMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    address?: SortOrder
+    encryptedPrivateKey?: SortOrder
+    balance?: SortOrder
+    lastBalanceUpdate?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WalletSumOrderByAggregateInput = {
+    balance?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type EnumRealLifeLeagueFilter<$PrismaModel = never> = {
+    equals?: $Enums.RealLifeLeague | EnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    in?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    not?: NestedEnumRealLifeLeagueFilter<$PrismaModel> | $Enums.RealLifeLeague
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -13483,19 +12018,15 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
+  export type TeamUserIdRealLifeLeagueCompoundUniqueInput = {
+    userId: string
+    realLifeLeague: $Enums.RealLifeLeague
   }
 
   export type TeamCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    realLifeLeague?: SortOrder
     teamValue?: SortOrder
     teamPlayers?: SortOrder
     captainId?: SortOrder
@@ -13512,6 +12043,7 @@ export namespace Prisma {
   export type TeamMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    realLifeLeague?: SortOrder
     teamValue?: SortOrder
     captainId?: SortOrder
     createdAt?: SortOrder
@@ -13521,6 +12053,7 @@ export namespace Prisma {
   export type TeamMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    realLifeLeague?: SortOrder
     teamValue?: SortOrder
     captainId?: SortOrder
     createdAt?: SortOrder
@@ -13531,6 +12064,16 @@ export namespace Prisma {
     teamValue?: SortOrder
     teamPlayers?: SortOrder
     captainId?: SortOrder
+  }
+
+  export type EnumRealLifeLeagueWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RealLifeLeague | EnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    in?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    not?: NestedEnumRealLifeLeagueWithAggregatesFilter<$PrismaModel> | $Enums.RealLifeLeague
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
+    _max?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -13565,26 +12108,6 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type StringNullableListFilter<$PrismaModel = never> = {
     equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
     has?: string | StringFieldRefInput<$PrismaModel> | null
@@ -13592,26 +12115,64 @@ export namespace Prisma {
     hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
     isEmpty?: boolean
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type GameweekScalarRelationFilter = {
     is?: GameweekWhereInput
     isNot?: GameweekWhereInput
   }
 
+  export type TransactionListRelationFilter = {
+    every?: TransactionWhereInput
+    some?: TransactionWhereInput
+    none?: TransactionWhereInput
+  }
+
+  export type TransactionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type FantasyLeagueCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     stake?: SortOrder
     limit?: SortOrder
     leagueType?: SortOrder
     leagueMode?: SortOrder
     winners?: SortOrder
-    allowPowerUps?: SortOrder
-    description?: SortOrder
     code?: SortOrder
     ownerId?: SortOrder
+    realLifeLeague?: SortOrder
     status?: SortOrder
     winnersArray?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
+    blockchainTxHash?: SortOrder
+    prizeDistribution?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13620,22 +12181,29 @@ export namespace Prisma {
   export type FantasyLeagueAvgOrderByAggregateInput = {
     limit?: SortOrder
     winners?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
     gameweekId?: SortOrder
   }
 
   export type FantasyLeagueMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     stake?: SortOrder
     limit?: SortOrder
     leagueType?: SortOrder
     leagueMode?: SortOrder
     winners?: SortOrder
-    allowPowerUps?: SortOrder
-    description?: SortOrder
     code?: SortOrder
     ownerId?: SortOrder
+    realLifeLeague?: SortOrder
     status?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
+    blockchainTxHash?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13644,16 +12212,20 @@ export namespace Prisma {
   export type FantasyLeagueMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     stake?: SortOrder
     limit?: SortOrder
     leagueType?: SortOrder
     leagueMode?: SortOrder
     winners?: SortOrder
-    allowPowerUps?: SortOrder
-    description?: SortOrder
     code?: SortOrder
     ownerId?: SortOrder
+    realLifeLeague?: SortOrder
     status?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
+    blockchainTxHash?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13662,48 +12234,52 @@ export namespace Prisma {
   export type FantasyLeagueSumOrderByAggregateInput = {
     limit?: SortOrder
     winners?: SortOrder
+    entryFeeUsd?: SortOrder
+    totalPoolUsd?: SortOrder
+    currentParticipants?: SortOrder
     gameweekId?: SortOrder
   }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
     _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
-  export type FantasyLeagueMembershipPowerUpListRelationFilter = {
-    every?: FantasyLeagueMembershipPowerUpWhereInput
-    some?: FantasyLeagueMembershipPowerUpWhereInput
-    none?: FantasyLeagueMembershipPowerUpWhereInput
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
   }
 
   export type FantasyLeagueScalarRelationFilter = {
     is?: FantasyLeagueWhereInput
     isNot?: FantasyLeagueWhereInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type FantasyLeagueMembershipUserIdLeagueIdCompoundUniqueInput = {
@@ -13716,8 +12292,22 @@ export namespace Prisma {
     userId?: SortOrder
     leagueId?: SortOrder
     teamName?: SortOrder
+    stakeAmount?: SortOrder
+    position?: SortOrder
+    score?: SortOrder
+    payoutAmount?: SortOrder
+    payoutStatus?: SortOrder
+    blockchainTxHash?: SortOrder
+    joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type FantasyLeagueMembershipAvgOrderByAggregateInput = {
+    stakeAmount?: SortOrder
+    position?: SortOrder
+    score?: SortOrder
+    payoutAmount?: SortOrder
   }
 
   export type FantasyLeagueMembershipMaxOrderByAggregateInput = {
@@ -13725,6 +12315,13 @@ export namespace Prisma {
     userId?: SortOrder
     leagueId?: SortOrder
     teamName?: SortOrder
+    stakeAmount?: SortOrder
+    position?: SortOrder
+    score?: SortOrder
+    payoutAmount?: SortOrder
+    payoutStatus?: SortOrder
+    blockchainTxHash?: SortOrder
+    joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13734,14 +12331,50 @@ export namespace Prisma {
     userId?: SortOrder
     leagueId?: SortOrder
     teamName?: SortOrder
+    stakeAmount?: SortOrder
+    position?: SortOrder
+    score?: SortOrder
+    payoutAmount?: SortOrder
+    payoutStatus?: SortOrder
+    blockchainTxHash?: SortOrder
+    joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type FantasyLeagueMembershipSumOrderByAggregateInput = {
+    stakeAmount?: SortOrder
+    position?: SortOrder
+    score?: SortOrder
+    payoutAmount?: SortOrder
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type GameweekCountOrderByAggregateInput = {
     id?: SortOrder
     deadline?: SortOrder
     isActive?: SortOrder
+    realLifeLeague?: SortOrder
   }
 
   export type GameweekAvgOrderByAggregateInput = {
@@ -13752,162 +12385,94 @@ export namespace Prisma {
     id?: SortOrder
     deadline?: SortOrder
     isActive?: SortOrder
+    realLifeLeague?: SortOrder
   }
 
   export type GameweekMinOrderByAggregateInput = {
     id?: SortOrder
     deadline?: SortOrder
     isActive?: SortOrder
+    realLifeLeague?: SortOrder
   }
 
   export type GameweekSumOrderByAggregateInput = {
     id?: SortOrder
   }
 
-  export type PowerUpCategoryNullableScalarRelationFilter = {
-    is?: PowerUpCategoryWhereInput | null
-    isNot?: PowerUpCategoryWhereInput | null
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type PowerUpCountOrderByAggregateInput = {
+  export type FantasyLeagueNullableScalarRelationFilter = {
+    is?: FantasyLeagueWhereInput | null
+    isNot?: FantasyLeagueWhereInput | null
+  }
+
+  export type TransactionCountOrderByAggregateInput = {
     id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    categoryId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PowerUpMaxOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    categoryId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PowerUpMinOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    categoryId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PowerUpListRelationFilter = {
-    every?: PowerUpWhereInput
-    some?: PowerUpWhereInput
-    none?: PowerUpWhereInput
-  }
-
-  export type PowerUpOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type PowerUpCategoryCountOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PowerUpCategoryMaxOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PowerUpCategoryMinOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PowerUpScalarRelationFilter = {
-    is?: PowerUpWhereInput
-    isNot?: PowerUpWhereInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpNullableScalarRelationFilter = {
-    is?: FantasyLeagueMembershipPowerUpWhereInput | null
-    isNot?: FantasyLeagueMembershipPowerUpWhereInput | null
-  }
-
-  export type PowerUpUsageCountOrderByAggregateInput = {
-    id?: SortOrder
+    txHash?: SortOrder
+    type?: SortOrder
+    leagueId?: SortOrder
     userId?: SortOrder
-    powerUpId?: SortOrder
-    transactionId?: SortOrder
-    isVerified?: SortOrder
+    amount?: SortOrder
+    status?: SortOrder
+    blockNumber?: SortOrder
+    gasUsed?: SortOrder
+    errorMessage?: SortOrder
+    metadata?: SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
+    confirmedAt?: SortOrder
   }
 
-  export type PowerUpUsageMaxOrderByAggregateInput = {
+  export type TransactionAvgOrderByAggregateInput = {
+    amount?: SortOrder
+    blockNumber?: SortOrder
+  }
+
+  export type TransactionMaxOrderByAggregateInput = {
     id?: SortOrder
+    txHash?: SortOrder
+    type?: SortOrder
+    leagueId?: SortOrder
     userId?: SortOrder
-    powerUpId?: SortOrder
-    transactionId?: SortOrder
-    isVerified?: SortOrder
+    amount?: SortOrder
+    status?: SortOrder
+    blockNumber?: SortOrder
+    gasUsed?: SortOrder
+    errorMessage?: SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
+    confirmedAt?: SortOrder
   }
 
-  export type PowerUpUsageMinOrderByAggregateInput = {
+  export type TransactionMinOrderByAggregateInput = {
     id?: SortOrder
+    txHash?: SortOrder
+    type?: SortOrder
+    leagueId?: SortOrder
     userId?: SortOrder
-    powerUpId?: SortOrder
-    transactionId?: SortOrder
-    isVerified?: SortOrder
+    amount?: SortOrder
+    status?: SortOrder
+    blockNumber?: SortOrder
+    gasUsed?: SortOrder
+    errorMessage?: SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
+    confirmedAt?: SortOrder
   }
 
-  export type FantasyLeagueMembershipScalarRelationFilter = {
-    is?: FantasyLeagueMembershipWhereInput
-    isNot?: FantasyLeagueMembershipWhereInput
+  export type TransactionSumOrderByAggregateInput = {
+    amount?: SortOrder
+    blockNumber?: SortOrder
   }
 
-  export type PowerUpUsageScalarRelationFilter = {
-    is?: PowerUpUsageWhereInput
-    isNot?: PowerUpUsageWhereInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpCountOrderByAggregateInput = {
-    id?: SortOrder
-    fantasyLeagueMembershipId?: SortOrder
-    powerUpUsageId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type FantasyLeagueMembershipPowerUpMaxOrderByAggregateInput = {
-    id?: SortOrder
-    fantasyLeagueMembershipId?: SortOrder
-    powerUpUsageId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type FantasyLeagueMembershipPowerUpMinOrderByAggregateInput = {
-    id?: SortOrder
-    fantasyLeagueMembershipId?: SortOrder
-    powerUpUsageId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TeamCreateNestedOneWithoutUserInput = {
-    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeamCreateOrConnectWithoutUserInput
-    connect?: TeamWhereUniqueInput
+  export type TeamCreateNestedManyWithoutUserInput = {
+    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput> | TeamCreateWithoutUserInput[] | TeamUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TeamCreateOrConnectWithoutUserInput | TeamCreateOrConnectWithoutUserInput[]
+    createMany?: TeamCreateManyUserInputEnvelope
+    connect?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
   }
 
   export type FantasyLeagueMembershipCreateNestedManyWithoutUserInput = {
@@ -13924,17 +12489,17 @@ export namespace Prisma {
     connect?: FantasyLeagueWhereUniqueInput | FantasyLeagueWhereUniqueInput[]
   }
 
-  export type PowerUpUsageCreateNestedManyWithoutUserInput = {
-    create?: XOR<PowerUpUsageCreateWithoutUserInput, PowerUpUsageUncheckedCreateWithoutUserInput> | PowerUpUsageCreateWithoutUserInput[] | PowerUpUsageUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutUserInput | PowerUpUsageCreateOrConnectWithoutUserInput[]
-    createMany?: PowerUpUsageCreateManyUserInputEnvelope
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
+  export type WalletCreateNestedOneWithoutUserInput = {
+    create?: XOR<WalletCreateWithoutUserInput, WalletUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WalletCreateOrConnectWithoutUserInput
+    connect?: WalletWhereUniqueInput
   }
 
-  export type TeamUncheckedCreateNestedOneWithoutUserInput = {
-    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeamCreateOrConnectWithoutUserInput
-    connect?: TeamWhereUniqueInput
+  export type TeamUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput> | TeamCreateWithoutUserInput[] | TeamUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TeamCreateOrConnectWithoutUserInput | TeamCreateOrConnectWithoutUserInput[]
+    createMany?: TeamCreateManyUserInputEnvelope
+    connect?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
   }
 
   export type FantasyLeagueMembershipUncheckedCreateNestedManyWithoutUserInput = {
@@ -13951,29 +12516,44 @@ export namespace Prisma {
     connect?: FantasyLeagueWhereUniqueInput | FantasyLeagueWhereUniqueInput[]
   }
 
-  export type PowerUpUsageUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<PowerUpUsageCreateWithoutUserInput, PowerUpUsageUncheckedCreateWithoutUserInput> | PowerUpUsageCreateWithoutUserInput[] | PowerUpUsageUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutUserInput | PowerUpUsageCreateOrConnectWithoutUserInput[]
-    createMany?: PowerUpUsageCreateManyUserInputEnvelope
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
+  export type WalletUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<WalletCreateWithoutUserInput, WalletUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WalletCreateOrConnectWithoutUserInput
+    connect?: WalletWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
 
-  export type TeamUpdateOneWithoutUserNestedInput = {
-    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeamCreateOrConnectWithoutUserInput
-    upsert?: TeamUpsertWithoutUserInput
-    disconnect?: TeamWhereInput | boolean
-    delete?: TeamWhereInput | boolean
-    connect?: TeamWhereUniqueInput
-    update?: XOR<XOR<TeamUpdateToOneWithWhereWithoutUserInput, TeamUpdateWithoutUserInput>, TeamUncheckedUpdateWithoutUserInput>
+  export type TeamUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput> | TeamCreateWithoutUserInput[] | TeamUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TeamCreateOrConnectWithoutUserInput | TeamCreateOrConnectWithoutUserInput[]
+    upsert?: TeamUpsertWithWhereUniqueWithoutUserInput | TeamUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TeamCreateManyUserInputEnvelope
+    set?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    disconnect?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    delete?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    connect?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    update?: TeamUpdateWithWhereUniqueWithoutUserInput | TeamUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TeamUpdateManyWithWhereWithoutUserInput | TeamUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TeamScalarWhereInput | TeamScalarWhereInput[]
   }
 
   export type FantasyLeagueMembershipUpdateManyWithoutUserNestedInput = {
@@ -14004,28 +12584,28 @@ export namespace Prisma {
     deleteMany?: FantasyLeagueScalarWhereInput | FantasyLeagueScalarWhereInput[]
   }
 
-  export type PowerUpUsageUpdateManyWithoutUserNestedInput = {
-    create?: XOR<PowerUpUsageCreateWithoutUserInput, PowerUpUsageUncheckedCreateWithoutUserInput> | PowerUpUsageCreateWithoutUserInput[] | PowerUpUsageUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutUserInput | PowerUpUsageCreateOrConnectWithoutUserInput[]
-    upsert?: PowerUpUsageUpsertWithWhereUniqueWithoutUserInput | PowerUpUsageUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: PowerUpUsageCreateManyUserInputEnvelope
-    set?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    disconnect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    delete?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    update?: PowerUpUsageUpdateWithWhereUniqueWithoutUserInput | PowerUpUsageUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: PowerUpUsageUpdateManyWithWhereWithoutUserInput | PowerUpUsageUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: PowerUpUsageScalarWhereInput | PowerUpUsageScalarWhereInput[]
+  export type WalletUpdateOneWithoutUserNestedInput = {
+    create?: XOR<WalletCreateWithoutUserInput, WalletUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WalletCreateOrConnectWithoutUserInput
+    upsert?: WalletUpsertWithoutUserInput
+    disconnect?: WalletWhereInput | boolean
+    delete?: WalletWhereInput | boolean
+    connect?: WalletWhereUniqueInput
+    update?: XOR<XOR<WalletUpdateToOneWithWhereWithoutUserInput, WalletUpdateWithoutUserInput>, WalletUncheckedUpdateWithoutUserInput>
   }
 
-  export type TeamUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeamCreateOrConnectWithoutUserInput
-    upsert?: TeamUpsertWithoutUserInput
-    disconnect?: TeamWhereInput | boolean
-    delete?: TeamWhereInput | boolean
-    connect?: TeamWhereUniqueInput
-    update?: XOR<XOR<TeamUpdateToOneWithWhereWithoutUserInput, TeamUpdateWithoutUserInput>, TeamUncheckedUpdateWithoutUserInput>
+  export type TeamUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput> | TeamCreateWithoutUserInput[] | TeamUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TeamCreateOrConnectWithoutUserInput | TeamCreateOrConnectWithoutUserInput[]
+    upsert?: TeamUpsertWithWhereUniqueWithoutUserInput | TeamUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TeamCreateManyUserInputEnvelope
+    set?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    disconnect?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    delete?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    connect?: TeamWhereUniqueInput | TeamWhereUniqueInput[]
+    update?: TeamUpdateWithWhereUniqueWithoutUserInput | TeamUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TeamUpdateManyWithWhereWithoutUserInput | TeamUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TeamScalarWhereInput | TeamScalarWhereInput[]
   }
 
   export type FantasyLeagueMembershipUncheckedUpdateManyWithoutUserNestedInput = {
@@ -14056,28 +12636,46 @@ export namespace Prisma {
     deleteMany?: FantasyLeagueScalarWhereInput | FantasyLeagueScalarWhereInput[]
   }
 
-  export type PowerUpUsageUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<PowerUpUsageCreateWithoutUserInput, PowerUpUsageUncheckedCreateWithoutUserInput> | PowerUpUsageCreateWithoutUserInput[] | PowerUpUsageUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutUserInput | PowerUpUsageCreateOrConnectWithoutUserInput[]
-    upsert?: PowerUpUsageUpsertWithWhereUniqueWithoutUserInput | PowerUpUsageUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: PowerUpUsageCreateManyUserInputEnvelope
-    set?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    disconnect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    delete?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    update?: PowerUpUsageUpdateWithWhereUniqueWithoutUserInput | PowerUpUsageUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: PowerUpUsageUpdateManyWithWhereWithoutUserInput | PowerUpUsageUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: PowerUpUsageScalarWhereInput | PowerUpUsageScalarWhereInput[]
+  export type WalletUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<WalletCreateWithoutUserInput, WalletUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WalletCreateOrConnectWithoutUserInput
+    upsert?: WalletUpsertWithoutUserInput
+    disconnect?: WalletWhereInput | boolean
+    delete?: WalletWhereInput | boolean
+    connect?: WalletWhereUniqueInput
+    update?: XOR<XOR<WalletUpdateToOneWithWhereWithoutUserInput, WalletUpdateWithoutUserInput>, WalletUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserCreateNestedOneWithoutWalletInput = {
+    create?: XOR<UserCreateWithoutWalletInput, UserUncheckedCreateWithoutWalletInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWalletInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type UserUpdateOneRequiredWithoutWalletNestedInput = {
+    create?: XOR<UserCreateWithoutWalletInput, UserUncheckedCreateWithoutWalletInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWalletInput
+    upsert?: UserUpsertWithoutWalletInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutWalletInput, UserUpdateWithoutWalletInput>, UserUncheckedUpdateWithoutWalletInput>
   }
 
   export type TeamCreateteamPlayersInput = {
     set: number[]
   }
 
-  export type UserCreateNestedOneWithoutTeamInput = {
-    create?: XOR<UserCreateWithoutTeamInput, UserUncheckedCreateWithoutTeamInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTeamInput
+  export type UserCreateNestedOneWithoutTeamsInput = {
+    create?: XOR<UserCreateWithoutTeamsInput, UserUncheckedCreateWithoutTeamsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTeamsInput
     connect?: UserWhereUniqueInput
+  }
+
+  export type EnumRealLifeLeagueFieldUpdateOperationsInput = {
+    set?: $Enums.RealLifeLeague
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -14101,12 +12699,12 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type UserUpdateOneRequiredWithoutTeamNestedInput = {
-    create?: XOR<UserCreateWithoutTeamInput, UserUncheckedCreateWithoutTeamInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTeamInput
-    upsert?: UserUpsertWithoutTeamInput
+  export type UserUpdateOneRequiredWithoutTeamsNestedInput = {
+    create?: XOR<UserCreateWithoutTeamsInput, UserUncheckedCreateWithoutTeamsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTeamsInput
+    upsert?: UserUpsertWithoutTeamsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTeamInput, UserUpdateWithoutTeamInput>, UserUncheckedUpdateWithoutTeamInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTeamsInput, UserUpdateWithoutTeamsInput>, UserUncheckedUpdateWithoutTeamsInput>
   }
 
   export type FantasyLeagueCreatewinnersArrayInput = {
@@ -14132,6 +12730,13 @@ export namespace Prisma {
     connect?: GameweekWhereUniqueInput
   }
 
+  export type TransactionCreateNestedManyWithoutLeagueInput = {
+    create?: XOR<TransactionCreateWithoutLeagueInput, TransactionUncheckedCreateWithoutLeagueInput> | TransactionCreateWithoutLeagueInput[] | TransactionUncheckedCreateWithoutLeagueInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutLeagueInput | TransactionCreateOrConnectWithoutLeagueInput[]
+    createMany?: TransactionCreateManyLeagueInputEnvelope
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
   export type FantasyLeagueMembershipUncheckedCreateNestedManyWithoutLeagueInput = {
     create?: XOR<FantasyLeagueMembershipCreateWithoutLeagueInput, FantasyLeagueMembershipUncheckedCreateWithoutLeagueInput> | FantasyLeagueMembershipCreateWithoutLeagueInput[] | FantasyLeagueMembershipUncheckedCreateWithoutLeagueInput[]
     connectOrCreate?: FantasyLeagueMembershipCreateOrConnectWithoutLeagueInput | FantasyLeagueMembershipCreateOrConnectWithoutLeagueInput[]
@@ -14139,12 +12744,11 @@ export namespace Prisma {
     connect?: FantasyLeagueMembershipWhereUniqueInput | FantasyLeagueMembershipWhereUniqueInput[]
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
+  export type TransactionUncheckedCreateNestedManyWithoutLeagueInput = {
+    create?: XOR<TransactionCreateWithoutLeagueInput, TransactionUncheckedCreateWithoutLeagueInput> | TransactionCreateWithoutLeagueInput[] | TransactionUncheckedCreateWithoutLeagueInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutLeagueInput | TransactionCreateOrConnectWithoutLeagueInput[]
+    createMany?: TransactionCreateManyLeagueInputEnvelope
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
   }
 
   export type FantasyLeagueUpdatewinnersArrayInput = {
@@ -14182,6 +12786,20 @@ export namespace Prisma {
     update?: XOR<XOR<GameweekUpdateToOneWithWhereWithoutLeaguesInput, GameweekUpdateWithoutLeaguesInput>, GameweekUncheckedUpdateWithoutLeaguesInput>
   }
 
+  export type TransactionUpdateManyWithoutLeagueNestedInput = {
+    create?: XOR<TransactionCreateWithoutLeagueInput, TransactionUncheckedCreateWithoutLeagueInput> | TransactionCreateWithoutLeagueInput[] | TransactionUncheckedCreateWithoutLeagueInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutLeagueInput | TransactionCreateOrConnectWithoutLeagueInput[]
+    upsert?: TransactionUpsertWithWhereUniqueWithoutLeagueInput | TransactionUpsertWithWhereUniqueWithoutLeagueInput[]
+    createMany?: TransactionCreateManyLeagueInputEnvelope
+    set?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    disconnect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    delete?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    update?: TransactionUpdateWithWhereUniqueWithoutLeagueInput | TransactionUpdateWithWhereUniqueWithoutLeagueInput[]
+    updateMany?: TransactionUpdateManyWithWhereWithoutLeagueInput | TransactionUpdateManyWithWhereWithoutLeagueInput[]
+    deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
   export type FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueNestedInput = {
     create?: XOR<FantasyLeagueMembershipCreateWithoutLeagueInput, FantasyLeagueMembershipUncheckedCreateWithoutLeagueInput> | FantasyLeagueMembershipCreateWithoutLeagueInput[] | FantasyLeagueMembershipUncheckedCreateWithoutLeagueInput[]
     connectOrCreate?: FantasyLeagueMembershipCreateOrConnectWithoutLeagueInput | FantasyLeagueMembershipCreateOrConnectWithoutLeagueInput[]
@@ -14196,11 +12814,18 @@ export namespace Prisma {
     deleteMany?: FantasyLeagueMembershipScalarWhereInput | FantasyLeagueMembershipScalarWhereInput[]
   }
 
-  export type FantasyLeagueMembershipPowerUpCreateNestedManyWithoutFantasyLeagueMembershipInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput> | FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput[] | FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput[]
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput[]
-    createMany?: FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInputEnvelope
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
+  export type TransactionUncheckedUpdateManyWithoutLeagueNestedInput = {
+    create?: XOR<TransactionCreateWithoutLeagueInput, TransactionUncheckedCreateWithoutLeagueInput> | TransactionCreateWithoutLeagueInput[] | TransactionUncheckedCreateWithoutLeagueInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutLeagueInput | TransactionCreateOrConnectWithoutLeagueInput[]
+    upsert?: TransactionUpsertWithWhereUniqueWithoutLeagueInput | TransactionUpsertWithWhereUniqueWithoutLeagueInput[]
+    createMany?: TransactionCreateManyLeagueInputEnvelope
+    set?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    disconnect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    delete?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    update?: TransactionUpdateWithWhereUniqueWithoutLeagueInput | TransactionUpdateWithWhereUniqueWithoutLeagueInput[]
+    updateMany?: TransactionUpdateManyWithWhereWithoutLeagueInput | TransactionUpdateManyWithWhereWithoutLeagueInput[]
+    deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutLeaguesInput = {
@@ -14215,25 +12840,12 @@ export namespace Prisma {
     connect?: FantasyLeagueWhereUniqueInput
   }
 
-  export type FantasyLeagueMembershipPowerUpUncheckedCreateNestedManyWithoutFantasyLeagueMembershipInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput> | FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput[] | FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput[]
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput[]
-    createMany?: FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInputEnvelope
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateManyWithoutFantasyLeagueMembershipNestedInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput> | FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput[] | FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput[]
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput[]
-    upsert?: FantasyLeagueMembershipPowerUpUpsertWithWhereUniqueWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpUpsertWithWhereUniqueWithoutFantasyLeagueMembershipInput[]
-    createMany?: FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInputEnvelope
-    set?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    disconnect?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    delete?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    update?: FantasyLeagueMembershipPowerUpUpdateWithWhereUniqueWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpUpdateWithWhereUniqueWithoutFantasyLeagueMembershipInput[]
-    updateMany?: FantasyLeagueMembershipPowerUpUpdateManyWithWhereWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpUpdateManyWithWhereWithoutFantasyLeagueMembershipInput[]
-    deleteMany?: FantasyLeagueMembershipPowerUpScalarWhereInput | FantasyLeagueMembershipPowerUpScalarWhereInput[]
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type UserUpdateOneRequiredWithoutLeaguesNestedInput = {
@@ -14252,20 +12864,6 @@ export namespace Prisma {
     update?: XOR<XOR<FantasyLeagueUpdateToOneWithWhereWithoutMembersInput, FantasyLeagueUpdateWithoutMembersInput>, FantasyLeagueUncheckedUpdateWithoutMembersInput>
   }
 
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateManyWithoutFantasyLeagueMembershipNestedInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput> | FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput[] | FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput[]
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput[]
-    upsert?: FantasyLeagueMembershipPowerUpUpsertWithWhereUniqueWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpUpsertWithWhereUniqueWithoutFantasyLeagueMembershipInput[]
-    createMany?: FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInputEnvelope
-    set?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    disconnect?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    delete?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput | FantasyLeagueMembershipPowerUpWhereUniqueInput[]
-    update?: FantasyLeagueMembershipPowerUpUpdateWithWhereUniqueWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpUpdateWithWhereUniqueWithoutFantasyLeagueMembershipInput[]
-    updateMany?: FantasyLeagueMembershipPowerUpUpdateManyWithWhereWithoutFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpUpdateManyWithWhereWithoutFantasyLeagueMembershipInput[]
-    deleteMany?: FantasyLeagueMembershipPowerUpScalarWhereInput | FantasyLeagueMembershipPowerUpScalarWhereInput[]
-  }
-
   export type FantasyLeagueCreateNestedManyWithoutGameweekInput = {
     create?: XOR<FantasyLeagueCreateWithoutGameweekInput, FantasyLeagueUncheckedCreateWithoutGameweekInput> | FantasyLeagueCreateWithoutGameweekInput[] | FantasyLeagueUncheckedCreateWithoutGameweekInput[]
     connectOrCreate?: FantasyLeagueCreateOrConnectWithoutGameweekInput | FantasyLeagueCreateOrConnectWithoutGameweekInput[]
@@ -14278,6 +12876,10 @@ export namespace Prisma {
     connectOrCreate?: FantasyLeagueCreateOrConnectWithoutGameweekInput | FantasyLeagueCreateOrConnectWithoutGameweekInput[]
     createMany?: FantasyLeagueCreateManyGameweekInputEnvelope
     connect?: FantasyLeagueWhereUniqueInput | FantasyLeagueWhereUniqueInput[]
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type FantasyLeagueUpdateManyWithoutGameweekNestedInput = {
@@ -14308,192 +12910,20 @@ export namespace Prisma {
     deleteMany?: FantasyLeagueScalarWhereInput | FantasyLeagueScalarWhereInput[]
   }
 
-  export type PowerUpCategoryCreateNestedOneWithoutPowerUpsInput = {
-    create?: XOR<PowerUpCategoryCreateWithoutPowerUpsInput, PowerUpCategoryUncheckedCreateWithoutPowerUpsInput>
-    connectOrCreate?: PowerUpCategoryCreateOrConnectWithoutPowerUpsInput
-    connect?: PowerUpCategoryWhereUniqueInput
+  export type FantasyLeagueCreateNestedOneWithoutTransactionsInput = {
+    create?: XOR<FantasyLeagueCreateWithoutTransactionsInput, FantasyLeagueUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: FantasyLeagueCreateOrConnectWithoutTransactionsInput
+    connect?: FantasyLeagueWhereUniqueInput
   }
 
-  export type PowerUpUsageCreateNestedManyWithoutPowerUpInput = {
-    create?: XOR<PowerUpUsageCreateWithoutPowerUpInput, PowerUpUsageUncheckedCreateWithoutPowerUpInput> | PowerUpUsageCreateWithoutPowerUpInput[] | PowerUpUsageUncheckedCreateWithoutPowerUpInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutPowerUpInput | PowerUpUsageCreateOrConnectWithoutPowerUpInput[]
-    createMany?: PowerUpUsageCreateManyPowerUpInputEnvelope
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-  }
-
-  export type PowerUpUsageUncheckedCreateNestedManyWithoutPowerUpInput = {
-    create?: XOR<PowerUpUsageCreateWithoutPowerUpInput, PowerUpUsageUncheckedCreateWithoutPowerUpInput> | PowerUpUsageCreateWithoutPowerUpInput[] | PowerUpUsageUncheckedCreateWithoutPowerUpInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutPowerUpInput | PowerUpUsageCreateOrConnectWithoutPowerUpInput[]
-    createMany?: PowerUpUsageCreateManyPowerUpInputEnvelope
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-  }
-
-  export type PowerUpCategoryUpdateOneWithoutPowerUpsNestedInput = {
-    create?: XOR<PowerUpCategoryCreateWithoutPowerUpsInput, PowerUpCategoryUncheckedCreateWithoutPowerUpsInput>
-    connectOrCreate?: PowerUpCategoryCreateOrConnectWithoutPowerUpsInput
-    upsert?: PowerUpCategoryUpsertWithoutPowerUpsInput
-    disconnect?: PowerUpCategoryWhereInput | boolean
-    delete?: PowerUpCategoryWhereInput | boolean
-    connect?: PowerUpCategoryWhereUniqueInput
-    update?: XOR<XOR<PowerUpCategoryUpdateToOneWithWhereWithoutPowerUpsInput, PowerUpCategoryUpdateWithoutPowerUpsInput>, PowerUpCategoryUncheckedUpdateWithoutPowerUpsInput>
-  }
-
-  export type PowerUpUsageUpdateManyWithoutPowerUpNestedInput = {
-    create?: XOR<PowerUpUsageCreateWithoutPowerUpInput, PowerUpUsageUncheckedCreateWithoutPowerUpInput> | PowerUpUsageCreateWithoutPowerUpInput[] | PowerUpUsageUncheckedCreateWithoutPowerUpInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutPowerUpInput | PowerUpUsageCreateOrConnectWithoutPowerUpInput[]
-    upsert?: PowerUpUsageUpsertWithWhereUniqueWithoutPowerUpInput | PowerUpUsageUpsertWithWhereUniqueWithoutPowerUpInput[]
-    createMany?: PowerUpUsageCreateManyPowerUpInputEnvelope
-    set?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    disconnect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    delete?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    update?: PowerUpUsageUpdateWithWhereUniqueWithoutPowerUpInput | PowerUpUsageUpdateWithWhereUniqueWithoutPowerUpInput[]
-    updateMany?: PowerUpUsageUpdateManyWithWhereWithoutPowerUpInput | PowerUpUsageUpdateManyWithWhereWithoutPowerUpInput[]
-    deleteMany?: PowerUpUsageScalarWhereInput | PowerUpUsageScalarWhereInput[]
-  }
-
-  export type PowerUpUsageUncheckedUpdateManyWithoutPowerUpNestedInput = {
-    create?: XOR<PowerUpUsageCreateWithoutPowerUpInput, PowerUpUsageUncheckedCreateWithoutPowerUpInput> | PowerUpUsageCreateWithoutPowerUpInput[] | PowerUpUsageUncheckedCreateWithoutPowerUpInput[]
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutPowerUpInput | PowerUpUsageCreateOrConnectWithoutPowerUpInput[]
-    upsert?: PowerUpUsageUpsertWithWhereUniqueWithoutPowerUpInput | PowerUpUsageUpsertWithWhereUniqueWithoutPowerUpInput[]
-    createMany?: PowerUpUsageCreateManyPowerUpInputEnvelope
-    set?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    disconnect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    delete?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    connect?: PowerUpUsageWhereUniqueInput | PowerUpUsageWhereUniqueInput[]
-    update?: PowerUpUsageUpdateWithWhereUniqueWithoutPowerUpInput | PowerUpUsageUpdateWithWhereUniqueWithoutPowerUpInput[]
-    updateMany?: PowerUpUsageUpdateManyWithWhereWithoutPowerUpInput | PowerUpUsageUpdateManyWithWhereWithoutPowerUpInput[]
-    deleteMany?: PowerUpUsageScalarWhereInput | PowerUpUsageScalarWhereInput[]
-  }
-
-  export type PowerUpCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<PowerUpCreateWithoutCategoryInput, PowerUpUncheckedCreateWithoutCategoryInput> | PowerUpCreateWithoutCategoryInput[] | PowerUpUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: PowerUpCreateOrConnectWithoutCategoryInput | PowerUpCreateOrConnectWithoutCategoryInput[]
-    createMany?: PowerUpCreateManyCategoryInputEnvelope
-    connect?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-  }
-
-  export type PowerUpUncheckedCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<PowerUpCreateWithoutCategoryInput, PowerUpUncheckedCreateWithoutCategoryInput> | PowerUpCreateWithoutCategoryInput[] | PowerUpUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: PowerUpCreateOrConnectWithoutCategoryInput | PowerUpCreateOrConnectWithoutCategoryInput[]
-    createMany?: PowerUpCreateManyCategoryInputEnvelope
-    connect?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-  }
-
-  export type PowerUpUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<PowerUpCreateWithoutCategoryInput, PowerUpUncheckedCreateWithoutCategoryInput> | PowerUpCreateWithoutCategoryInput[] | PowerUpUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: PowerUpCreateOrConnectWithoutCategoryInput | PowerUpCreateOrConnectWithoutCategoryInput[]
-    upsert?: PowerUpUpsertWithWhereUniqueWithoutCategoryInput | PowerUpUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: PowerUpCreateManyCategoryInputEnvelope
-    set?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    disconnect?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    delete?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    connect?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    update?: PowerUpUpdateWithWhereUniqueWithoutCategoryInput | PowerUpUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: PowerUpUpdateManyWithWhereWithoutCategoryInput | PowerUpUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: PowerUpScalarWhereInput | PowerUpScalarWhereInput[]
-  }
-
-  export type PowerUpUncheckedUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<PowerUpCreateWithoutCategoryInput, PowerUpUncheckedCreateWithoutCategoryInput> | PowerUpCreateWithoutCategoryInput[] | PowerUpUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: PowerUpCreateOrConnectWithoutCategoryInput | PowerUpCreateOrConnectWithoutCategoryInput[]
-    upsert?: PowerUpUpsertWithWhereUniqueWithoutCategoryInput | PowerUpUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: PowerUpCreateManyCategoryInputEnvelope
-    set?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    disconnect?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    delete?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    connect?: PowerUpWhereUniqueInput | PowerUpWhereUniqueInput[]
-    update?: PowerUpUpdateWithWhereUniqueWithoutCategoryInput | PowerUpUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: PowerUpUpdateManyWithWhereWithoutCategoryInput | PowerUpUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: PowerUpScalarWhereInput | PowerUpScalarWhereInput[]
-  }
-
-  export type UserCreateNestedOneWithoutPowerUpUsagesInput = {
-    create?: XOR<UserCreateWithoutPowerUpUsagesInput, UserUncheckedCreateWithoutPowerUpUsagesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPowerUpUsagesInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type PowerUpCreateNestedOneWithoutPowerUpUsagesInput = {
-    create?: XOR<PowerUpCreateWithoutPowerUpUsagesInput, PowerUpUncheckedCreateWithoutPowerUpUsagesInput>
-    connectOrCreate?: PowerUpCreateOrConnectWithoutPowerUpUsagesInput
-    connect?: PowerUpWhereUniqueInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpCreateNestedOneWithoutPowerUpUsageInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput>
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutPowerUpUsageInput
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedCreateNestedOneWithoutPowerUpUsageInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput>
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutPowerUpUsageInput
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutPowerUpUsagesNestedInput = {
-    create?: XOR<UserCreateWithoutPowerUpUsagesInput, UserUncheckedCreateWithoutPowerUpUsagesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPowerUpUsagesInput
-    upsert?: UserUpsertWithoutPowerUpUsagesInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPowerUpUsagesInput, UserUpdateWithoutPowerUpUsagesInput>, UserUncheckedUpdateWithoutPowerUpUsagesInput>
-  }
-
-  export type PowerUpUpdateOneRequiredWithoutPowerUpUsagesNestedInput = {
-    create?: XOR<PowerUpCreateWithoutPowerUpUsagesInput, PowerUpUncheckedCreateWithoutPowerUpUsagesInput>
-    connectOrCreate?: PowerUpCreateOrConnectWithoutPowerUpUsagesInput
-    upsert?: PowerUpUpsertWithoutPowerUpUsagesInput
-    connect?: PowerUpWhereUniqueInput
-    update?: XOR<XOR<PowerUpUpdateToOneWithWhereWithoutPowerUpUsagesInput, PowerUpUpdateWithoutPowerUpUsagesInput>, PowerUpUncheckedUpdateWithoutPowerUpUsagesInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateOneWithoutPowerUpUsageNestedInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput>
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutPowerUpUsageInput
-    upsert?: FantasyLeagueMembershipPowerUpUpsertWithoutPowerUpUsageInput
-    disconnect?: FantasyLeagueMembershipPowerUpWhereInput | boolean
-    delete?: FantasyLeagueMembershipPowerUpWhereInput | boolean
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    update?: XOR<XOR<FantasyLeagueMembershipPowerUpUpdateToOneWithWhereWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUpdateWithoutPowerUpUsageInput>, FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutPowerUpUsageInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateOneWithoutPowerUpUsageNestedInput = {
-    create?: XOR<FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput>
-    connectOrCreate?: FantasyLeagueMembershipPowerUpCreateOrConnectWithoutPowerUpUsageInput
-    upsert?: FantasyLeagueMembershipPowerUpUpsertWithoutPowerUpUsageInput
-    disconnect?: FantasyLeagueMembershipPowerUpWhereInput | boolean
-    delete?: FantasyLeagueMembershipPowerUpWhereInput | boolean
-    connect?: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    update?: XOR<XOR<FantasyLeagueMembershipPowerUpUpdateToOneWithWhereWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUpdateWithoutPowerUpUsageInput>, FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutPowerUpUsageInput>
-  }
-
-  export type FantasyLeagueMembershipCreateNestedOneWithoutPowerUpsInput = {
-    create?: XOR<FantasyLeagueMembershipCreateWithoutPowerUpsInput, FantasyLeagueMembershipUncheckedCreateWithoutPowerUpsInput>
-    connectOrCreate?: FantasyLeagueMembershipCreateOrConnectWithoutPowerUpsInput
-    connect?: FantasyLeagueMembershipWhereUniqueInput
-  }
-
-  export type PowerUpUsageCreateNestedOneWithoutLeagueMembershipPowerUpInput = {
-    create?: XOR<PowerUpUsageCreateWithoutLeagueMembershipPowerUpInput, PowerUpUsageUncheckedCreateWithoutLeagueMembershipPowerUpInput>
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutLeagueMembershipPowerUpInput
-    connect?: PowerUpUsageWhereUniqueInput
-  }
-
-  export type FantasyLeagueMembershipUpdateOneRequiredWithoutPowerUpsNestedInput = {
-    create?: XOR<FantasyLeagueMembershipCreateWithoutPowerUpsInput, FantasyLeagueMembershipUncheckedCreateWithoutPowerUpsInput>
-    connectOrCreate?: FantasyLeagueMembershipCreateOrConnectWithoutPowerUpsInput
-    upsert?: FantasyLeagueMembershipUpsertWithoutPowerUpsInput
-    connect?: FantasyLeagueMembershipWhereUniqueInput
-    update?: XOR<XOR<FantasyLeagueMembershipUpdateToOneWithWhereWithoutPowerUpsInput, FantasyLeagueMembershipUpdateWithoutPowerUpsInput>, FantasyLeagueMembershipUncheckedUpdateWithoutPowerUpsInput>
-  }
-
-  export type PowerUpUsageUpdateOneRequiredWithoutLeagueMembershipPowerUpNestedInput = {
-    create?: XOR<PowerUpUsageCreateWithoutLeagueMembershipPowerUpInput, PowerUpUsageUncheckedCreateWithoutLeagueMembershipPowerUpInput>
-    connectOrCreate?: PowerUpUsageCreateOrConnectWithoutLeagueMembershipPowerUpInput
-    upsert?: PowerUpUsageUpsertWithoutLeagueMembershipPowerUpInput
-    connect?: PowerUpUsageWhereUniqueInput
-    update?: XOR<XOR<PowerUpUsageUpdateToOneWithWhereWithoutLeagueMembershipPowerUpInput, PowerUpUsageUpdateWithoutLeagueMembershipPowerUpInput>, PowerUpUsageUncheckedUpdateWithoutLeagueMembershipPowerUpInput>
+  export type FantasyLeagueUpdateOneWithoutTransactionsNestedInput = {
+    create?: XOR<FantasyLeagueCreateWithoutTransactionsInput, FantasyLeagueUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: FantasyLeagueCreateOrConnectWithoutTransactionsInput
+    upsert?: FantasyLeagueUpsertWithoutTransactionsInput
+    disconnect?: FantasyLeagueWhereInput | boolean
+    delete?: FantasyLeagueWhereInput | boolean
+    connect?: FantasyLeagueWhereUniqueInput
+    update?: XOR<XOR<FantasyLeagueUpdateToOneWithWhereWithoutTransactionsInput, FantasyLeagueUpdateWithoutTransactionsInput>, FantasyLeagueUncheckedUpdateWithoutTransactionsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -14508,6 +12938,31 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringFilter<$PrismaModel> | string
+  }
+
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -14549,6 +13004,50 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -14563,15 +13062,46 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumRealLifeLeagueFilter<$PrismaModel = never> = {
+    equals?: $Enums.RealLifeLeague | EnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    in?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    not?: NestedEnumRealLifeLeagueFilter<$PrismaModel> | $Enums.RealLifeLeague
+  }
+
+  export type NestedEnumRealLifeLeagueWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RealLifeLeague | EnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    in?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RealLifeLeague[] | ListEnumRealLifeLeagueFieldRefInput<$PrismaModel>
+    not?: NestedEnumRealLifeLeagueWithAggregatesFilter<$PrismaModel> | $Enums.RealLifeLeague
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
+    _max?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -14627,24 +13157,60 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
 
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -14655,25 +13221,9 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
   export type TeamCreateWithoutUserInput = {
     id?: string
+    realLifeLeague?: $Enums.RealLifeLeague
     teamValue?: number
     teamPlayers?: TeamCreateteamPlayersInput | number[]
     captainId?: number | null
@@ -14683,6 +13233,7 @@ export namespace Prisma {
 
   export type TeamUncheckedCreateWithoutUserInput = {
     id?: string
+    realLifeLeague?: $Enums.RealLifeLeague
     teamValue?: number
     teamPlayers?: TeamCreateteamPlayersInput | number[]
     captainId?: number | null
@@ -14695,12 +13246,23 @@ export namespace Prisma {
     create: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput>
   }
 
+  export type TeamCreateManyUserInputEnvelope = {
+    data: TeamCreateManyUserInput | TeamCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type FantasyLeagueMembershipCreateWithoutUserInput = {
     id?: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpCreateNestedManyWithoutFantasyLeagueMembershipInput
     league: FantasyLeagueCreateNestedOneWithoutMembersInput
   }
 
@@ -14708,9 +13270,15 @@ export namespace Prisma {
     id?: string
     leagueId: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUncheckedCreateNestedManyWithoutFantasyLeagueMembershipInput
   }
 
   export type FantasyLeagueMembershipCreateOrConnectWithoutUserInput = {
@@ -14726,39 +13294,51 @@ export namespace Prisma {
   export type FantasyLeagueCreateWithoutOwnerInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
     gameweek: GameweekCreateNestedOneWithoutLeaguesInput
+    transactions?: TransactionCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueUncheckedCreateWithoutOwnerInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutLeagueInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueCreateOrConnectWithoutOwnerInput = {
@@ -14771,63 +13351,57 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type PowerUpUsageCreateWithoutUserInput = {
+  export type WalletCreateWithoutUserInput = {
     id?: string
-    transactionId: string
-    isVerified?: boolean
+    address: string
+    encryptedPrivateKey: string
+    balance?: Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
-    powerUp: PowerUpCreateNestedOneWithoutPowerUpUsagesInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpCreateNestedOneWithoutPowerUpUsageInput
   }
 
-  export type PowerUpUsageUncheckedCreateWithoutUserInput = {
+  export type WalletUncheckedCreateWithoutUserInput = {
     id?: string
-    powerUpId: string
-    transactionId: string
-    isVerified?: boolean
+    address: string
+    encryptedPrivateKey: string
+    balance?: Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUncheckedCreateNestedOneWithoutPowerUpUsageInput
   }
 
-  export type PowerUpUsageCreateOrConnectWithoutUserInput = {
-    where: PowerUpUsageWhereUniqueInput
-    create: XOR<PowerUpUsageCreateWithoutUserInput, PowerUpUsageUncheckedCreateWithoutUserInput>
+  export type WalletCreateOrConnectWithoutUserInput = {
+    where: WalletWhereUniqueInput
+    create: XOR<WalletCreateWithoutUserInput, WalletUncheckedCreateWithoutUserInput>
   }
 
-  export type PowerUpUsageCreateManyUserInputEnvelope = {
-    data: PowerUpUsageCreateManyUserInput | PowerUpUsageCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type TeamUpsertWithoutUserInput = {
+  export type TeamUpsertWithWhereUniqueWithoutUserInput = {
+    where: TeamWhereUniqueInput
     update: XOR<TeamUpdateWithoutUserInput, TeamUncheckedUpdateWithoutUserInput>
     create: XOR<TeamCreateWithoutUserInput, TeamUncheckedCreateWithoutUserInput>
-    where?: TeamWhereInput
   }
 
-  export type TeamUpdateToOneWithWhereWithoutUserInput = {
-    where?: TeamWhereInput
+  export type TeamUpdateWithWhereUniqueWithoutUserInput = {
+    where: TeamWhereUniqueInput
     data: XOR<TeamUpdateWithoutUserInput, TeamUncheckedUpdateWithoutUserInput>
   }
 
-  export type TeamUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    teamValue?: IntFieldUpdateOperationsInput | number
-    teamPlayers?: TeamUpdateteamPlayersInput | number[]
-    captainId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type TeamUpdateManyWithWhereWithoutUserInput = {
+    where: TeamScalarWhereInput
+    data: XOR<TeamUpdateManyMutationInput, TeamUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type TeamUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    teamValue?: IntFieldUpdateOperationsInput | number
-    teamPlayers?: TeamUpdateteamPlayersInput | number[]
-    captainId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type TeamScalarWhereInput = {
+    AND?: TeamScalarWhereInput | TeamScalarWhereInput[]
+    OR?: TeamScalarWhereInput[]
+    NOT?: TeamScalarWhereInput | TeamScalarWhereInput[]
+    id?: StringFilter<"Team"> | string
+    userId?: StringFilter<"Team"> | string
+    realLifeLeague?: EnumRealLifeLeagueFilter<"Team"> | $Enums.RealLifeLeague
+    teamValue?: IntFilter<"Team"> | number
+    teamPlayers?: IntNullableListFilter<"Team">
+    captainId?: IntNullableFilter<"Team"> | number | null
+    createdAt?: DateTimeFilter<"Team"> | Date | string
+    updatedAt?: DateTimeFilter<"Team"> | Date | string
   }
 
   export type FantasyLeagueMembershipUpsertWithWhereUniqueWithoutUserInput = {
@@ -14854,6 +13428,13 @@ export namespace Prisma {
     userId?: StringFilter<"FantasyLeagueMembership"> | string
     leagueId?: StringFilter<"FantasyLeagueMembership"> | string
     teamName?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    stakeAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    position?: IntNullableFilter<"FantasyLeagueMembership"> | number | null
+    score?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFilter<"FantasyLeagueMembership"> | string
+    blockchainTxHash?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    joinedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
   }
@@ -14880,125 +13461,296 @@ export namespace Prisma {
     NOT?: FantasyLeagueScalarWhereInput | FantasyLeagueScalarWhereInput[]
     id?: StringFilter<"FantasyLeague"> | string
     name?: StringFilter<"FantasyLeague"> | string
-    stake?: StringFilter<"FantasyLeague"> | string
+    description?: StringNullableFilter<"FantasyLeague"> | string | null
+    stake?: StringNullableFilter<"FantasyLeague"> | string | null
     limit?: IntFilter<"FantasyLeague"> | number
     leagueType?: StringFilter<"FantasyLeague"> | string
     leagueMode?: StringFilter<"FantasyLeague"> | string
     winners?: IntFilter<"FantasyLeague"> | number
-    allowPowerUps?: BoolFilter<"FantasyLeague"> | boolean
-    description?: StringNullableFilter<"FantasyLeague"> | string | null
     code?: StringFilter<"FantasyLeague"> | string
     ownerId?: StringFilter<"FantasyLeague"> | string
+    realLifeLeague?: EnumRealLifeLeagueFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
+    entryFeeUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFilter<"FantasyLeague"> | number
+    blockchainTxHash?: StringNullableFilter<"FantasyLeague"> | string | null
+    prizeDistribution?: JsonNullableFilter<"FantasyLeague">
     gameweekId?: IntFilter<"FantasyLeague"> | number
     createdAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeague"> | Date | string
   }
 
-  export type PowerUpUsageUpsertWithWhereUniqueWithoutUserInput = {
-    where: PowerUpUsageWhereUniqueInput
-    update: XOR<PowerUpUsageUpdateWithoutUserInput, PowerUpUsageUncheckedUpdateWithoutUserInput>
-    create: XOR<PowerUpUsageCreateWithoutUserInput, PowerUpUsageUncheckedCreateWithoutUserInput>
+  export type WalletUpsertWithoutUserInput = {
+    update: XOR<WalletUpdateWithoutUserInput, WalletUncheckedUpdateWithoutUserInput>
+    create: XOR<WalletCreateWithoutUserInput, WalletUncheckedCreateWithoutUserInput>
+    where?: WalletWhereInput
   }
 
-  export type PowerUpUsageUpdateWithWhereUniqueWithoutUserInput = {
-    where: PowerUpUsageWhereUniqueInput
-    data: XOR<PowerUpUsageUpdateWithoutUserInput, PowerUpUsageUncheckedUpdateWithoutUserInput>
+  export type WalletUpdateToOneWithWhereWithoutUserInput = {
+    where?: WalletWhereInput
+    data: XOR<WalletUpdateWithoutUserInput, WalletUncheckedUpdateWithoutUserInput>
   }
 
-  export type PowerUpUsageUpdateManyWithWhereWithoutUserInput = {
-    where: PowerUpUsageScalarWhereInput
-    data: XOR<PowerUpUsageUpdateManyMutationInput, PowerUpUsageUncheckedUpdateManyWithoutUserInput>
+  export type WalletUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PowerUpUsageScalarWhereInput = {
-    AND?: PowerUpUsageScalarWhereInput | PowerUpUsageScalarWhereInput[]
-    OR?: PowerUpUsageScalarWhereInput[]
-    NOT?: PowerUpUsageScalarWhereInput | PowerUpUsageScalarWhereInput[]
-    id?: StringFilter<"PowerUpUsage"> | string
-    userId?: StringFilter<"PowerUpUsage"> | string
-    powerUpId?: StringFilter<"PowerUpUsage"> | string
-    transactionId?: StringFilter<"PowerUpUsage"> | string
-    isVerified?: BoolFilter<"PowerUpUsage"> | boolean
-    createdAt?: DateTimeFilter<"PowerUpUsage"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUpUsage"> | Date | string
+  export type WalletUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lastBalanceUpdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type UserCreateWithoutTeamInput = {
+  export type UserCreateWithoutWalletInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    teams?: TeamCreateNestedManyWithoutUserInput
+    leagues?: FantasyLeagueMembershipCreateNestedManyWithoutUserInput
+    ownedLeagues?: FantasyLeagueCreateNestedManyWithoutOwnerInput
+  }
+
+  export type UserUncheckedCreateWithoutWalletInput = {
+    id?: string
+    email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    teams?: TeamUncheckedCreateNestedManyWithoutUserInput
+    leagues?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutUserInput
+    ownedLeagues?: FantasyLeagueUncheckedCreateNestedManyWithoutOwnerInput
+  }
+
+  export type UserCreateOrConnectWithoutWalletInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutWalletInput, UserUncheckedCreateWithoutWalletInput>
+  }
+
+  export type UserUpsertWithoutWalletInput = {
+    update: XOR<UserUpdateWithoutWalletInput, UserUncheckedUpdateWithoutWalletInput>
+    create: XOR<UserCreateWithoutWalletInput, UserUncheckedCreateWithoutWalletInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutWalletInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutWalletInput, UserUncheckedUpdateWithoutWalletInput>
+  }
+
+  export type UserUpdateWithoutWalletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    teams?: TeamUpdateManyWithoutUserNestedInput
+    leagues?: FantasyLeagueMembershipUpdateManyWithoutUserNestedInput
+    ownedLeagues?: FantasyLeagueUpdateManyWithoutOwnerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutWalletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    teams?: TeamUncheckedUpdateManyWithoutUserNestedInput
+    leagues?: FantasyLeagueMembershipUncheckedUpdateManyWithoutUserNestedInput
+    ownedLeagues?: FantasyLeagueUncheckedUpdateManyWithoutOwnerNestedInput
+  }
+
+  export type UserCreateWithoutTeamsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leagues?: FantasyLeagueMembershipCreateNestedManyWithoutUserInput
     ownedLeagues?: FantasyLeagueCreateNestedManyWithoutOwnerInput
-    powerUpUsages?: PowerUpUsageCreateNestedManyWithoutUserInput
+    wallet?: WalletCreateNestedOneWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutTeamInput = {
+  export type UserUncheckedCreateWithoutTeamsInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leagues?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutUserInput
     ownedLeagues?: FantasyLeagueUncheckedCreateNestedManyWithoutOwnerInput
-    powerUpUsages?: PowerUpUsageUncheckedCreateNestedManyWithoutUserInput
+    wallet?: WalletUncheckedCreateNestedOneWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutTeamInput = {
+  export type UserCreateOrConnectWithoutTeamsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutTeamInput, UserUncheckedCreateWithoutTeamInput>
+    create: XOR<UserCreateWithoutTeamsInput, UserUncheckedCreateWithoutTeamsInput>
   }
 
-  export type UserUpsertWithoutTeamInput = {
-    update: XOR<UserUpdateWithoutTeamInput, UserUncheckedUpdateWithoutTeamInput>
-    create: XOR<UserCreateWithoutTeamInput, UserUncheckedCreateWithoutTeamInput>
+  export type UserUpsertWithoutTeamsInput = {
+    update: XOR<UserUpdateWithoutTeamsInput, UserUncheckedUpdateWithoutTeamsInput>
+    create: XOR<UserCreateWithoutTeamsInput, UserUncheckedCreateWithoutTeamsInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutTeamInput = {
+  export type UserUpdateToOneWithWhereWithoutTeamsInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutTeamInput, UserUncheckedUpdateWithoutTeamInput>
+    data: XOR<UserUpdateWithoutTeamsInput, UserUncheckedUpdateWithoutTeamsInput>
   }
 
-  export type UserUpdateWithoutTeamInput = {
+  export type UserUpdateWithoutTeamsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leagues?: FantasyLeagueMembershipUpdateManyWithoutUserNestedInput
     ownedLeagues?: FantasyLeagueUpdateManyWithoutOwnerNestedInput
-    powerUpUsages?: PowerUpUsageUpdateManyWithoutUserNestedInput
+    wallet?: WalletUpdateOneWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutTeamInput = {
+  export type UserUncheckedUpdateWithoutTeamsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leagues?: FantasyLeagueMembershipUncheckedUpdateManyWithoutUserNestedInput
     ownedLeagues?: FantasyLeagueUncheckedUpdateManyWithoutOwnerNestedInput
-    powerUpUsages?: PowerUpUsageUncheckedUpdateManyWithoutUserNestedInput
+    wallet?: WalletUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutOwnedLeaguesInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    team?: TeamCreateNestedOneWithoutUserInput
+    teams?: TeamCreateNestedManyWithoutUserInput
     leagues?: FantasyLeagueMembershipCreateNestedManyWithoutUserInput
-    powerUpUsages?: PowerUpUsageCreateNestedManyWithoutUserInput
+    wallet?: WalletCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOwnedLeaguesInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    team?: TeamUncheckedCreateNestedOneWithoutUserInput
+    teams?: TeamUncheckedCreateNestedManyWithoutUserInput
     leagues?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutUserInput
-    powerUpUsages?: PowerUpUsageUncheckedCreateNestedManyWithoutUserInput
+    wallet?: WalletUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOwnedLeaguesInput = {
@@ -15009,9 +13761,15 @@ export namespace Prisma {
   export type FantasyLeagueMembershipCreateWithoutLeagueInput = {
     id?: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpCreateNestedManyWithoutFantasyLeagueMembershipInput
     user: UserCreateNestedOneWithoutLeaguesInput
   }
 
@@ -15019,9 +13777,15 @@ export namespace Prisma {
     id?: string
     userId: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUncheckedCreateNestedManyWithoutFantasyLeagueMembershipInput
   }
 
   export type FantasyLeagueMembershipCreateOrConnectWithoutLeagueInput = {
@@ -15038,17 +13802,59 @@ export namespace Prisma {
     id: number
     deadline: Date | string
     isActive?: boolean
+    realLifeLeague?: $Enums.RealLifeLeague
   }
 
   export type GameweekUncheckedCreateWithoutLeaguesInput = {
     id: number
     deadline: Date | string
     isActive?: boolean
+    realLifeLeague?: $Enums.RealLifeLeague
   }
 
   export type GameweekCreateOrConnectWithoutLeaguesInput = {
     where: GameweekWhereUniqueInput
     create: XOR<GameweekCreateWithoutLeaguesInput, GameweekUncheckedCreateWithoutLeaguesInput>
+  }
+
+  export type TransactionCreateWithoutLeagueInput = {
+    id?: string
+    txHash: string
+    type: string
+    userId?: string | null
+    amount?: Decimal | DecimalJsLike | number | string | null
+    status?: string
+    blockNumber?: number | null
+    gasUsed?: string | null
+    errorMessage?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    confirmedAt?: Date | string | null
+  }
+
+  export type TransactionUncheckedCreateWithoutLeagueInput = {
+    id?: string
+    txHash: string
+    type: string
+    userId?: string | null
+    amount?: Decimal | DecimalJsLike | number | string | null
+    status?: string
+    blockNumber?: number | null
+    gasUsed?: string | null
+    errorMessage?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    confirmedAt?: Date | string | null
+  }
+
+  export type TransactionCreateOrConnectWithoutLeagueInput = {
+    where: TransactionWhereUniqueInput
+    create: XOR<TransactionCreateWithoutLeagueInput, TransactionUncheckedCreateWithoutLeagueInput>
+  }
+
+  export type TransactionCreateManyLeagueInputEnvelope = {
+    data: TransactionCreateManyLeagueInput | TransactionCreateManyLeagueInput[]
+    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutOwnedLeaguesInput = {
@@ -15065,21 +13871,43 @@ export namespace Prisma {
   export type UserUpdateWithoutOwnedLeaguesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUpdateOneWithoutUserNestedInput
+    teams?: TeamUpdateManyWithoutUserNestedInput
     leagues?: FantasyLeagueMembershipUpdateManyWithoutUserNestedInput
-    powerUpUsages?: PowerUpUsageUpdateManyWithoutUserNestedInput
+    wallet?: WalletUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedLeaguesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUncheckedUpdateOneWithoutUserNestedInput
+    teams?: TeamUncheckedUpdateManyWithoutUserNestedInput
     leagues?: FantasyLeagueMembershipUncheckedUpdateManyWithoutUserNestedInput
-    powerUpUsages?: PowerUpUsageUncheckedUpdateManyWithoutUserNestedInput
+    wallet?: WalletUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type FantasyLeagueMembershipUpsertWithWhereUniqueWithoutLeagueInput = {
@@ -15113,56 +13941,91 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
   }
 
   export type GameweekUncheckedUpdateWithoutLeaguesInput = {
     id?: IntFieldUpdateOperationsInput | number
     deadline?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
   }
 
-  export type FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput = {
-    id?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    powerUpUsage: PowerUpUsageCreateNestedOneWithoutLeagueMembershipPowerUpInput
+  export type TransactionUpsertWithWhereUniqueWithoutLeagueInput = {
+    where: TransactionWhereUniqueInput
+    update: XOR<TransactionUpdateWithoutLeagueInput, TransactionUncheckedUpdateWithoutLeagueInput>
+    create: XOR<TransactionCreateWithoutLeagueInput, TransactionUncheckedCreateWithoutLeagueInput>
   }
 
-  export type FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput = {
-    id?: string
-    powerUpUsageId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+  export type TransactionUpdateWithWhereUniqueWithoutLeagueInput = {
+    where: TransactionWhereUniqueInput
+    data: XOR<TransactionUpdateWithoutLeagueInput, TransactionUncheckedUpdateWithoutLeagueInput>
   }
 
-  export type FantasyLeagueMembershipPowerUpCreateOrConnectWithoutFantasyLeagueMembershipInput = {
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    create: XOR<FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput>
+  export type TransactionUpdateManyWithWhereWithoutLeagueInput = {
+    where: TransactionScalarWhereInput
+    data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutLeagueInput>
   }
 
-  export type FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInputEnvelope = {
-    data: FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInput | FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInput[]
-    skipDuplicates?: boolean
+  export type TransactionScalarWhereInput = {
+    AND?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+    OR?: TransactionScalarWhereInput[]
+    NOT?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+    id?: StringFilter<"Transaction"> | string
+    txHash?: StringFilter<"Transaction"> | string
+    type?: StringFilter<"Transaction"> | string
+    leagueId?: StringNullableFilter<"Transaction"> | string | null
+    userId?: StringNullableFilter<"Transaction"> | string | null
+    amount?: DecimalNullableFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    status?: StringFilter<"Transaction"> | string
+    blockNumber?: IntNullableFilter<"Transaction"> | number | null
+    gasUsed?: StringNullableFilter<"Transaction"> | string | null
+    errorMessage?: StringNullableFilter<"Transaction"> | string | null
+    metadata?: JsonNullableFilter<"Transaction">
+    createdAt?: DateTimeFilter<"Transaction"> | Date | string
+    confirmedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
   }
 
   export type UserCreateWithoutLeaguesInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    team?: TeamCreateNestedOneWithoutUserInput
+    teams?: TeamCreateNestedManyWithoutUserInput
     ownedLeagues?: FantasyLeagueCreateNestedManyWithoutOwnerInput
-    powerUpUsages?: PowerUpUsageCreateNestedManyWithoutUserInput
+    wallet?: WalletCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLeaguesInput = {
     id?: string
     email: string
+    name?: string | null
+    image?: string | null
+    password?: string | null
+    country?: string | null
+    currency?: string | null
+    balanceUsd?: Decimal | DecimalJsLike | number | string
+    totalDeposited?: Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: Decimal | DecimalJsLike | number | string
+    walletAddress?: string | null
+    kycStatus?: string
+    mobileMoneyNumber?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    team?: TeamUncheckedCreateNestedOneWithoutUserInput
+    teams?: TeamUncheckedCreateNestedManyWithoutUserInput
     ownedLeagues?: FantasyLeagueUncheckedCreateNestedManyWithoutOwnerInput
-    powerUpUsages?: PowerUpUsageUncheckedCreateNestedManyWithoutUserInput
+    wallet?: WalletUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLeaguesInput = {
@@ -15173,71 +14036,56 @@ export namespace Prisma {
   export type FantasyLeagueCreateWithoutMembersInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedLeaguesInput
     gameweek: GameweekCreateNestedOneWithoutLeaguesInput
+    transactions?: TransactionCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueUncheckedCreateWithoutMembersInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
     ownerId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    transactions?: TransactionUncheckedCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueCreateOrConnectWithoutMembersInput = {
     where: FantasyLeagueWhereUniqueInput
     create: XOR<FantasyLeagueCreateWithoutMembersInput, FantasyLeagueUncheckedCreateWithoutMembersInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpsertWithWhereUniqueWithoutFantasyLeagueMembershipInput = {
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    update: XOR<FantasyLeagueMembershipPowerUpUpdateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutFantasyLeagueMembershipInput>
-    create: XOR<FantasyLeagueMembershipPowerUpCreateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutFantasyLeagueMembershipInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateWithWhereUniqueWithoutFantasyLeagueMembershipInput = {
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    data: XOR<FantasyLeagueMembershipPowerUpUpdateWithoutFantasyLeagueMembershipInput, FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutFantasyLeagueMembershipInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateManyWithWhereWithoutFantasyLeagueMembershipInput = {
-    where: FantasyLeagueMembershipPowerUpScalarWhereInput
-    data: XOR<FantasyLeagueMembershipPowerUpUpdateManyMutationInput, FantasyLeagueMembershipPowerUpUncheckedUpdateManyWithoutFantasyLeagueMembershipInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpScalarWhereInput = {
-    AND?: FantasyLeagueMembershipPowerUpScalarWhereInput | FantasyLeagueMembershipPowerUpScalarWhereInput[]
-    OR?: FantasyLeagueMembershipPowerUpScalarWhereInput[]
-    NOT?: FantasyLeagueMembershipPowerUpScalarWhereInput | FantasyLeagueMembershipPowerUpScalarWhereInput[]
-    id?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    fantasyLeagueMembershipId?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    powerUpUsageId?: StringFilter<"FantasyLeagueMembershipPowerUp"> | string
-    createdAt?: DateTimeFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
-    updatedAt?: DateTimeFilter<"FantasyLeagueMembershipPowerUp"> | Date | string
   }
 
   export type UserUpsertWithoutLeaguesInput = {
@@ -15254,21 +14102,43 @@ export namespace Prisma {
   export type UserUpdateWithoutLeaguesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUpdateOneWithoutUserNestedInput
+    teams?: TeamUpdateManyWithoutUserNestedInput
     ownedLeagues?: FantasyLeagueUpdateManyWithoutOwnerNestedInput
-    powerUpUsages?: PowerUpUsageUpdateManyWithoutUserNestedInput
+    wallet?: WalletUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLeaguesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    walletAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    kycStatus?: StringFieldUpdateOperationsInput | string
+    mobileMoneyNumber?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUncheckedUpdateOneWithoutUserNestedInput
+    teams?: TeamUncheckedUpdateManyWithoutUserNestedInput
     ownedLeagues?: FantasyLeagueUncheckedUpdateManyWithoutOwnerNestedInput
-    powerUpUsages?: PowerUpUsageUncheckedUpdateManyWithoutUserNestedInput
+    wallet?: WalletUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type FantasyLeagueUpsertWithoutMembersInput = {
@@ -15285,77 +14155,101 @@ export namespace Prisma {
   export type FantasyLeagueUpdateWithoutMembersInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
     gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
+    transactions?: TransactionUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueUncheckedUpdateWithoutMembersInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transactions?: TransactionUncheckedUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueCreateWithoutGameweekInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedLeaguesInput
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
+    transactions?: TransactionCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueUncheckedCreateWithoutGameweekInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
     ownerId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutLeagueInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutLeagueInput
   }
 
   export type FantasyLeagueCreateOrConnectWithoutGameweekInput = {
@@ -15384,420 +14278,143 @@ export namespace Prisma {
     data: XOR<FantasyLeagueUpdateManyMutationInput, FantasyLeagueUncheckedUpdateManyWithoutGameweekInput>
   }
 
-  export type PowerUpCategoryCreateWithoutPowerUpsInput = {
+  export type FantasyLeagueCreateWithoutTransactionsInput = {
     id?: string
     name: string
-    description: string
+    description?: string | null
+    stake?: string | null
+    limit: number
+    leagueType: string
+    leagueMode: string
+    winners: number
+    code: string
+    realLifeLeague?: $Enums.RealLifeLeague
+    status?: string
+    winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedLeaguesInput
+    members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
+    gameweek: GameweekCreateNestedOneWithoutLeaguesInput
   }
 
-  export type PowerUpCategoryUncheckedCreateWithoutPowerUpsInput = {
+  export type FantasyLeagueUncheckedCreateWithoutTransactionsInput = {
     id?: string
     name: string
-    description: string
+    description?: string | null
+    stake?: string | null
+    limit: number
+    leagueType: string
+    leagueMode: string
+    winners: number
+    code: string
+    ownerId: string
+    realLifeLeague?: $Enums.RealLifeLeague
+    status?: string
+    winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    members?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutLeagueInput
   }
 
-  export type PowerUpCategoryCreateOrConnectWithoutPowerUpsInput = {
-    where: PowerUpCategoryWhereUniqueInput
-    create: XOR<PowerUpCategoryCreateWithoutPowerUpsInput, PowerUpCategoryUncheckedCreateWithoutPowerUpsInput>
+  export type FantasyLeagueCreateOrConnectWithoutTransactionsInput = {
+    where: FantasyLeagueWhereUniqueInput
+    create: XOR<FantasyLeagueCreateWithoutTransactionsInput, FantasyLeagueUncheckedCreateWithoutTransactionsInput>
   }
 
-  export type PowerUpUsageCreateWithoutPowerUpInput = {
-    id?: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutPowerUpUsagesInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpCreateNestedOneWithoutPowerUpUsageInput
+  export type FantasyLeagueUpsertWithoutTransactionsInput = {
+    update: XOR<FantasyLeagueUpdateWithoutTransactionsInput, FantasyLeagueUncheckedUpdateWithoutTransactionsInput>
+    create: XOR<FantasyLeagueCreateWithoutTransactionsInput, FantasyLeagueUncheckedCreateWithoutTransactionsInput>
+    where?: FantasyLeagueWhereInput
   }
 
-  export type PowerUpUsageUncheckedCreateWithoutPowerUpInput = {
-    id?: string
-    userId: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUncheckedCreateNestedOneWithoutPowerUpUsageInput
+  export type FantasyLeagueUpdateToOneWithWhereWithoutTransactionsInput = {
+    where?: FantasyLeagueWhereInput
+    data: XOR<FantasyLeagueUpdateWithoutTransactionsInput, FantasyLeagueUncheckedUpdateWithoutTransactionsInput>
   }
 
-  export type PowerUpUsageCreateOrConnectWithoutPowerUpInput = {
-    where: PowerUpUsageWhereUniqueInput
-    create: XOR<PowerUpUsageCreateWithoutPowerUpInput, PowerUpUsageUncheckedCreateWithoutPowerUpInput>
-  }
-
-  export type PowerUpUsageCreateManyPowerUpInputEnvelope = {
-    data: PowerUpUsageCreateManyPowerUpInput | PowerUpUsageCreateManyPowerUpInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PowerUpCategoryUpsertWithoutPowerUpsInput = {
-    update: XOR<PowerUpCategoryUpdateWithoutPowerUpsInput, PowerUpCategoryUncheckedUpdateWithoutPowerUpsInput>
-    create: XOR<PowerUpCategoryCreateWithoutPowerUpsInput, PowerUpCategoryUncheckedCreateWithoutPowerUpsInput>
-    where?: PowerUpCategoryWhereInput
-  }
-
-  export type PowerUpCategoryUpdateToOneWithWhereWithoutPowerUpsInput = {
-    where?: PowerUpCategoryWhereInput
-    data: XOR<PowerUpCategoryUpdateWithoutPowerUpsInput, PowerUpCategoryUncheckedUpdateWithoutPowerUpsInput>
-  }
-
-  export type PowerUpCategoryUpdateWithoutPowerUpsInput = {
+  export type FantasyLeagueUpdateWithoutTransactionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
+    limit?: IntFieldUpdateOperationsInput | number
+    leagueType?: StringFieldUpdateOperationsInput | string
+    leagueMode?: StringFieldUpdateOperationsInput | string
+    winners?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
+    status?: StringFieldUpdateOperationsInput | string
+    winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
+    members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
+    gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
   }
 
-  export type PowerUpCategoryUncheckedUpdateWithoutPowerUpsInput = {
+  export type FantasyLeagueUncheckedUpdateWithoutTransactionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
+    limit?: IntFieldUpdateOperationsInput | number
+    leagueType?: StringFieldUpdateOperationsInput | string
+    leagueMode?: StringFieldUpdateOperationsInput | string
+    winners?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
+    status?: StringFieldUpdateOperationsInput | string
+    winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueNestedInput
   }
 
-  export type PowerUpUsageUpsertWithWhereUniqueWithoutPowerUpInput = {
-    where: PowerUpUsageWhereUniqueInput
-    update: XOR<PowerUpUsageUpdateWithoutPowerUpInput, PowerUpUsageUncheckedUpdateWithoutPowerUpInput>
-    create: XOR<PowerUpUsageCreateWithoutPowerUpInput, PowerUpUsageUncheckedCreateWithoutPowerUpInput>
-  }
-
-  export type PowerUpUsageUpdateWithWhereUniqueWithoutPowerUpInput = {
-    where: PowerUpUsageWhereUniqueInput
-    data: XOR<PowerUpUsageUpdateWithoutPowerUpInput, PowerUpUsageUncheckedUpdateWithoutPowerUpInput>
-  }
-
-  export type PowerUpUsageUpdateManyWithWhereWithoutPowerUpInput = {
-    where: PowerUpUsageScalarWhereInput
-    data: XOR<PowerUpUsageUpdateManyMutationInput, PowerUpUsageUncheckedUpdateManyWithoutPowerUpInput>
-  }
-
-  export type PowerUpCreateWithoutCategoryInput = {
+  export type TeamCreateManyUserInput = {
     id?: string
-    name: string
-    description: string
+    realLifeLeague?: $Enums.RealLifeLeague
+    teamValue?: number
+    teamPlayers?: TeamCreateteamPlayersInput | number[]
+    captainId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    powerUpUsages?: PowerUpUsageCreateNestedManyWithoutPowerUpInput
-  }
-
-  export type PowerUpUncheckedCreateWithoutCategoryInput = {
-    id?: string
-    name: string
-    description: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    powerUpUsages?: PowerUpUsageUncheckedCreateNestedManyWithoutPowerUpInput
-  }
-
-  export type PowerUpCreateOrConnectWithoutCategoryInput = {
-    where: PowerUpWhereUniqueInput
-    create: XOR<PowerUpCreateWithoutCategoryInput, PowerUpUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type PowerUpCreateManyCategoryInputEnvelope = {
-    data: PowerUpCreateManyCategoryInput | PowerUpCreateManyCategoryInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PowerUpUpsertWithWhereUniqueWithoutCategoryInput = {
-    where: PowerUpWhereUniqueInput
-    update: XOR<PowerUpUpdateWithoutCategoryInput, PowerUpUncheckedUpdateWithoutCategoryInput>
-    create: XOR<PowerUpCreateWithoutCategoryInput, PowerUpUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type PowerUpUpdateWithWhereUniqueWithoutCategoryInput = {
-    where: PowerUpWhereUniqueInput
-    data: XOR<PowerUpUpdateWithoutCategoryInput, PowerUpUncheckedUpdateWithoutCategoryInput>
-  }
-
-  export type PowerUpUpdateManyWithWhereWithoutCategoryInput = {
-    where: PowerUpScalarWhereInput
-    data: XOR<PowerUpUpdateManyMutationInput, PowerUpUncheckedUpdateManyWithoutCategoryInput>
-  }
-
-  export type PowerUpScalarWhereInput = {
-    AND?: PowerUpScalarWhereInput | PowerUpScalarWhereInput[]
-    OR?: PowerUpScalarWhereInput[]
-    NOT?: PowerUpScalarWhereInput | PowerUpScalarWhereInput[]
-    id?: StringFilter<"PowerUp"> | string
-    name?: StringFilter<"PowerUp"> | string
-    description?: StringFilter<"PowerUp"> | string
-    categoryId?: StringNullableFilter<"PowerUp"> | string | null
-    createdAt?: DateTimeFilter<"PowerUp"> | Date | string
-    updatedAt?: DateTimeFilter<"PowerUp"> | Date | string
-  }
-
-  export type UserCreateWithoutPowerUpUsagesInput = {
-    id?: string
-    email: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    team?: TeamCreateNestedOneWithoutUserInput
-    leagues?: FantasyLeagueMembershipCreateNestedManyWithoutUserInput
-    ownedLeagues?: FantasyLeagueCreateNestedManyWithoutOwnerInput
-  }
-
-  export type UserUncheckedCreateWithoutPowerUpUsagesInput = {
-    id?: string
-    email: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    team?: TeamUncheckedCreateNestedOneWithoutUserInput
-    leagues?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutUserInput
-    ownedLeagues?: FantasyLeagueUncheckedCreateNestedManyWithoutOwnerInput
-  }
-
-  export type UserCreateOrConnectWithoutPowerUpUsagesInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutPowerUpUsagesInput, UserUncheckedCreateWithoutPowerUpUsagesInput>
-  }
-
-  export type PowerUpCreateWithoutPowerUpUsagesInput = {
-    id?: string
-    name: string
-    description: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    category?: PowerUpCategoryCreateNestedOneWithoutPowerUpsInput
-  }
-
-  export type PowerUpUncheckedCreateWithoutPowerUpUsagesInput = {
-    id?: string
-    name: string
-    description: string
-    categoryId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PowerUpCreateOrConnectWithoutPowerUpUsagesInput = {
-    where: PowerUpWhereUniqueInput
-    create: XOR<PowerUpCreateWithoutPowerUpUsagesInput, PowerUpUncheckedCreateWithoutPowerUpUsagesInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput = {
-    id?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    fantasyLeagueMembership: FantasyLeagueMembershipCreateNestedOneWithoutPowerUpsInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput = {
-    id?: string
-    fantasyLeagueMembershipId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpCreateOrConnectWithoutPowerUpUsageInput = {
-    where: FantasyLeagueMembershipPowerUpWhereUniqueInput
-    create: XOR<FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput>
-  }
-
-  export type UserUpsertWithoutPowerUpUsagesInput = {
-    update: XOR<UserUpdateWithoutPowerUpUsagesInput, UserUncheckedUpdateWithoutPowerUpUsagesInput>
-    create: XOR<UserCreateWithoutPowerUpUsagesInput, UserUncheckedCreateWithoutPowerUpUsagesInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutPowerUpUsagesInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutPowerUpUsagesInput, UserUncheckedUpdateWithoutPowerUpUsagesInput>
-  }
-
-  export type UserUpdateWithoutPowerUpUsagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUpdateOneWithoutUserNestedInput
-    leagues?: FantasyLeagueMembershipUpdateManyWithoutUserNestedInput
-    ownedLeagues?: FantasyLeagueUpdateManyWithoutOwnerNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutPowerUpUsagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    team?: TeamUncheckedUpdateOneWithoutUserNestedInput
-    leagues?: FantasyLeagueMembershipUncheckedUpdateManyWithoutUserNestedInput
-    ownedLeagues?: FantasyLeagueUncheckedUpdateManyWithoutOwnerNestedInput
-  }
-
-  export type PowerUpUpsertWithoutPowerUpUsagesInput = {
-    update: XOR<PowerUpUpdateWithoutPowerUpUsagesInput, PowerUpUncheckedUpdateWithoutPowerUpUsagesInput>
-    create: XOR<PowerUpCreateWithoutPowerUpUsagesInput, PowerUpUncheckedCreateWithoutPowerUpUsagesInput>
-    where?: PowerUpWhereInput
-  }
-
-  export type PowerUpUpdateToOneWithWhereWithoutPowerUpUsagesInput = {
-    where?: PowerUpWhereInput
-    data: XOR<PowerUpUpdateWithoutPowerUpUsagesInput, PowerUpUncheckedUpdateWithoutPowerUpUsagesInput>
-  }
-
-  export type PowerUpUpdateWithoutPowerUpUsagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: PowerUpCategoryUpdateOneWithoutPowerUpsNestedInput
-  }
-
-  export type PowerUpUncheckedUpdateWithoutPowerUpUsagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpsertWithoutPowerUpUsageInput = {
-    update: XOR<FantasyLeagueMembershipPowerUpUpdateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutPowerUpUsageInput>
-    create: XOR<FantasyLeagueMembershipPowerUpCreateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedCreateWithoutPowerUpUsageInput>
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateToOneWithWhereWithoutPowerUpUsageInput = {
-    where?: FantasyLeagueMembershipPowerUpWhereInput
-    data: XOR<FantasyLeagueMembershipPowerUpUpdateWithoutPowerUpUsageInput, FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutPowerUpUsageInput>
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateWithoutPowerUpUsageInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fantasyLeagueMembership?: FantasyLeagueMembershipUpdateOneRequiredWithoutPowerUpsNestedInput
-  }
-
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutPowerUpUsageInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    fantasyLeagueMembershipId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FantasyLeagueMembershipCreateWithoutPowerUpsInput = {
-    id?: string
-    teamName?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutLeaguesInput
-    league: FantasyLeagueCreateNestedOneWithoutMembersInput
-  }
-
-  export type FantasyLeagueMembershipUncheckedCreateWithoutPowerUpsInput = {
-    id?: string
-    userId: string
-    leagueId: string
-    teamName?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FantasyLeagueMembershipCreateOrConnectWithoutPowerUpsInput = {
-    where: FantasyLeagueMembershipWhereUniqueInput
-    create: XOR<FantasyLeagueMembershipCreateWithoutPowerUpsInput, FantasyLeagueMembershipUncheckedCreateWithoutPowerUpsInput>
-  }
-
-  export type PowerUpUsageCreateWithoutLeagueMembershipPowerUpInput = {
-    id?: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutPowerUpUsagesInput
-    powerUp: PowerUpCreateNestedOneWithoutPowerUpUsagesInput
-  }
-
-  export type PowerUpUsageUncheckedCreateWithoutLeagueMembershipPowerUpInput = {
-    id?: string
-    userId: string
-    powerUpId: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PowerUpUsageCreateOrConnectWithoutLeagueMembershipPowerUpInput = {
-    where: PowerUpUsageWhereUniqueInput
-    create: XOR<PowerUpUsageCreateWithoutLeagueMembershipPowerUpInput, PowerUpUsageUncheckedCreateWithoutLeagueMembershipPowerUpInput>
-  }
-
-  export type FantasyLeagueMembershipUpsertWithoutPowerUpsInput = {
-    update: XOR<FantasyLeagueMembershipUpdateWithoutPowerUpsInput, FantasyLeagueMembershipUncheckedUpdateWithoutPowerUpsInput>
-    create: XOR<FantasyLeagueMembershipCreateWithoutPowerUpsInput, FantasyLeagueMembershipUncheckedCreateWithoutPowerUpsInput>
-    where?: FantasyLeagueMembershipWhereInput
-  }
-
-  export type FantasyLeagueMembershipUpdateToOneWithWhereWithoutPowerUpsInput = {
-    where?: FantasyLeagueMembershipWhereInput
-    data: XOR<FantasyLeagueMembershipUpdateWithoutPowerUpsInput, FantasyLeagueMembershipUncheckedUpdateWithoutPowerUpsInput>
-  }
-
-  export type FantasyLeagueMembershipUpdateWithoutPowerUpsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    teamName?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutLeaguesNestedInput
-    league?: FantasyLeagueUpdateOneRequiredWithoutMembersNestedInput
-  }
-
-  export type FantasyLeagueMembershipUncheckedUpdateWithoutPowerUpsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    leagueId?: StringFieldUpdateOperationsInput | string
-    teamName?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpUsageUpsertWithoutLeagueMembershipPowerUpInput = {
-    update: XOR<PowerUpUsageUpdateWithoutLeagueMembershipPowerUpInput, PowerUpUsageUncheckedUpdateWithoutLeagueMembershipPowerUpInput>
-    create: XOR<PowerUpUsageCreateWithoutLeagueMembershipPowerUpInput, PowerUpUsageUncheckedCreateWithoutLeagueMembershipPowerUpInput>
-    where?: PowerUpUsageWhereInput
-  }
-
-  export type PowerUpUsageUpdateToOneWithWhereWithoutLeagueMembershipPowerUpInput = {
-    where?: PowerUpUsageWhereInput
-    data: XOR<PowerUpUsageUpdateWithoutLeagueMembershipPowerUpInput, PowerUpUsageUncheckedUpdateWithoutLeagueMembershipPowerUpInput>
-  }
-
-  export type PowerUpUsageUpdateWithoutLeagueMembershipPowerUpInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutPowerUpUsagesNestedInput
-    powerUp?: PowerUpUpdateOneRequiredWithoutPowerUpUsagesNestedInput
-  }
-
-  export type PowerUpUsageUncheckedUpdateWithoutLeagueMembershipPowerUpInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    powerUpId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FantasyLeagueMembershipCreateManyUserInput = {
     id?: string
     leagueId: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -15805,36 +14422,68 @@ export namespace Prisma {
   export type FantasyLeagueCreateManyOwnerInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
-  export type PowerUpUsageCreateManyUserInput = {
-    id?: string
-    powerUpId: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
+  export type TeamUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
+    teamValue?: IntFieldUpdateOperationsInput | number
+    teamPlayers?: TeamUpdateteamPlayersInput | number[]
+    captainId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TeamUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
+    teamValue?: IntFieldUpdateOperationsInput | number
+    teamPlayers?: TeamUpdateteamPlayersInput | number[]
+    captainId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TeamUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
+    teamValue?: IntFieldUpdateOperationsInput | number
+    teamPlayers?: TeamUpdateteamPlayersInput | number[]
+    captainId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FantasyLeagueMembershipUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUpdateManyWithoutFantasyLeagueMembershipNestedInput
     league?: FantasyLeagueUpdateOneRequiredWithoutMembersNestedInput
   }
 
@@ -15842,15 +14491,28 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     leagueId?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUncheckedUpdateManyWithoutFantasyLeagueMembershipNestedInput
   }
 
   export type FantasyLeagueMembershipUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     leagueId?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15858,84 +14520,72 @@ export namespace Prisma {
   export type FantasyLeagueUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
     gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
+    transactions?: TransactionUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueUncheckedUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueUncheckedUpdateManyWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     gameweekId?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpUsageUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUp?: PowerUpUpdateOneRequiredWithoutPowerUpUsagesNestedInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUpdateOneWithoutPowerUpUsageNestedInput
-  }
-
-  export type PowerUpUsageUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    powerUpId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUncheckedUpdateOneWithoutPowerUpUsageNestedInput
-  }
-
-  export type PowerUpUsageUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    powerUpId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15944,16 +14594,44 @@ export namespace Prisma {
     id?: string
     userId: string
     teamName?: string | null
+    stakeAmount?: Decimal | DecimalJsLike | number | string | null
+    position?: number | null
+    score?: Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: string
+    blockchainTxHash?: string | null
+    joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type TransactionCreateManyLeagueInput = {
+    id?: string
+    txHash: string
+    type: string
+    userId?: string | null
+    amount?: Decimal | DecimalJsLike | number | string | null
+    status?: string
+    blockNumber?: number | null
+    gasUsed?: string | null
+    errorMessage?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    confirmedAt?: Date | string | null
   }
 
   export type FantasyLeagueMembershipUpdateWithoutLeagueInput = {
     id?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUpdateManyWithoutFantasyLeagueMembershipNestedInput
     user?: UserUpdateOneRequiredWithoutLeaguesNestedInput
   }
 
@@ -15961,61 +14639,96 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUps?: FantasyLeagueMembershipPowerUpUncheckedUpdateManyWithoutFantasyLeagueMembershipNestedInput
   }
 
   export type FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    stakeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    payoutStatus?: StringFieldUpdateOperationsInput | string
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type FantasyLeagueMembershipPowerUpCreateManyFantasyLeagueMembershipInput = {
-    id?: string
-    powerUpUsageId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FantasyLeagueMembershipPowerUpUpdateWithoutFantasyLeagueMembershipInput = {
+  export type TransactionUpdateWithoutLeagueInput = {
     id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUpUsage?: PowerUpUsageUpdateOneRequiredWithoutLeagueMembershipPowerUpNestedInput
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateWithoutFantasyLeagueMembershipInput = {
+  export type TransactionUncheckedUpdateWithoutLeagueInput = {
     id?: StringFieldUpdateOperationsInput | string
-    powerUpUsageId?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type FantasyLeagueMembershipPowerUpUncheckedUpdateManyWithoutFantasyLeagueMembershipInput = {
+  export type TransactionUncheckedUpdateManyWithoutLeagueInput = {
     id?: StringFieldUpdateOperationsInput | string
-    powerUpUsageId?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    blockNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    gasUsed?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type FantasyLeagueCreateManyGameweekInput = {
     id?: string
     name: string
-    stake: string
+    description?: string | null
+    stake?: string | null
     limit: number
     leagueType: string
     leagueMode: string
     winners: number
-    allowPowerUps: boolean
-    description?: string | null
     code: string
     ownerId: string
+    realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
+    entryFeeUsd?: Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: Decimal | DecimalJsLike | number | string
+    currentParticipants?: number
+    blockchainTxHash?: string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -16023,127 +14736,72 @@ export namespace Prisma {
   export type FantasyLeagueUpdateWithoutGameweekInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
+    transactions?: TransactionUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueUncheckedUpdateWithoutGameweekInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutLeagueNestedInput
   }
 
   export type FantasyLeagueUncheckedUpdateManyWithoutGameweekInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    stake?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    stake?: NullableStringFieldUpdateOperationsInput | string | null
     limit?: IntFieldUpdateOperationsInput | number
     leagueType?: StringFieldUpdateOperationsInput | string
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
-    allowPowerUps?: BoolFieldUpdateOperationsInput | boolean
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpUsageCreateManyPowerUpInput = {
-    id?: string
-    userId: string
-    transactionId: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PowerUpUsageUpdateWithoutPowerUpInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutPowerUpUsagesNestedInput
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUpdateOneWithoutPowerUpUsageNestedInput
-  }
-
-  export type PowerUpUsageUncheckedUpdateWithoutPowerUpInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leagueMembershipPowerUp?: FantasyLeagueMembershipPowerUpUncheckedUpdateOneWithoutPowerUpUsageNestedInput
-  }
-
-  export type PowerUpUsageUncheckedUpdateManyWithoutPowerUpInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    transactionId?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PowerUpCreateManyCategoryInput = {
-    id?: string
-    name: string
-    description: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PowerUpUpdateWithoutCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUpUsages?: PowerUpUsageUpdateManyWithoutPowerUpNestedInput
-  }
-
-  export type PowerUpUncheckedUpdateWithoutCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    powerUpUsages?: PowerUpUsageUncheckedUpdateManyWithoutPowerUpNestedInput
-  }
-
-  export type PowerUpUncheckedUpdateManyWithoutCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    entryFeeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPoolUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentParticipants?: IntFieldUpdateOperationsInput | number
+    blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

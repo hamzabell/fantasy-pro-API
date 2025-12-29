@@ -33,7 +33,12 @@ export async function validateUserAuth(c: Context, next: Function) {
 		return c.json({ error: 'Unauthorized: Invalid token' }, 401);
 	}
 
-	const userData = await retrieveUserFromDatabaseById(user.user.id);
+	const userDataResult = await retrieveUserFromDatabaseById(user.user.id)();
+    let userData = null;
+    
+    if (userDataResult._tag === 'Right') {
+        userData = userDataResult.right;
+    }
 
 	if (!userData) {
 		const createdUser = await saveUserToDatabase(createPopulatedUser({

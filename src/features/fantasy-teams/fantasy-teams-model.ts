@@ -1,4 +1,4 @@
-import type { Team, User } from "../../generated/prisma/index.js";
+import type { Team, User, RealLifeLeague } from "../../generated/prisma/index.js";
 import prisma from "../../prisma.js";
 
 export type PartialTeamParameters = Parameters<typeof prisma.team.create>;
@@ -29,14 +29,18 @@ export async function retrieveTeamFromDatabaseById(id: Team["id"]) {
 
 
 /**
- * Retrieves a Team record from the database based on its user id.
+ * Retrieves a Team record from the database based on its user id and real life league.
  *
- * @param id - The id of the User to get the Team for.
+ * @param userId - The id of the User to get the Team for.
+ * @param realLifeLeague - The real life league.
  * @returns The Team with a given id or null if it wasn't found.
  */
-export async function retrieveTeamFromDatabaseByUserId(userId: User["id"]) {
+export async function retrieveTeamFromDatabaseByUserAndLeague(userId: User["id"], realLifeLeague: RealLifeLeague) {
 	return await prisma.team.findUnique({ where: {
-		userId
+		userId_realLifeLeague: {
+			userId,
+			realLifeLeague
+		}
 	}});
 }
 

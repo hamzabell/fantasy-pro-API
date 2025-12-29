@@ -10,15 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { calculateLeaguePosition } from './league-position-utils.js';
 import { retrieveFantasyLeagueMembershipsByLeagueId, retrieveUserFromDatabaseById } from './fantasy-leagues-model.js';
-import { retrieveTeamFromDatabaseByUserId } from '../fantasy-teams/fantasy-teams-model.js';
+import { retrieveTeamFromDatabaseByUserAndLeague } from '../fantasy-teams/fantasy-teams-model.js';
 import { fetchPlayerPointsByGameweek, fetchPlayerGoalsByGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { RealLifeLeague } from '../../generated/prisma/index.js';
 // Mock the imported functions
 vi.mock('./fantasy-leagues-model.js', () => ({
     retrieveFantasyLeagueMembershipsByLeagueId: vi.fn(),
     retrieveUserFromDatabaseById: vi.fn(),
 }));
 vi.mock('../fantasy-teams/fantasy-teams-model.js', () => ({
-    retrieveTeamFromDatabaseByUserId: vi.fn(),
+    retrieveTeamFromDatabaseByUserAndLeague: vi.fn(),
 }));
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js', () => ({
     fetchPlayerPointsByGameweek: vi.fn(),
@@ -29,6 +30,7 @@ describe('League Position Utils', () => {
         const leagueId = 'test-league-id';
         const gameweekId = 1;
         const userId = 'test-user-id';
+        const realLifeLeague = 'PREMIER_LEAGUE';
         beforeEach(() => {
             // Clear all mocks before each test
             vi.clearAllMocks();
@@ -46,7 +48,7 @@ describe('League Position Utils', () => {
                 .mockResolvedValueOnce({ id: 'user-2', email: 'user2@example.com' })
                 .mockResolvedValueOnce({ id: 'user-3', email: 'user3@example.com' });
             // Mock the teams
-            vi.mocked(retrieveTeamFromDatabaseByUserId)
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague)
                 .mockResolvedValueOnce({ userId: 'user-1', teamPlayers: [1, 2, 3] })
                 .mockResolvedValueOnce({ userId: 'user-2', teamPlayers: [4, 5, 6] })
                 .mockResolvedValueOnce({ userId: 'user-3', teamPlayers: [7, 8, 9] });
@@ -72,7 +74,7 @@ describe('League Position Utils', () => {
                 .mockResolvedValueOnce(0) // Player 7
                 .mockResolvedValueOnce(0) // Player 8
                 .mockResolvedValueOnce(0); // Player 9
-            const result = yield calculateLeaguePosition(leagueId, gameweekId, 'user-1');
+            const result = yield calculateLeaguePosition(leagueId, gameweekId, 'user-1', realLifeLeague);
             // User 1: 10 points, 2 goals (1st place)
             // User 2: 10 points, 3 goals (1st place, but higher goals)
             // User 3: 3 points, 0 goals (3rd place)
@@ -84,7 +86,7 @@ describe('League Position Utils', () => {
         test('given a user who is not a member of the league: it should return null position', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock empty memberships
             vi.mocked(retrieveFantasyLeagueMembershipsByLeagueId).mockResolvedValue([]);
-            const result = yield calculateLeaguePosition(leagueId, gameweekId, userId);
+            const result = yield calculateLeaguePosition(leagueId, gameweekId, userId, realLifeLeague);
             expect(result.position).toBeNull();
             expect(result.teamName).toBe(`Team ${userId}`);
             expect(result.points).toBe(0);
@@ -98,11 +100,11 @@ describe('League Position Utils', () => {
             // Mock the user details
             vi.mocked(retrieveUserFromDatabaseById).mockResolvedValue({ id: 'user-1', email: 'user1@example.com' });
             // Mock the team
-            vi.mocked(retrieveTeamFromDatabaseByUserId).mockResolvedValue({ userId: 'user-1', teamPlayers: [1] });
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague).mockResolvedValue({ userId: 'user-1', teamPlayers: [1] });
             // Mock the player points and goals
             vi.mocked(fetchPlayerPointsByGameweek).mockResolvedValue(10);
             vi.mocked(fetchPlayerGoalsByGameweek).mockResolvedValue(2);
-            const result = yield calculateLeaguePosition(leagueId, gameweekId, 'user-1');
+            const result = yield calculateLeaguePosition(leagueId, gameweekId, 'user-1', realLifeLeague);
             expect(result.position).toBe(1);
             expect(result.teamName).toBe('Solo Team');
             expect(result.points).toBe(10);
@@ -116,7 +118,7 @@ describe('League Position Utils', () => {
             // Mock the user details
             vi.mocked(retrieveUserFromDatabaseById).mockResolvedValue({ id: 'user-1', email: 'user1@example.com' });
             // Mock the team
-            vi.mocked(retrieveTeamFromDatabaseByUserId).mockResolvedValue({ userId: 'user-1', teamPlayers: [1, 2] });
+            vi.mocked(retrieveTeamFromDatabaseByUserAndLeague).mockResolvedValue({ userId: 'user-1', teamPlayers: [1, 2] });
             // Mock player data fetching with one error and one success
             vi.mocked(fetchPlayerPointsByGameweek)
                 .mockImplementation((playerId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -132,7 +134,7 @@ describe('League Position Utils', () => {
                 }
                 return 2; // Player 2 succeeds
             }));
-            const result = yield calculateLeaguePosition(leagueId, gameweekId, 'user-1');
+            const result = yield calculateLeaguePosition(leagueId, gameweekId, 'user-1', realLifeLeague);
             // Even with one player failing, we should still get data for the other
             expect(result.position).toBe(1);
             expect(result.teamName).toBe('Team 1');

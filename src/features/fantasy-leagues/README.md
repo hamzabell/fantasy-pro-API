@@ -19,7 +19,6 @@ This API provides endpoints for managing fantasy leagues in the FantasyPro appli
     "leagueType": "string",
     "leagueMode": "string",
     "winners": "number",
-    "allowPowerUps": "boolean",
     "code": "string (optional)",
     "gameweekId": "number (optional)"
   }
@@ -73,7 +72,6 @@ This API provides endpoints for managing fantasy leagues in the FantasyPro appli
         "leagueType": "string",
         "leagueMode": "string",
         "winners": "number",
-        "allowPowerUps": "boolean",
         "description": "string",
         "code": "string",
         "ownerId": "string",
