@@ -21,8 +21,8 @@ const mockWalletService = {
 };
 // Mock service imports
 vi.mock('./auth.service.js', () => ({
-    generateGoogleAuthUrl: () => mockAuthService.generateGoogleAuthUrl(),
-    loginWithGoogleCode: (code) => mockAuthService.loginWithGoogleCode(code),
+    generateGoogleAuthUrl: (referralCode) => mockAuthService.generateGoogleAuthUrl(referralCode),
+    loginWithGoogleCode: (code, referralCode) => mockAuthService.loginWithGoogleCode(code, referralCode),
 }));
 vi.mock('../wallet/wallet.repository.js', () => ({
     createWalletRepository: vi.fn(),
@@ -30,9 +30,9 @@ vi.mock('../wallet/wallet.repository.js', () => ({
 vi.mock('../wallet/wallet.service.js', () => ({
     createWalletService: () => mockWalletService,
 }));
-vi.mock('../../infrastructure/blockchain/blockchain.service.js', () => ({
-    createBlockchainService: vi.fn()
-}));
+// Mock retrieveUserStats via module mock
+vi.mock('../users/users-model.js');
+import { retrieveUserStats } from '../users/users-model.js';
 describe('Authentication Routes', () => {
     let testApp;
     beforeEach(() => {
@@ -48,6 +48,12 @@ describe('Authentication Routes', () => {
             const res = yield testApp.request('/google/url');
             expect(res.status).toBe(200);
             expect(yield res.json()).toEqual({ url: mockUrl });
+        }));
+        it('should pass referralCode to generateGoogleAuthUrl', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockUrl = 'https://google.com/auth';
+            mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
+            yield testApp.request('/google/url?referralCode=REF123');
+            expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123');
         }));
     });
     describe('GET /google/callback', () => {
@@ -83,12 +89,15 @@ describe('Authentication Routes', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     image: 'http://image.com',
-                    walletAddress: null
+                    walletAddress: null,
+                    coins: 50 // Mock user has coins
                 });
                 yield next();
             }));
             authApp.route('/', app);
             mockWalletService.getUserWallet.mockReturnValue(TE.right({ address: '0x123' }));
+            const mockStats = { matches: 5, points: 100, trophies: 1 };
+            vi.mocked(retrieveUserStats).mockReturnValue(TE.right(mockStats));
             const res = yield authApp.request('/user', { method: 'GET' });
             expect(res.status).toBe(200);
             expect(yield res.json()).toEqual({
@@ -96,7 +105,13 @@ describe('Authentication Routes', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 image: 'http://image.com',
-                walletAddress: '0x123'
+                walletAddress: '0x123',
+                matches: 5,
+                points: 100,
+                trophies: 1,
+                referralId: '123',
+                referralLink: 'http://localhost:8100/signup?ref=123',
+                coins: 50
             });
         }));
         it('should return 401 if not authorized', () => __awaiter(void 0, void 0, void 0, function* () {

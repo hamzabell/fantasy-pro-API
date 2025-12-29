@@ -8,6 +8,8 @@ import type { BlockchainService } from '../../infrastructure/blockchain/blockcha
 import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js'
 import type { PaymentService } from '../../infrastructure/payment/payment.service.js'
 import { createPaymentService } from '../../infrastructure/payment/payment.service.js'
+import type { PublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
+import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 
 // The environment that all ReaderTaskEither functions depend on
 export interface AppEnvironment {
@@ -18,6 +20,7 @@ export interface AppEnvironment {
 	walletService: WalletService
 	blockchainService: BlockchainService
 	paymentService: PaymentService
+	publicLeagueService: PublicLeagueService
 }
 
 // Application configuration
@@ -26,7 +29,7 @@ export interface AppConfig {
 	minPlayers: number
 	maxPlayers: number
 	webhookApiToken: string
-	polygonNetwork: 'mainnet' | 'mumbai'
+	tonNetwork: 'mainnet' | 'testnet'
 }
 
 // Constructor for creating the environment (called at app startup)
@@ -39,13 +42,15 @@ export const createEnvironment = (
 	
 	// TODO: Move these to config/env vars
 	const blockchainService = createBlockchainService(
-		process.env.POLYGON_RPC_URL || 'https://rpc-mumbai.maticvigil.com',
-		process.env.USDC_ADDRESS || '0x0',
-		process.env.ESCROW_ADDRESS || '0x0'
+		process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC',
+		process.env.TON_API_KEY || '',
+		process.env.LEAGUE_ESCROW_ADDRESS || '', // Keeper/Escrow Address
+        process.env.SERVER_MNEMONIC || ''
 	)
 
 	const walletService = createWalletService(walletRepo, blockchainService)
 	const paymentService = createPaymentService()
+	const publicLeagueService = createPublicLeagueService(prisma, walletService)
 
 	return {
 		prisma,
@@ -54,7 +59,8 @@ export const createEnvironment = (
 		walletRepo,
 		walletService,
 		blockchainService,
-		paymentService
+		paymentService,
+		publicLeagueService
 	}
 }
 
@@ -64,5 +70,5 @@ export const defaultConfig: AppConfig = {
 	minPlayers: 5,
 	maxPlayers: 5,
 	webhookApiToken: process.env.WEBHOOK_API_TOKEN ?? '',
-	polygonNetwork: (process.env.POLYGON_NETWORK as 'mainnet' | 'mumbai') ?? 'mumbai'
+	tonNetwork: (process.env.TON_NETWORK as 'mainnet' | 'testnet') ?? 'testnet'
 }

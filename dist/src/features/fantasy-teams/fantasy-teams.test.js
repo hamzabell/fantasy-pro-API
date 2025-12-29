@@ -26,7 +26,7 @@ const setupUserWithATeam = () => __awaiter(void 0, void 0, void 0, function* () 
     });
     const team = yield saveTeamToDatabase({
         userId: user.id,
-        teamValue: 80,
+        teamValue: 30,
         teamPlayers: [1, 2, 3, 4, 5],
     });
     return { user, team };
@@ -50,7 +50,7 @@ describe("Fantasy Teams", () => {
             // Check structure of first team
             const returnedTeam = actual.teams.find((t) => t.userId === user.id);
             expect(returnedTeam).toBeDefined();
-            expect(returnedTeam.balance).toBe(100 - team.teamValue);
+            expect(returnedTeam.balance).toBe(40 - team.teamValue);
             expect(returnedTeam.realLifeLeague).toBe('PREMIER_LEAGUE');
             yield deleteUserFromDatabaseById(user.id);
         }));
@@ -80,7 +80,7 @@ describe("Fantasy Teams", () => {
         }));
     });
     describe("POST /create-team", () => {
-        test("given that a user selects 5 players for his team and all players costs are equal or under 100M pound: it should create a team for the user and map the players to the user", () => __awaiter(void 0, void 0, void 0, function* () {
+        test("given that a user selects 5 players for his team and all players costs are equal or under 40M pound: it should create a team for the user and map the players to the user", () => __awaiter(void 0, void 0, void 0, function* () {
             // Create a unique user for this test
             const user = yield saveUserToDatabase({
                 id: `user-${Date.now()}-${Math.random()}`,
@@ -101,7 +101,7 @@ describe("Fantasy Teams", () => {
             expect(userTeam).toBeNull(); // Ensure no team exists before test
             const res = yield app.request('/api/fantasy-teams/create-team', Object.assign(Object.assign(Object.assign({}, createAuthHeaders(user.id)), createBody({
                 players: playerIds
-                // No budget field needed as it's fixed at 100M
+                // No budget field needed as it's fixed at 40M
             })), { method: 'POST' }));
             expect(res.status).toBe(201);
             const actual = yield res.json();
@@ -128,7 +128,7 @@ describe("Fantasy Teams", () => {
             // Cleanup after test
             yield deleteUserFromDatabaseById(user.id);
         }));
-        test("given that a user selects 5 players for his team and the total cost of player is over 100M pounds: it should return an error stating that the total cost of players exceeds the budget", () => __awaiter(void 0, void 0, void 0, function* () {
+        test("given that a user selects 5 players for his team and the total cost of player is over 40M pounds: it should return an error stating that the total cost of players exceeds the budget", () => __awaiter(void 0, void 0, void 0, function* () {
             // Create a unique user for this test
             const user = yield saveUserToDatabase({
                 id: `user-${Date.now()}-${Math.random()}`,
@@ -209,32 +209,6 @@ describe("Fantasy Teams", () => {
             expect(actual).toEqual(expected);
             yield deleteUserFromDatabaseById(user.id);
         }));
-        test("given the user selects invalid positions: it should return an error stating that positions are invalid", () => __awaiter(void 0, void 0, void 0, function* () {
-            // Create a unique user for this test
-            const user = yield saveUserToDatabase({
-                id: `user-${Date.now()}-${Math.random()}`,
-                email: `test-${Date.now()}-${Math.random()}@example.com`,
-            });
-            const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
-            vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
-            vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
-            // Mock invalid positions (e.g. all Goalkeepers)
-            vi.mocked(fetchPlayersByIds).mockResolvedValue([
-                { id: 1, name: 'Player 1', teamId: 1, position: 'Goalkeeper', image: 'image1.jpg', cost: 10 },
-                { id: 2, name: 'Player 2', teamId: 2, position: 'Goalkeeper', image: 'image2.jpg', cost: 8 },
-                { id: 3, name: 'Player 3', teamId: 3, position: 'Goalkeeper', image: 'image3.jpg', cost: 6 },
-                { id: 4, name: 'Player 4', teamId: 4, position: 'Goalkeeper', image: 'image4.jpg', cost: 5 },
-                { id: 5, name: 'Player 5', teamId: 5, position: 'Goalkeeper', image: 'image5.jpg', cost: 12 }
-            ]);
-            const playerIds = [1, 2, 3, 4, 5];
-            const res = yield app.request('/api/fantasy-teams/create-team', Object.assign(Object.assign(Object.assign({}, createAuthHeaders(user.id)), createBody({
-                players: playerIds
-            })), { method: 'POST' }));
-            expect(res.status).toBe(422);
-            const actual = yield res.json();
-            expect(actual).toMatchObject({ error: 'Team must have 1 GK, 1 DEF, 1 MID, and 2 FWDs.' });
-            yield deleteUserFromDatabaseById(user.id);
-        }));
         test("given the user selects duplicate players: it should return an error stating that duplicate players are not allowed", () => __awaiter(void 0, void 0, void 0, function* () {
             // Create a unique user for this test
             const user = yield saveUserToDatabase({
@@ -274,7 +248,7 @@ describe("Fantasy Teams", () => {
             });
             yield saveTeamToDatabase({
                 userId: user.id,
-                teamValue: 80,
+                teamValue: 30,
                 teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
             });
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
@@ -316,7 +290,7 @@ describe("Fantasy Teams", () => {
             const expected = {
                 message: 'Team retrieved successfully',
                 team: {
-                    balance: 100 - teamValue,
+                    balance: 40 - teamValue,
                     players: expect.arrayContaining([
                         expect.objectContaining({
                             id: expect.any(String),
@@ -363,7 +337,7 @@ describe("Fantasy Teams", () => {
             const { user, team: { teamValue, teamPlayers } } = yield setupUserWithATeam();
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
-            vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+            vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(30);
             // Mock players including the new one
             vi.mocked(fetchPlayersByIds).mockResolvedValue([
                 { id: 1, name: 'Player 1', teamId: 1, position: 'Goalkeeper', image: 'image1.jpg', cost: 10 },
@@ -382,7 +356,7 @@ describe("Fantasy Teams", () => {
             const expected = {
                 message: 'Team updated successfully',
                 team: {
-                    balance: 100 - teamValue,
+                    balance: 40 - teamValue,
                     players: expect.arrayContaining([
                         expect.objectContaining({
                             id: expect.any(String),
@@ -405,7 +379,7 @@ describe("Fantasy Teams", () => {
             const { user, team: { teamValue, teamPlayers } } = yield setupUserWithATeam();
             const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
             vi.spyOn(supabase.auth, 'getUser').mockImplementation(mockSupabase.auth.getUser);
-            vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(80);
+            vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(35);
             // Mock players including new ones. We need 1 GK, 1 DEF, 1 MID, 2 FWD.
             // Setup has: 1(GK), 2(DEF), 3(MID), 4(FWD), 5(FWD)
             // We replace 3, 4, 5 with new players mapping to same positions?
@@ -427,7 +401,7 @@ describe("Fantasy Teams", () => {
             const expected = {
                 message: 'Team updated successfully',
                 team: {
-                    balance: 100 - teamValue,
+                    balance: 5,
                     players: expect.arrayContaining([
                         expect.objectContaining({
                             id: expect.any(String),

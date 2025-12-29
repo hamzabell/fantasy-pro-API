@@ -67,6 +67,26 @@ const transferRoute = createRoute({
         500: { description: 'Internal Server Error' },
     },
 });
+// GET /api/wallet/transactions
+const getTransactionsRoute = createRoute({
+    method: 'get',
+    path: '/transactions',
+    security: [{ BearerAuth: [] }],
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        transactions: z.array(z.any()),
+                    }),
+                },
+            },
+            description: 'Get user transactions',
+        },
+        401: { description: 'Unauthorized' },
+        500: { description: 'Internal Server Error' },
+    },
+});
 app.openapi(getBalanceRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const env = c.get('env');
     // Assuming user ID is attached to context by auth middleware
@@ -95,5 +115,13 @@ app.openapi(transferRoute, (c) => __awaiter(void 0, void 0, void 0, function* ()
         }
         return c.json(toErrorResponse(error), 500);
     }, (txHash) => c.json({ txHash }, 200)))();
+}));
+app.openapi(getTransactionsRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const env = c.get('env');
+    const user = c.get('user');
+    if (!user || !user.id) {
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+    return yield pipe(env.walletService.getUserTransactions(user.id), TE.match((error) => c.json(toErrorResponse(error), 500), (transactions) => c.json({ transactions }, 200)))();
 }));
 export default app;

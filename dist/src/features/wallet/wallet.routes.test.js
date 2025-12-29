@@ -25,6 +25,7 @@ describe('Wallet Routes', () => {
         mockWalletService = {
             getWalletBalance: vi.fn(),
             transferFunds: vi.fn(),
+            getUserTransactions: vi.fn(),
         };
         // Create a wrapper app to inject dependencies and auth
         testApp = new Hono();
@@ -119,6 +120,39 @@ describe('Wallet Routes', () => {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer valid_token', 'Content-Type': 'application/json' },
                 body: JSON.stringify(transferPayload)
+            });
+            expect(res.status).toBe(500);
+        }));
+    });
+    describe('GET /api/wallet/transactions', () => {
+        it('should return 200 with transactions when authorized', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockTransactions = [{ id: 'tx1', amount: '10' }];
+            mockWalletService.getUserTransactions.mockReturnValue(TE.right(mockTransactions));
+            const res = yield testApp.request('/api/wallet/transactions', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer valid_token'
+                }
+            });
+            expect(res.status).toBe(200);
+            const body = yield res.json();
+            expect(body).toEqual({ transactions: mockTransactions });
+            expect(mockWalletService.getUserTransactions).toHaveBeenCalledWith('user123');
+        }));
+        it('should return 401 when unauthorized', () => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield testApp.request('/api/wallet/transactions', {
+                method: 'GET',
+                // No auth header
+            });
+            expect(res.status).toBe(401);
+        }));
+        it('should return 500 on service error', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockWalletService.getUserTransactions.mockReturnValue(TE.left({ _tag: 'DatabaseError', message: 'DB Fail' }));
+            const res = yield testApp.request('/api/wallet/transactions', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer valid_token'
+                }
             });
             expect(res.status).toBe(500);
         }));

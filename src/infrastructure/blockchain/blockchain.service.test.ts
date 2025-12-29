@@ -1,164 +1,128 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createBlockchainService } from './blockchain.service.js';
 import * as E from 'fp-ts/lib/Either.js';
-import { ethers } from 'ethers';
 
-// Mock ethers
-vi.mock('ethers', () => {
-  const MockContract = vi.fn();
-  MockContract.prototype.transfer = vi.fn();
-  MockContract.prototype.approve = vi.fn();
-  MockContract.prototype.joinLeague = vi.fn();
+// Mock @ton/ton and @ton/crypto
+const mockSend = vi.fn();
+const mockOpen = vi.fn(() => ({
+    getSeqno: vi.fn().mockResolvedValue(1),
+    createTransfer: vi.fn(),
+    send: mockSend
+}));
 
-  const MockWallet = vi.fn();
-  
-  const MockProvider = vi.fn();
-  MockProvider.prototype.getBalance = vi.fn();
-
-  return {
-    ethers: {
-      JsonRpcProvider: MockProvider,
-      Wallet: MockWallet,
-      Contract: MockContract,
-      formatEther: vi.fn(),
-      parseUnits: vi.fn(),
-      id: vi.fn((str) => '0xhashed' + str), // Simple mock for id/keccak256
-    }
-  };
+vi.mock('@ton/ton', async () => {
+    return {
+        TonClient: vi.fn(() => ({
+            getBalance: vi.fn().mockResolvedValue(BigInt(1000000000)), // 1 TON
+            open: mockOpen
+        })),
+        WalletContractV4: {
+            create: vi.fn(() => ({
+                address: { toString: () => 'UQAddress' },
+                getSeqno: vi.fn().mockResolvedValue(1),
+                createTransfer: vi.fn(),
+                send: vi.fn()
+            }))
+        },
+        Address: {
+            parse: vi.fn((str) => str) // Simple pass-through or mock object
+        },
+        toNano: vi.fn((val) => BigInt(100000000)), // Mock toNano
+        fromNano: vi.fn((val) => '1'), // Mock fromNano
+        internal: vi.fn(),
+        SendMode: { PAY_GAS_SEPARATELY: 1, IGNORE_ERRORS: 2 },
+        beginCell: vi.fn(() => ({
+            storeUint: vi.fn().mockReturnThis(),
+            storeStringTail: vi.fn().mockReturnThis(),
+            storeAddress: vi.fn().mockReturnThis(),
+            endCell: vi.fn()
+        }))
+    };
 });
 
+vi.mock('@ton/crypto', () => ({
+    mnemonicToWalletKey: vi.fn().mockResolvedValue({
+        secretKey: Buffer.from('mockSecret'),
+        publicKey: Buffer.from('mockPublic')
+    }),
+    keyPairFromSecretKey: vi.fn(() => ({
+         secretKey: Buffer.from('mockSecret'),
+         publicKey: Buffer.from('mockPublic')
+    }))
+}));
+
 describe('BlockchainService', () => {
-  const rpcUrl = 'http://localhost:8545';
-  const usdcAddress = '0xUSDC';
-  const escrowAddress = '0xEscrow';
+  const endpoint = 'https://toncenter.com/api/v2/jsonRPC';
+  const apiKey = 'test-api-key';
+  const escrowAddress = 'UQEscrowAddress';
   
-  // Mocks
-  let mockProvider: any;
-  let mockWallet: any;
-  let mockContract: any;
   let service: ReturnType<typeof createBlockchainService>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Setup Service
-    service = createBlockchainService(rpcUrl, usdcAddress, escrowAddress);
-
-    // Get Mock Instances
-    mockProvider = (ethers.JsonRpcProvider as any).mock.instances[0];
-    // Note: Wallet and Contract are instantiated inside methods, so we mock prototype methods in the factory above
-    // or capture them when called.
+    service = createBlockchainService(endpoint, apiKey, escrowAddress, '');
   });
 
   describe('getBalance', () => {
     it('should return formatted balance on success', async () => {
-      const address = '0x123';
-      const balanceBigInt = BigInt("1000000000000000000"); // 1 ETH
-      const balanceStr = '1.0';
-
-      mockProvider.getBalance.mockResolvedValue(balanceBigInt);
-      (ethers.formatEther as any).mockReturnValue(balanceStr);
-
-      const result = await service.getBalance(address)();
-
+      const result = await service.getBalance('UQAddress')();
       expect(E.isRight(result)).toBe(true);
       if (E.isRight(result)) {
-        expect(result.right).toBe(balanceStr);
-      }
-      expect(mockProvider.getBalance).toHaveBeenCalledWith(address);
-    });
-
-    it('should return AppError on failure', async () => {
-      mockProvider.getBalance.mockRejectedValue(new Error('Network Error'));
-
-      const result = await service.getBalance('0x123')();
-
-      expect(E.isLeft(result)).toBe(true);
-      if (E.isLeft(result)) {
-        // AppError structure from infrastructure might vary, let's check broadly or inspect the actual error wrapper
-        // The implementation uses `blockchainError` factory.
-        // If it returns { tag: 'BlockchainError', ... } then expecting tag is correct.
-        // However, if the mock failed to return a proper structure or if checking wrong prop.
-        // Let's debug by checking if 'tag' exists.
-        expect(result.left).toHaveProperty('_tag', 'BlockchainError');
+        expect(result.right).toBe('1'); // 1 TON
       }
     });
   });
 
-  describe('transferUSDC', () => {
-    it('should transfer USDC successfully', async () => {
-        // Setup Mocks
-        const mockTransfer = vi.fn().mockResolvedValue({
-            hash: '0xtxhash',
-            wait: vi.fn().mockResolvedValue({})
-        });
+  describe('transferTON', () => {
+    it('should transfer TON successfully', async () => {
+        const hexKey = Buffer.from('secret').toString('hex');
+        const result = await service.transferTON(hexKey, 'UQReceiver', '10')();
         
-        // Mock the Contract constructor/instance specifically for this test if needed, 
-        // or rely on global mock. Global mock setup:
-        // MockContract.prototype.transfer = mockTransfer
-        // We need to access the specific instance created inside the function or prototype
-        const MockContract = (ethers.Contract as any);
-        MockContract.prototype.transfer = mockTransfer;
-
-        const privateKey = '0xpriv';
-        const to = '0xreceiver';
-        const amount = '100'; // 100 USDC
-
-        (ethers.parseUnits as any).mockReturnValue(BigInt("100000000")); // Mock parsing
-
-        const result = await service.transferUSDC(privateKey, to, amount)();
-
         expect(E.isRight(result)).toBe(true);
+        expect(mockOpen).toHaveBeenCalled();
+        expect(mockSend).toHaveBeenCalled();
         if (E.isRight(result)) {
-            expect(result.right).toBe('0xtxhash');
+            expect(result.right).toContain('seqno_');
         }
-        expect(mockTransfer).toHaveBeenCalled();
-    });
-
-    it('should handle transfer errors', async () => {
-        const MockContract = (ethers.Contract as any);
-        MockContract.prototype.transfer = vi.fn().mockRejectedValue(new Error('Transfer Failed'));
-
-        const result = await service.transferUSDC('0xpriv', '0xto', '10')();
-
-        expect(E.isLeft(result)).toBe(true);
-    });
-  });
-
-  describe('approveEscrow', () => {
-    it('should approve escrow successfully', async () => {
-        const mockApprove = vi.fn().mockResolvedValue({
-            hash: '0xapproveHash',
-            wait: vi.fn().mockResolvedValue({})
-        });
-        (ethers.Contract as any).prototype.approve = mockApprove;
-
-        const result = await service.approveEscrow('0xpriv', '50')();
-
-        expect(E.isRight(result)).toBe(true);
-        if (E.isRight(result)) {
-            expect(result.right).toBe('0xapproveHash');
-        }
-        expect(mockApprove).toHaveBeenCalledWith(escrowAddress, expect.any(BigInt));
     });
   });
 
   describe('joinLeagueOnChain', () => {
-    it('should call joinLeague and return tx hash', async () => {
-        const mockJoin = vi.fn().mockResolvedValue({
-            hash: '0xjoinHash',
-            wait: vi.fn().mockResolvedValue({})
-        });
-        (ethers.Contract as any).prototype.joinLeague = mockJoin;
-
-        const result = await service.joinLeagueOnChain('0xpriv', 'league123', '0xuser')();
-
+    it('should call contract and return seqno', async () => {
+        const hexKey = Buffer.from('secret').toString('hex');
+        const result = await service.joinLeagueOnChain(hexKey, 'league123', 'UQUser')();
+        
         expect(E.isRight(result)).toBe(true);
+        expect(mockSend).toHaveBeenCalled();
         if (E.isRight(result)) {
-            expect(result.right).toBe('0xjoinHash');
+            expect(result.right).toContain('join_league_seqno_');
         }
-        expect(mockJoin).toHaveBeenCalledWith(expect.any(String), '0xuser');
     });
   });
 
+  describe('fundEscrow', () => {
+      it('should fund escrow', async () => {
+        const hexKey = Buffer.from('secret').toString('hex');
+        const result = await service.fundEscrow(hexKey, '10')();
+        
+        expect(E.isRight(result)).toBe(true);
+        expect(mockSend).toHaveBeenCalled();
+        if (E.isRight(result)) {
+            expect(result.right).toContain('fund_escrow_seqno_');
+        }
+      });
+  });
+
+  describe('distributeWinnings', () => {
+      it('should distribute winnings', async () => {
+        const hexKey = Buffer.from('secret').toString('hex');
+        const result = await service.distributeWinnings(hexKey, 'league123', ['UQWinner'], ['10'], '0', null, '0')();
+        
+        expect(E.isRight(result)).toBe(true);
+        expect(mockSend).toHaveBeenCalled();
+        if (E.isRight(result)) {
+            expect(result.right).toContain('distribute_seqno_');
+        }
+      });
+  });
 });

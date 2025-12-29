@@ -76,7 +76,7 @@ export async function updateUserInDatabaseById({
 	/**
 	 * The values of the User you want to change.
 	 */
-	user: Partial<Omit<Parameters<typeof prisma.user.update>, "id">>;
+	user: Parameters<typeof prisma.user.update>[0]['data'];
 }) {
 	return await prisma.user.update({
 		where: { id: userId },

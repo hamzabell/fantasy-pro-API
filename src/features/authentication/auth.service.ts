@@ -29,9 +29,10 @@ const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/a
 const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, REDIRECT_URI);
 
 const blockchainService = createBlockchainService(
-    process.env.POLYGON_RPC_URL || 'https://rpc-mumbai.maticvigil.com',
-    process.env.USDC_ADDRESS || '0x0',
-    process.env.LEAGUE_ESCROW_ADDRESS || '0x0'
+    process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC',
+    process.env.TON_API_KEY || '',
+    process.env.LEAGUE_ESCROW_ADDRESS || '0x0',
+    process.env.SERVER_MNEMONIC || ''
 );
 const walletRepository = createWalletRepository(prisma);
 const walletService = createWalletService(walletRepository, blockchainService);
@@ -71,6 +72,7 @@ export const loginWithGoogleCode = (code: string, referralCode?: string): TE.Tas
     TE.tryCatch(
       async () => {
         const { tokens } = await client.getToken(code);
+        console.log('[Auth] Google Tokens received. ID Token present:', !!tokens.id_token);
         client.setCredentials(tokens);
         
         // Verify ID Token
@@ -84,7 +86,10 @@ export const loginWithGoogleCode = (code: string, referralCode?: string): TE.Tas
         }
         return payload;
       },
-      (e) => authenticationError('Google Auth Failed', e as "InvalidToken")
+      (e) => {
+        console.error('[Auth] Google Auth Detail Failure:', e);
+        return authenticationError('Google Auth Failed', 'InvalidToken');
+      }
     ),
     // 2. Find or Create User
     TE.chain((payload) => 

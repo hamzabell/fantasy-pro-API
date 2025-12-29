@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
     getBalance: vi.fn(),
     fundEscrow: vi.fn(),
     joinLeagueOnChain: vi.fn(),
-    transferMATIC: vi.fn(),
+    transferTON: vi.fn(),
     getGasCost: vi.fn(),
     distributeWinnings: vi.fn(),
 }));
@@ -24,9 +24,7 @@ vi.mock('../../infrastructure/blockchain/blockchain.service.js', () => ({
         getBalance: mocks.getBalance,
         fundEscrow: mocks.fundEscrow,
         joinLeagueOnChain: mocks.joinLeagueOnChain,
-        transferUSDC: vi.fn(),
-        approveEscrow: vi.fn(),
-        transferMATIC: mocks.transferMATIC,
+        transferTON: mocks.transferTON,
         getGasCost: mocks.getGasCost,
         distributeWinnings: mocks.distributeWinnings,
     })
@@ -120,7 +118,7 @@ describe("Fantasy Leagues", () => {
                 right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id } 
             }));
             mocks.getBalance.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '1000.0'})); // Sufficient balance
-            mocks.transferMATIC.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '0xTXHASH'}));
+            mocks.transferTON.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '0xTXHASH'}));
 
 			const response = await app.request('/api/fantasy-leagues', {
 				method: 'POST',
@@ -599,16 +597,22 @@ describe("Fantasy Leagues", () => {
 			const privateLeague = createPopulatedFantasyLeague({
 				ownerId: savedUser.id,
 				leagueType: 'private',
-				stake: '50'
+				stake: '0',
+				winners: 1
 			});
+            
+            const completedLeague = createPopulatedFantasyLeague({
+                ownerId: savedUser.id,
+                leagueType: 'public',
+                status: 'completed',
+                stake: '50',
+                winners: 1
+            });
 
 			const savedLeague1 = await saveFantasyLeagueToDatabase(league1);
 			const savedLeague2 = await saveFantasyLeagueToDatabase(league2);
 			const savedPrivateLeague = await saveFantasyLeagueToDatabase(privateLeague);
-
-			// mock supabase Auth
-			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedUser));;
-			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+            const savedCompletedLeague = await saveFantasyLeagueToDatabase(completedLeague);
 
 			const response = await app.request('/api/fantasy-leagues', {
 				method: 'GET',
@@ -621,17 +625,19 @@ describe("Fantasy Leagues", () => {
 			
 			// Filter to only the leagues we created in this test
 			const testLeagues = actual.leagues.filter((league: any) => 
-				[savedLeague1.id, savedLeague2.id, savedPrivateLeague.id].includes(league.id)
+				[savedLeague1.id, savedLeague2.id, savedPrivateLeague.id, savedCompletedLeague.id].includes(league.id)
 			);
 			
 			// Check that we have the right number of leagues
-			expect(testLeagues).toHaveLength(3); // Public leagues + private league user owns
+			// Should contain public open leagues (2) + private owned league (1) = 3
+            // Should NOT contain completed league.
+			expect(testLeagues).toHaveLength(3); 
 			
-			// Check that private leagues are not included
 			const leagueIds = testLeagues.map((league: any) => league.id);
 			expect(leagueIds).toContain(savedLeague1.id);
 			expect(leagueIds).toContain(savedLeague2.id);
 			expect(leagueIds).toContain(savedPrivateLeague.id);
+            expect(leagueIds).not.toContain(savedCompletedLeague.id);
 
 			// Check league details for the leagues we created
 			const firstLeague = testLeagues.find((league: any) => league.id === savedLeague1.id);
@@ -658,7 +664,48 @@ describe("Fantasy Leagues", () => {
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
 			await deleteFantasyLeagueFromDatabaseById(savedLeague2.id);
 			await deleteFantasyLeagueFromDatabaseById(savedPrivateLeague.id);
+            await deleteFantasyLeagueFromDatabaseById(savedCompletedLeague.id);
 			await deleteUserFromDatabaseById(savedUser.id);
+		});
+
+		test('given an authenticated user (not owner, not member) tries to get leagues: it should return public leagues created by others', async () => {
+			// Setup System User & League
+			const systemUser = createPopulatedUser();
+			const savedSystemUser = await saveUserToDatabase(systemUser);
+			
+			const systemLeague = createPopulatedFantasyLeague({
+				ownerId: savedSystemUser.id,
+				leagueType: 'public',
+				stake: '10'
+			});
+			const savedSystemLeague = await saveFantasyLeagueToDatabase(systemLeague);
+
+			// Setup Regular User
+			const regularUser = createPopulatedUser();
+			const savedRegularUser = await saveUserToDatabase(regularUser);
+			
+			// mock supabase Auth for Regular User
+			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(savedRegularUser));
+			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
+
+			// Request
+			const response = await app.request('/api/fantasy-leagues', {
+				method: 'GET',
+				...createAuthHeaders(savedRegularUser.id)
+			});
+
+			expect(response.status).toBe(200);
+			const body = await response.json();
+			
+			// Verify System League is present
+			const found = body.leagues.find((l: any) => l.id === savedSystemLeague.id);
+			expect(found).toBeDefined();
+			expect(found.owner.id).toBe(savedSystemUser.id);
+			
+			// Cleanup
+			await deleteFantasyLeagueFromDatabaseById(savedSystemLeague.id);
+			await deleteUserFromDatabaseById(savedSystemUser.id);
+			await deleteUserFromDatabaseById(savedRegularUser.id);
 		});
 
 		test('given an authenticated user tries to filter leagues by stake value: it should return only leagues with that stake value', async () => {
@@ -835,9 +882,11 @@ describe("Fantasy Leagues", () => {
 				[savedLeague1.id, savedLeague2.id].includes(league.id)
 			);
 
-			// Verify the response contains only the league the user is a member of
-			expect(testLeagues).toHaveLength(1);
-			expect(testLeagues[0].id).toBe(savedLeague1.id);
+			// Verify the response contains both leagues (joined or owned)
+			expect(testLeagues).toHaveLength(2);
+			const ids = testLeagues.map((l: any) => l.id);
+			expect(ids).toContain(savedLeague1.id);
+			expect(ids).toContain(savedLeague2.id);
 
 			// clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
@@ -857,8 +906,10 @@ describe("Fantasy Leagues", () => {
 				name: 'League A'
 			});
 			
+			const otherUser = await saveUserToDatabase(createPopulatedUser());
+			
 			const league2 = createPopulatedFantasyLeague({
-				ownerId: savedUser.id,
+				ownerId: otherUser.id,
 				leagueType: 'public',
 				name: 'League B'
 			});

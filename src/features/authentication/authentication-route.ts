@@ -122,6 +122,7 @@ const googleCallbackRoute = createRoute({
 
 app.openapi(googleCallbackRoute, async (c) => {
     const { code, state } = c.req.valid('query');
+    console.log('[Auth] Google Callback received. Code:', code ? 'present' : 'missing', 'State:', state);
     let referralCode: string | undefined;
 
     if (state) {
@@ -171,9 +172,10 @@ app.openapi(getUserRoute, async (c) => {
 
   // Initialize Wallet Service (TODO: Dependency Injection)
   const blockchainService = createBlockchainService(
-      process.env.POLYGON_RPC_URL || 'https://rpc-mumbai.maticvigil.com',
-      process.env.USDC_ADDRESS || '0x0',
-      process.env.LEAGUE_ESCROW_ADDRESS || '0x0'
+      process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC',
+      process.env.TON_API_KEY || '',
+      process.env.LEAGUE_ESCROW_ADDRESS || '0x0',
+      process.env.SERVER_MNEMONIC || ''
   );
   const walletRepository = createWalletRepository(prisma);
   const walletService = createWalletService(walletRepository, blockchainService);

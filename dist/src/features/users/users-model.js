@@ -29,6 +29,22 @@ import { databaseError, notFoundError } from '../../fp/domain/errors/AppError.js
  */
 export const retrieveUserFromDatabaseByEmail = (email) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () { return prisma.user.findUnique({ where: { email } }); }), (e) => databaseError('Read', 'User', e));
 export const retrieveUserFromDatabaseById = (id) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () { return prisma.user.findUnique({ where: { id } }); }), (e) => databaseError('Read', 'User', e));
+/**
+ * Retrieves user statistics: matches (leagues joined), total points, and trophies (wins).
+ */
+export const retrieveUserStats = (userId) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
+    const memberships = yield prisma.fantasyLeagueMembership.findMany({
+        where: { userId },
+        select: {
+            score: true,
+            position: true
+        }
+    });
+    const matches = memberships.length;
+    const points = memberships.reduce((acc, m) => acc + (Number(m.score) || 0), 0);
+    const trophies = memberships.filter(m => m.position === 1).length;
+    return { matches, points, trophies };
+}), (e) => databaseError('Read', 'UserStats', e));
 // UPDATE
 /**
  * Updates a User in the database.
@@ -82,5 +98,20 @@ export function deleteAllUsersFromDatabase() {
             yield prisma.wallet.deleteMany();
         }
         return yield prisma.user.deleteMany();
+    });
+}
+/**
+ * Increments the user's coins.
+ */
+export function incrementUserCoins(userId, amount) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.user.update({
+            where: { id: userId },
+            data: {
+                coins: {
+                    increment: amount
+                }
+            }
+        });
     });
 }

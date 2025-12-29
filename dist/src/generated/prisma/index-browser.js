@@ -128,6 +128,7 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   country: 'country',
   currency: 'currency',
+  coins: 'coins',
   balanceUsd: 'balanceUsd',
   totalDeposited: 'totalDeposited',
   totalWithdrawn: 'totalWithdrawn',
@@ -178,6 +179,9 @@ exports.Prisma.FantasyLeagueScalarFieldEnum = {
   currentParticipants: 'currentParticipants',
   blockchainTxHash: 'blockchainTxHash',
   prizeDistribution: 'prizeDistribution',
+  paymentMethod: 'paymentMethod',
+  commissionRate: 'commissionRate',
+  creatorCommission: 'creatorCommission',
   gameweekId: 'gameweekId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

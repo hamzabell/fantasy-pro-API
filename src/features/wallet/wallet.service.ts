@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
@@ -15,6 +14,7 @@ export interface WalletService {
   getUserWallet: (userId: string) => TE.TaskEither<AppError, Wallet>;
   transferFunds: (userId: string, toAddress: string, amount: string) => TE.TaskEither<AppError, string>;
   getUserTransactions: (userId: string) => TE.TaskEither<AppError, Transaction[]>;
+  creditUser: (userId: string, amount: string) => TE.TaskEither<AppError, string>;
 }
 
 export const createWalletService = (repo: WalletRepository, blockchainService: BlockchainService): WalletService => ({
@@ -22,8 +22,21 @@ export const createWalletService = (repo: WalletRepository, blockchainService: B
     pipe(
       TE.tryCatch(
           async () => {
-             const wallet = ethers.Wallet.createRandom();
-             return { address: wallet.address, privateKey: wallet.privateKey };
+             // Generate new TON wallet
+             // We use @ton/crypto for mnemonic
+             const { mnemonicNew, mnemonicToWalletKey } = await import('@ton/crypto');
+             const { WalletContractV4 } = await import('@ton/ton');
+             
+             const mnemonics = await mnemonicNew();
+             const keyPair = await mnemonicToWalletKey(mnemonics);
+             
+             const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+             
+             // We store the Secret Key (Hex) as the "privateKey". 
+             // Ideally we store Mnemonic but for compatibility with existing "privateKey" field we use secret key.
+             const secretKeyHex = keyPair.secretKey.toString('hex');
+             
+             return { address: wallet.address.toString(), privateKey: secretKeyHex };
           },
           (e) => internalError('Failed to generate wallet', e)
       ),
@@ -62,7 +75,7 @@ export const createWalletService = (repo: WalletRepository, blockchainService: B
                     
                     // Proceed with transfer
                     return pipe(
-                        blockchainService.transferMATIC(privateKey, toAddress, amount),
+                        blockchainService.transferTON(privateKey, toAddress, amount),
                         TE.chain((txHash) => 
                             // Update balance in DB - simplified sync
                             // ideally we wait for event or have a worker, but for now we subtract immediately
@@ -76,6 +89,20 @@ export const createWalletService = (repo: WalletRepository, blockchainService: B
             )
         })
     ),
+  getUserTransactions: (userId) => repo.getTransactions(userId),
 
-  getUserTransactions: (userId) => repo.getTransactions(userId)
+  creditUser: (userId, amount) =>
+    pipe(
+      repo.findByUserId(userId),
+      TE.chain((wallet) => {
+        const current = wallet.balance;
+        const toAdd = new Decimal(amount);
+        const newBalance = current.add(toAdd);
+        
+        return pipe(
+          repo.updateBalance(userId, newBalance),
+          TE.map(() => newBalance.toString())
+        );
+      })
+    )
 });

@@ -28,7 +28,7 @@ const FantasyLeagueSchema = z.object({
   leagueMode: z.string(),
   winners: z.number().positive("Winners must be a positive number"),
   code: z.string(),
-  ownerId: z.string(),
+  ownerId: z.string().nullable().optional(),
   gameweekId: z.number(),
   status: z.string(),
   realLifeLeague: z.nativeEnum(RealLifeLeague),
@@ -36,7 +36,36 @@ const FantasyLeagueSchema = z.object({
   currentParticipants: z.number().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  commissionRate: z.number().optional(),
+  creatorCommission: z.number().optional(),
+  potentialWinnings: z.number().optional(),
 });
+
+/**
+ * Maps a Prisma FantasyLeague object to the API response format,
+ * ensuring correct types and calculating potential winnings.
+ */
+const mapToLeagueResponse = (l: any) => {
+  const stakeVal = Number(l.entryFeeUsd);
+  const limit = l.limit || 0;
+  const platformCommission = Number(l.commissionRate || 0);
+  const creatorCommission = Number(l.creatorCommission || 0);
+  
+  const grossPotential = stakeVal * limit;
+  const potentialWinnings = grossPotential * (1 - (platformCommission + creatorCommission) / 100);
+
+  return {
+      ...l,
+      entryFeeUsd: stakeVal,
+      totalPoolUsd: Number(l.totalPoolUsd),
+      commissionRate: platformCommission,
+      creatorCommission: creatorCommission,
+      potentialWinnings: potentialWinnings,
+      createdAt: l.createdAt instanceof Date ? l.createdAt.toISOString() : l.createdAt,
+      updatedAt: l.updatedAt instanceof Date ? l.updatedAt.toISOString() : l.updatedAt,
+  };
+};
 
 // Create Fantasy League route
 const createFantasyLeagueRoute = createRoute({
@@ -58,7 +87,9 @@ const createFantasyLeagueRoute = createRoute({
             code: z.string().optional(),
             gameweekId: z.coerce.number().optional(),
             teamName: z.string().min(1, "Team name cannot be empty"),
-            realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE')
+            realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE'),
+            paymentMethod: z.enum(['UPFRONT', 'COMMISSION']).optional().default('UPFRONT'),
+            creatorCommission: z.coerce.number().min(0).max(50).default(0)
           }),
         },
       },
@@ -131,6 +162,17 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
       if (body.leagueMode === 'head-to-head' && body.limit > 2) {
         return { _tag: 'Left', left: businessRuleError('LeagueLimit', 'Head-to-head leagues can have a maximum of 2 teams') };
       }
+      
+      if (body.leagueType === 'public' && body.creatorCommission > 0) {
+          return { _tag: 'Left', left: businessRuleError('InvalidCommission', 'Public leagues cannot have a creator commission') };
+      }
+
+      // Validate Commission Cap
+      const platformCommission = body.limit < 5 ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0);
+      const totalCommission = platformCommission + body.creatorCommission;
+      if (totalCommission >= 100) {
+          return { _tag: 'Left', left: businessRuleError('InvalidCommission', `Total commission (${totalCommission}%) cannot exceed or equal 100%`) };
+      }
       return { _tag: 'Right', right: null };
     }),
     // 2. Check if user has a team
@@ -169,7 +211,8 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
     TE.bindTo('gameweekId'),
     TE.bind('cost', () => TE.of(calculateLeagueCreationCost(body.limit))),
     TE.chainW(({ gameweekId, cost }) => {
-       if (cost > 0) {
+       const shouldChargeUpfront = body.paymentMethod === 'UPFRONT' || body.limit < 5;
+       if (cost > 0 && shouldChargeUpfront) {
            return pipe(
                // Get User Wallet
                env.walletService.getUserWallet(user.id),
@@ -201,7 +244,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
                                return TE.left(businessRuleError('ConfigurationError', 'Platform wallet not configured') as AppError);
                            }
                            
-                           return env.blockchainService.transferMATIC(privateKey, platformWallet, cost.toString());
+                           return env.blockchainService.transferTON(privateKey, platformWallet, cost.toString());
                        }),
                        TE.map((txHash) => ({ txHash }))
                    )
@@ -261,7 +304,23 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
                           blockchainTxHash: txHash
                       }
                   },
-                  currentParticipants: 1
+                  currentParticipants: 1,
+                  paymentMethod: body.paymentMethod || 'UPFRONT',
+                  // Commission Rules: 
+                  // 1. Creator Commission given by user.
+                  // 2. Platform Commission:
+                  //    - If PaymentMethod = COMMISSION & limit >= 5: 20%
+                  //    - If PaymentMethod = UPFRONT: 0%
+                  //    - If limit < 5: 10% (Legacy Logic override? Or should we apply minimal? User said "We charge 10% if less than 5")
+                  //      User also said: "We don't normally charge now... we charge 10% if less than 5... but if more than 5 we expected user to pay upfront"
+                  //      So: limit < 5 -> Platform = 10 (regardless of payment method? Or only if COMMISSION?)
+                  //      Let's stick to requested logic: if limit < 5, platform takes 10%. 
+                  //      Wait, if limit < 5, does user pay upfront fee? Usually small leagues are free to create?
+                  //      If free to create, we take commission.
+                  //      Logic:
+                  //      Base Platform Rate = (body.limit < 5) ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0);
+                  commissionRate: body.limit < 5 ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0),
+                  creatorCommission: body.creatorCommission
               }
           }),
           'createLeague'
@@ -276,13 +335,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
   const league = result.right;
   return c.json({
     message: 'Fantasy league created successfully',
-    league: {
-      ...league,
-      entryFeeUsd: Number(league.entryFeeUsd), // Decimal to number
-      totalPoolUsd: Number(league.totalPoolUsd),
-      createdAt: league.createdAt.toISOString(),
-      updatedAt: league.updatedAt.toISOString(),
-    },
+    league: mapToLeagueResponse(league)
   }, 201);
 });
 
@@ -294,7 +347,7 @@ const getAllFantasyLeaguesRoute = createRoute({
   request: {
     query: z.object({
       stake: z.string().optional(),
-      isMember: z.string().optional().transform(val => val === 'true'),
+      isMember: z.enum(['true', 'false']).optional().transform(val => val === undefined ? undefined : val === 'true'),
       sortBy: z.enum(['createdAt', 'teamsCount']).optional(),
       sortOrder: z.enum(['asc', 'desc']).optional(),
       search: z.string().optional(),
@@ -352,6 +405,9 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
       TE.map((leagues) => {
           let filtered = leagues;
 
+          // Filter out completed leagues by default
+          filtered = filtered.filter(l => l.status !== 'completed');
+
           // Filter by leagueType
           if (leagueType) {
               filtered = filtered.filter(l => l.leagueType === leagueType);
@@ -375,7 +431,10 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
           if (isMember !== undefined) {
               filtered = filtered.filter(l => {
                   const amMember = l.members.some(m => m.userId === user.id);
-                  return isMember ? amMember : !amMember;
+                  const isOwner = l.ownerId === user.id;
+                  // If seeking 'My Leagues' (isMember=true), return if member OR owner
+                  // If seeking 'Other Leagues' (isMember=false), return if NOT member AND NOT owner
+                  return isMember ? (amMember || isOwner) : (!amMember && !isOwner);
               });
           }
 
@@ -395,27 +454,14 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
 
           // Map to response format
           const mapped = filtered.map(l => {
-              const teamsCount = l._count.members;
-              const stakeVal = Number(l.entryFeeUsd);
-              // Potential winnings: Total Pool (or projected)
-              // If totalPoolUsd is tracked, use it. Else projected: stake * count
-              const potentialWinnings = Number(l.totalPoolUsd) > 0 
-                  ? Number(l.totalPoolUsd) 
-                  : (l.winners > 0 ? (stakeVal * teamsCount) : 0);
-
               const prizeDist = Array.isArray(l.prizeDistribution) 
                 ? l.prizeDistribution as any[] 
                 : calculatePrizeDistribution(l.winners);
 
               return {
-                  ...l,
-                  entryFeeUsd: Number(l.entryFeeUsd),
-                  totalPoolUsd: Number(l.totalPoolUsd),
-                  createdAt: l.createdAt.toISOString(),
-                  updatedAt: l.updatedAt.toISOString(),
-                  owner: { id: l.owner.id, email: l.owner.email },
-                  teamsCount,
-                  potentialWinnings,
+                  ...mapToLeagueResponse(l),
+                  owner: l.owner ? { id: l.owner.id, email: l.owner.email } : { id: 'SYSTEM', email: 'FantasyPro App' },
+                  teamsCount: l._count.members,
                   prizeDistribution: prizeDist
               };
           });
@@ -476,6 +522,34 @@ const getFantasyLeagueByIdRoute = createRoute({
   tags: ['Fantasy Leagues'],
 });
 
+// Get Fantasy League by Code route
+const getFantasyLeagueByCodeRoute = createRoute({
+  method: 'get',
+  path: '/code/{code}',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({
+      code: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            league: FantasyLeagueSchema,
+          }),
+        },
+      },
+      description: 'Fantasy league retrieved by code',
+    },
+    404: { description: 'League not found' },
+    500: { description: 'Internal Error' }
+  },
+  tags: ['Fantasy Leagues'],
+});
+
 fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
   const env = c.get('env');
   const user = c.get('user') as any;
@@ -506,20 +580,48 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
   )();
 
   if (result._tag === 'Left') {
-      const status = result.left._tag.includes('Auth') ? 403 : (result.left.message.includes('not found') ? 404 : 500);
-      return c.json(toErrorResponse(result.left), status) as any;
+      const error = result.left;
+      const isNotFound = error._tag === 'NotFoundError' || (error._tag === 'BusinessRuleError' && error.rule === 'LeagueNotFound');
+      const isAuthError = error._tag === 'AuthenticationError' || error._tag === 'AuthorizationError';
+      const status = isAuthError ? 403 : (isNotFound ? 404 : 500);
+      return c.json(toErrorResponse(error), status) as any;
   }
   
   const league = result.right;
   return c.json({
       message: 'League Retrieved Successfully',
-      league: {
-          ...league,
-          entryFeeUsd: Number(league.entryFeeUsd),
-          totalPoolUsd: Number(league.totalPoolUsd),
-          createdAt: league.createdAt.toISOString(),
-          updatedAt: league.updatedAt.toISOString(),
-      }
+      league: mapToLeagueResponse(league)
+  }, 200);
+});
+
+fantasyLeaguesApp.openapi(getFantasyLeagueByCodeRoute, async (c) => {
+  const env = c.get('env');
+  const { code } = c.req.valid('param');
+
+  const result = await pipe(
+      safePrisma(
+          () => env.prisma.fantasyLeague.findUnique({
+              where: { code },
+              include: { _count: { select: { members: true } } }
+          }),
+          'getLeagueByCode'
+      ),
+      TE.chain((league) => {
+          if (!league) return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
+          return TE.right(league);
+      })
+  )();
+
+  if (result._tag === 'Left') {
+      const error = result.left;
+      const status = error._tag === 'BusinessRuleError' && error.rule === 'LeagueNotFound' ? 404 : 500;
+      return c.json(toErrorResponse(error), status) as any;
+  }
+  
+  const league = result.right;
+  return c.json({
+      message: 'League Retrieved Successfully',
+      league: mapToLeagueResponse(league)
   }, 200);
 });
 
@@ -580,7 +682,7 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
     ),
     TE.chain((league) => {
         if (!league) return TE.left(businessRuleError('LeagueNotFound', 'League not found') as AppError);
-        if (league.status !== 'pending') return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
+        if (league.status !== 'pending' && league.status !== 'open') return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
         if (league._count.members >= league.limit) return TE.left(businessRuleError('LeagueFull', 'League is full') as AppError);
         return TE.right(league);
     }),
@@ -641,11 +743,11 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
                         })
                     )
                 ),
-                TE.chain(({ privateKey }) => 
+                TE.chain(({ wallet, privateKey }) => 
                     // Fund Escrow
                     pipe(
                         env.blockchainService.fundEscrow(privateKey, fee.toString()),
-                        TE.chain(() => env.blockchainService.joinLeagueOnChain(privateKey, league.id, user.id))
+                        TE.chain(() => env.blockchainService.joinLeagueOnChain(privateKey, league.id, wallet.address))
                     )
                 ),
                 TE.map((txHash) => ({ league, txHash }))

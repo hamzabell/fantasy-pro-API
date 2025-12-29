@@ -1550,12 +1550,14 @@ export namespace Prisma {
   }
 
   export type UserAvgAggregateOutputType = {
+    coins: number | null
     balanceUsd: Decimal | null
     totalDeposited: Decimal | null
     totalWithdrawn: Decimal | null
   }
 
   export type UserSumAggregateOutputType = {
+    coins: number | null
     balanceUsd: Decimal | null
     totalDeposited: Decimal | null
     totalWithdrawn: Decimal | null
@@ -1569,6 +1571,7 @@ export namespace Prisma {
     password: string | null
     country: string | null
     currency: string | null
+    coins: number | null
     balanceUsd: Decimal | null
     totalDeposited: Decimal | null
     totalWithdrawn: Decimal | null
@@ -1587,6 +1590,7 @@ export namespace Prisma {
     password: string | null
     country: string | null
     currency: string | null
+    coins: number | null
     balanceUsd: Decimal | null
     totalDeposited: Decimal | null
     totalWithdrawn: Decimal | null
@@ -1605,6 +1609,7 @@ export namespace Prisma {
     password: number
     country: number
     currency: number
+    coins: number
     balanceUsd: number
     totalDeposited: number
     totalWithdrawn: number
@@ -1618,12 +1623,14 @@ export namespace Prisma {
 
 
   export type UserAvgAggregateInputType = {
+    coins?: true
     balanceUsd?: true
     totalDeposited?: true
     totalWithdrawn?: true
   }
 
   export type UserSumAggregateInputType = {
+    coins?: true
     balanceUsd?: true
     totalDeposited?: true
     totalWithdrawn?: true
@@ -1637,6 +1644,7 @@ export namespace Prisma {
     password?: true
     country?: true
     currency?: true
+    coins?: true
     balanceUsd?: true
     totalDeposited?: true
     totalWithdrawn?: true
@@ -1655,6 +1663,7 @@ export namespace Prisma {
     password?: true
     country?: true
     currency?: true
+    coins?: true
     balanceUsd?: true
     totalDeposited?: true
     totalWithdrawn?: true
@@ -1673,6 +1682,7 @@ export namespace Prisma {
     password?: true
     country?: true
     currency?: true
+    coins?: true
     balanceUsd?: true
     totalDeposited?: true
     totalWithdrawn?: true
@@ -1778,6 +1788,7 @@ export namespace Prisma {
     password: string | null
     country: string | null
     currency: string | null
+    coins: number
     balanceUsd: Decimal
     totalDeposited: Decimal
     totalWithdrawn: Decimal
@@ -1815,6 +1826,7 @@ export namespace Prisma {
     password?: boolean
     country?: boolean
     currency?: boolean
+    coins?: boolean
     balanceUsd?: boolean
     totalDeposited?: boolean
     totalWithdrawn?: boolean
@@ -1838,6 +1850,7 @@ export namespace Prisma {
     password?: boolean
     country?: boolean
     currency?: boolean
+    coins?: boolean
     balanceUsd?: boolean
     totalDeposited?: boolean
     totalWithdrawn?: boolean
@@ -1856,6 +1869,7 @@ export namespace Prisma {
     password?: boolean
     country?: boolean
     currency?: boolean
+    coins?: boolean
     balanceUsd?: boolean
     totalDeposited?: boolean
     totalWithdrawn?: boolean
@@ -1874,6 +1888,7 @@ export namespace Prisma {
     password?: boolean
     country?: boolean
     currency?: boolean
+    coins?: boolean
     balanceUsd?: boolean
     totalDeposited?: boolean
     totalWithdrawn?: boolean
@@ -1884,7 +1899,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "image" | "password" | "country" | "currency" | "balanceUsd" | "totalDeposited" | "totalWithdrawn" | "walletAddress" | "kycStatus" | "mobileMoneyNumber" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "image" | "password" | "country" | "currency" | "coins" | "balanceUsd" | "totalDeposited" | "totalWithdrawn" | "walletAddress" | "kycStatus" | "mobileMoneyNumber" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     teams?: boolean | User$teamsArgs<ExtArgs>
     leagues?: boolean | User$leaguesArgs<ExtArgs>
@@ -1911,6 +1926,7 @@ export namespace Prisma {
       password: string | null
       country: string | null
       currency: string | null
+      coins: number
       balanceUsd: Prisma.Decimal
       totalDeposited: Prisma.Decimal
       totalWithdrawn: Prisma.Decimal
@@ -2353,6 +2369,7 @@ export namespace Prisma {
     readonly password: FieldRef<"User", 'String'>
     readonly country: FieldRef<"User", 'String'>
     readonly currency: FieldRef<"User", 'String'>
+    readonly coins: FieldRef<"User", 'Int'>
     readonly balanceUsd: FieldRef<"User", 'Decimal'>
     readonly totalDeposited: FieldRef<"User", 'Decimal'>
     readonly totalWithdrawn: FieldRef<"User", 'Decimal'>
@@ -5129,6 +5146,8 @@ export namespace Prisma {
     entryFeeUsd: Decimal | null
     totalPoolUsd: Decimal | null
     currentParticipants: number | null
+    commissionRate: Decimal | null
+    creatorCommission: Decimal | null
     gameweekId: number | null
   }
 
@@ -5138,6 +5157,8 @@ export namespace Prisma {
     entryFeeUsd: Decimal | null
     totalPoolUsd: Decimal | null
     currentParticipants: number | null
+    commissionRate: Decimal | null
+    creatorCommission: Decimal | null
     gameweekId: number | null
   }
 
@@ -5158,6 +5179,9 @@ export namespace Prisma {
     totalPoolUsd: Decimal | null
     currentParticipants: number | null
     blockchainTxHash: string | null
+    paymentMethod: string | null
+    commissionRate: Decimal | null
+    creatorCommission: Decimal | null
     gameweekId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5180,6 +5204,9 @@ export namespace Prisma {
     totalPoolUsd: Decimal | null
     currentParticipants: number | null
     blockchainTxHash: string | null
+    paymentMethod: string | null
+    commissionRate: Decimal | null
+    creatorCommission: Decimal | null
     gameweekId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5204,6 +5231,9 @@ export namespace Prisma {
     currentParticipants: number
     blockchainTxHash: number
     prizeDistribution: number
+    paymentMethod: number
+    commissionRate: number
+    creatorCommission: number
     gameweekId: number
     createdAt: number
     updatedAt: number
@@ -5217,6 +5247,8 @@ export namespace Prisma {
     entryFeeUsd?: true
     totalPoolUsd?: true
     currentParticipants?: true
+    commissionRate?: true
+    creatorCommission?: true
     gameweekId?: true
   }
 
@@ -5226,6 +5258,8 @@ export namespace Prisma {
     entryFeeUsd?: true
     totalPoolUsd?: true
     currentParticipants?: true
+    commissionRate?: true
+    creatorCommission?: true
     gameweekId?: true
   }
 
@@ -5246,6 +5280,9 @@ export namespace Prisma {
     totalPoolUsd?: true
     currentParticipants?: true
     blockchainTxHash?: true
+    paymentMethod?: true
+    commissionRate?: true
+    creatorCommission?: true
     gameweekId?: true
     createdAt?: true
     updatedAt?: true
@@ -5268,6 +5305,9 @@ export namespace Prisma {
     totalPoolUsd?: true
     currentParticipants?: true
     blockchainTxHash?: true
+    paymentMethod?: true
+    commissionRate?: true
+    creatorCommission?: true
     gameweekId?: true
     createdAt?: true
     updatedAt?: true
@@ -5292,6 +5332,9 @@ export namespace Prisma {
     currentParticipants?: true
     blockchainTxHash?: true
     prizeDistribution?: true
+    paymentMethod?: true
+    commissionRate?: true
+    creatorCommission?: true
     gameweekId?: true
     createdAt?: true
     updatedAt?: true
@@ -5394,7 +5437,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId: string | null
     realLifeLeague: $Enums.RealLifeLeague
     status: string
     winnersArray: string[]
@@ -5403,6 +5446,9 @@ export namespace Prisma {
     currentParticipants: number
     blockchainTxHash: string | null
     prizeDistribution: JsonValue | null
+    paymentMethod: string
+    commissionRate: Decimal
+    creatorCommission: Decimal
     gameweekId: number
     createdAt: Date
     updatedAt: Date
@@ -5446,10 +5492,13 @@ export namespace Prisma {
     currentParticipants?: boolean
     blockchainTxHash?: boolean
     prizeDistribution?: boolean
+    paymentMethod?: boolean
+    commissionRate?: boolean
+    creatorCommission?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    owner?: boolean | UserDefaultArgs<ExtArgs>
+    owner?: boolean | FantasyLeague$ownerArgs<ExtArgs>
     members?: boolean | FantasyLeague$membersArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
     transactions?: boolean | FantasyLeague$transactionsArgs<ExtArgs>
@@ -5475,10 +5524,13 @@ export namespace Prisma {
     currentParticipants?: boolean
     blockchainTxHash?: boolean
     prizeDistribution?: boolean
+    paymentMethod?: boolean
+    commissionRate?: boolean
+    creatorCommission?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    owner?: boolean | UserDefaultArgs<ExtArgs>
+    owner?: boolean | FantasyLeague$ownerArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fantasyLeague"]>
 
@@ -5501,10 +5553,13 @@ export namespace Prisma {
     currentParticipants?: boolean
     blockchainTxHash?: boolean
     prizeDistribution?: boolean
+    paymentMethod?: boolean
+    commissionRate?: boolean
+    creatorCommission?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    owner?: boolean | UserDefaultArgs<ExtArgs>
+    owner?: boolean | FantasyLeague$ownerArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fantasyLeague"]>
 
@@ -5527,32 +5582,35 @@ export namespace Prisma {
     currentParticipants?: boolean
     blockchainTxHash?: boolean
     prizeDistribution?: boolean
+    paymentMethod?: boolean
+    commissionRate?: boolean
+    creatorCommission?: boolean
     gameweekId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FantasyLeagueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "stake" | "limit" | "leagueType" | "leagueMode" | "winners" | "code" | "ownerId" | "realLifeLeague" | "status" | "winnersArray" | "entryFeeUsd" | "totalPoolUsd" | "currentParticipants" | "blockchainTxHash" | "prizeDistribution" | "gameweekId" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeague"]>
+  export type FantasyLeagueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "stake" | "limit" | "leagueType" | "leagueMode" | "winners" | "code" | "ownerId" | "realLifeLeague" | "status" | "winnersArray" | "entryFeeUsd" | "totalPoolUsd" | "currentParticipants" | "blockchainTxHash" | "prizeDistribution" | "paymentMethod" | "commissionRate" | "creatorCommission" | "gameweekId" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeague"]>
   export type FantasyLeagueInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    owner?: boolean | UserDefaultArgs<ExtArgs>
+    owner?: boolean | FantasyLeague$ownerArgs<ExtArgs>
     members?: boolean | FantasyLeague$membersArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
     transactions?: boolean | FantasyLeague$transactionsArgs<ExtArgs>
     _count?: boolean | FantasyLeagueCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FantasyLeagueIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    owner?: boolean | UserDefaultArgs<ExtArgs>
+    owner?: boolean | FantasyLeague$ownerArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
   }
   export type FantasyLeagueIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    owner?: boolean | UserDefaultArgs<ExtArgs>
+    owner?: boolean | FantasyLeague$ownerArgs<ExtArgs>
     gameweek?: boolean | GameweekDefaultArgs<ExtArgs>
   }
 
   export type $FantasyLeaguePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FantasyLeague"
     objects: {
-      owner: Prisma.$UserPayload<ExtArgs>
+      owner: Prisma.$UserPayload<ExtArgs> | null
       members: Prisma.$FantasyLeagueMembershipPayload<ExtArgs>[]
       gameweek: Prisma.$GameweekPayload<ExtArgs>
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
@@ -5567,7 +5625,7 @@ export namespace Prisma {
       leagueMode: string
       winners: number
       code: string
-      ownerId: string
+      ownerId: string | null
       realLifeLeague: $Enums.RealLifeLeague
       status: string
       winnersArray: string[]
@@ -5576,6 +5634,9 @@ export namespace Prisma {
       currentParticipants: number
       blockchainTxHash: string | null
       prizeDistribution: Prisma.JsonValue | null
+      paymentMethod: string
+      commissionRate: Prisma.Decimal
+      creatorCommission: Prisma.Decimal
       gameweekId: number
       createdAt: Date
       updatedAt: Date
@@ -5973,7 +6034,7 @@ export namespace Prisma {
    */
   export interface Prisma__FantasyLeagueClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    owner<T extends FantasyLeague$ownerArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeague$ownerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     members<T extends FantasyLeague$membersArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeague$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FantasyLeagueMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     gameweek<T extends GameweekDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GameweekDefaultArgs<ExtArgs>>): Prisma__GameweekClient<$Result.GetResult<Prisma.$GameweekPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     transactions<T extends FantasyLeague$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, FantasyLeague$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -6024,6 +6085,9 @@ export namespace Prisma {
     readonly currentParticipants: FieldRef<"FantasyLeague", 'Int'>
     readonly blockchainTxHash: FieldRef<"FantasyLeague", 'String'>
     readonly prizeDistribution: FieldRef<"FantasyLeague", 'Json'>
+    readonly paymentMethod: FieldRef<"FantasyLeague", 'String'>
+    readonly commissionRate: FieldRef<"FantasyLeague", 'Decimal'>
+    readonly creatorCommission: FieldRef<"FantasyLeague", 'Decimal'>
     readonly gameweekId: FieldRef<"FantasyLeague", 'Int'>
     readonly createdAt: FieldRef<"FantasyLeague", 'DateTime'>
     readonly updatedAt: FieldRef<"FantasyLeague", 'DateTime'>
@@ -6420,6 +6484,25 @@ export namespace Prisma {
      * Limit how many FantasyLeagues to delete.
      */
     limit?: number
+  }
+
+  /**
+   * FantasyLeague.owner
+   */
+  export type FantasyLeague$ownerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -10033,6 +10116,7 @@ export namespace Prisma {
     password: 'password',
     country: 'country',
     currency: 'currency',
+    coins: 'coins',
     balanceUsd: 'balanceUsd',
     totalDeposited: 'totalDeposited',
     totalWithdrawn: 'totalWithdrawn',
@@ -10092,6 +10176,9 @@ export namespace Prisma {
     currentParticipants: 'currentParticipants',
     blockchainTxHash: 'blockchainTxHash',
     prizeDistribution: 'prizeDistribution',
+    paymentMethod: 'paymentMethod',
+    commissionRate: 'commissionRate',
+    creatorCommission: 'creatorCommission',
     gameweekId: 'gameweekId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -10209,6 +10296,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -10247,20 +10348,6 @@ export namespace Prisma {
    * Reference to a field of type 'RealLifeLeague[]'
    */
   export type ListEnumRealLifeLeagueFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RealLifeLeague[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int'
-   */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int[]'
-   */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -10313,6 +10400,7 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     country?: StringNullableFilter<"User"> | string | null
     currency?: StringNullableFilter<"User"> | string | null
+    coins?: IntFilter<"User"> | number
     balanceUsd?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
@@ -10335,6 +10423,7 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     country?: SortOrderInput | SortOrder
     currency?: SortOrderInput | SortOrder
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -10361,6 +10450,7 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     country?: StringNullableFilter<"User"> | string | null
     currency?: StringNullableFilter<"User"> | string | null
+    coins?: IntFilter<"User"> | number
     balanceUsd?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFilter<"User"> | Decimal | DecimalJsLike | number | string
@@ -10382,6 +10472,7 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     country?: SortOrderInput | SortOrder
     currency?: SortOrderInput | SortOrder
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -10408,6 +10499,7 @@ export namespace Prisma {
     password?: StringNullableWithAggregatesFilter<"User"> | string | null
     country?: StringNullableWithAggregatesFilter<"User"> | string | null
     currency?: StringNullableWithAggregatesFilter<"User"> | string | null
+    coins?: IntWithAggregatesFilter<"User"> | number
     balanceUsd?: DecimalWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string
@@ -10571,7 +10663,7 @@ export namespace Prisma {
     leagueMode?: StringFilter<"FantasyLeague"> | string
     winners?: IntFilter<"FantasyLeague"> | number
     code?: StringFilter<"FantasyLeague"> | string
-    ownerId?: StringFilter<"FantasyLeague"> | string
+    ownerId?: StringNullableFilter<"FantasyLeague"> | string | null
     realLifeLeague?: EnumRealLifeLeagueFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
@@ -10580,10 +10672,13 @@ export namespace Prisma {
     currentParticipants?: IntFilter<"FantasyLeague"> | number
     blockchainTxHash?: StringNullableFilter<"FantasyLeague"> | string | null
     prizeDistribution?: JsonNullableFilter<"FantasyLeague">
+    paymentMethod?: StringFilter<"FantasyLeague"> | string
+    commissionRate?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFilter<"FantasyLeague"> | number
     createdAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeague"> | Date | string
-    owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     members?: FantasyLeagueMembershipListRelationFilter
     gameweek?: XOR<GameweekScalarRelationFilter, GameweekWhereInput>
     transactions?: TransactionListRelationFilter
@@ -10599,7 +10694,7 @@ export namespace Prisma {
     leagueMode?: SortOrder
     winners?: SortOrder
     code?: SortOrder
-    ownerId?: SortOrder
+    ownerId?: SortOrderInput | SortOrder
     realLifeLeague?: SortOrder
     status?: SortOrder
     winnersArray?: SortOrder
@@ -10608,6 +10703,9 @@ export namespace Prisma {
     currentParticipants?: SortOrder
     blockchainTxHash?: SortOrderInput | SortOrder
     prizeDistribution?: SortOrderInput | SortOrder
+    paymentMethod?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10631,7 +10729,7 @@ export namespace Prisma {
     leagueType?: StringFilter<"FantasyLeague"> | string
     leagueMode?: StringFilter<"FantasyLeague"> | string
     winners?: IntFilter<"FantasyLeague"> | number
-    ownerId?: StringFilter<"FantasyLeague"> | string
+    ownerId?: StringNullableFilter<"FantasyLeague"> | string | null
     realLifeLeague?: EnumRealLifeLeagueFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
@@ -10639,10 +10737,13 @@ export namespace Prisma {
     totalPoolUsd?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
     currentParticipants?: IntFilter<"FantasyLeague"> | number
     prizeDistribution?: JsonNullableFilter<"FantasyLeague">
+    paymentMethod?: StringFilter<"FantasyLeague"> | string
+    commissionRate?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFilter<"FantasyLeague"> | number
     createdAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeague"> | Date | string
-    owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     members?: FantasyLeagueMembershipListRelationFilter
     gameweek?: XOR<GameweekScalarRelationFilter, GameweekWhereInput>
     transactions?: TransactionListRelationFilter
@@ -10658,7 +10759,7 @@ export namespace Prisma {
     leagueMode?: SortOrder
     winners?: SortOrder
     code?: SortOrder
-    ownerId?: SortOrder
+    ownerId?: SortOrderInput | SortOrder
     realLifeLeague?: SortOrder
     status?: SortOrder
     winnersArray?: SortOrder
@@ -10667,6 +10768,9 @@ export namespace Prisma {
     currentParticipants?: SortOrder
     blockchainTxHash?: SortOrderInput | SortOrder
     prizeDistribution?: SortOrderInput | SortOrder
+    paymentMethod?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10690,7 +10794,7 @@ export namespace Prisma {
     leagueMode?: StringWithAggregatesFilter<"FantasyLeague"> | string
     winners?: IntWithAggregatesFilter<"FantasyLeague"> | number
     code?: StringWithAggregatesFilter<"FantasyLeague"> | string
-    ownerId?: StringWithAggregatesFilter<"FantasyLeague"> | string
+    ownerId?: StringNullableWithAggregatesFilter<"FantasyLeague"> | string | null
     realLifeLeague?: EnumRealLifeLeagueWithAggregatesFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringWithAggregatesFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
@@ -10699,6 +10803,9 @@ export namespace Prisma {
     currentParticipants?: IntWithAggregatesFilter<"FantasyLeague"> | number
     blockchainTxHash?: StringNullableWithAggregatesFilter<"FantasyLeague"> | string | null
     prizeDistribution?: JsonNullableWithAggregatesFilter<"FantasyLeague">
+    paymentMethod?: StringWithAggregatesFilter<"FantasyLeague"> | string
+    commissionRate?: DecimalWithAggregatesFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalWithAggregatesFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
     gameweekId?: IntWithAggregatesFilter<"FantasyLeague"> | number
     createdAt?: DateTimeWithAggregatesFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FantasyLeague"> | Date | string
@@ -10962,6 +11069,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -10984,6 +11092,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -11006,6 +11115,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -11028,6 +11138,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -11050,6 +11161,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -11068,6 +11180,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -11086,6 +11199,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -11259,9 +11373,12 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    owner: UserCreateNestedOneWithoutOwnedLeaguesInput
+    owner?: UserCreateNestedOneWithoutOwnedLeaguesInput
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
     gameweek: GameweekCreateNestedOneWithoutLeaguesInput
     transactions?: TransactionCreateNestedManyWithoutLeagueInput
@@ -11277,7 +11394,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId?: string | null
     realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
@@ -11286,6 +11403,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11311,9 +11431,12 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
+    owner?: UserUpdateOneWithoutOwnedLeaguesNestedInput
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
     gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
     transactions?: TransactionUpdateManyWithoutLeagueNestedInput
@@ -11329,7 +11452,7 @@ export namespace Prisma {
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
@@ -11338,6 +11461,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11355,7 +11481,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId?: string | null
     realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
@@ -11364,6 +11490,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11387,6 +11516,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11401,7 +11533,7 @@ export namespace Prisma {
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
@@ -11410,6 +11542,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11719,6 +11854,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type DecimalFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
@@ -11789,6 +11935,7 @@ export namespace Prisma {
     password?: SortOrder
     country?: SortOrder
     currency?: SortOrder
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -11800,6 +11947,7 @@ export namespace Prisma {
   }
 
   export type UserAvgOrderByAggregateInput = {
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -11813,6 +11961,7 @@ export namespace Prisma {
     password?: SortOrder
     country?: SortOrder
     currency?: SortOrder
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -11831,6 +11980,7 @@ export namespace Prisma {
     password?: SortOrder
     country?: SortOrder
     currency?: SortOrder
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -11842,6 +11992,7 @@ export namespace Prisma {
   }
 
   export type UserSumOrderByAggregateInput = {
+    coins?: SortOrder
     balanceUsd?: SortOrder
     totalDeposited?: SortOrder
     totalWithdrawn?: SortOrder
@@ -11881,6 +12032,22 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
@@ -11988,17 +12155,6 @@ export namespace Prisma {
     not?: NestedEnumRealLifeLeagueFilter<$PrismaModel> | $Enums.RealLifeLeague
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type IntNullableListFilter<$PrismaModel = never> = {
     equals?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     has?: number | IntFieldRefInput<$PrismaModel> | null
@@ -12076,22 +12232,6 @@ export namespace Prisma {
     _max?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -12139,6 +12279,11 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type GameweekScalarRelationFilter = {
     is?: GameweekWhereInput
     isNot?: GameweekWhereInput
@@ -12173,6 +12318,9 @@ export namespace Prisma {
     currentParticipants?: SortOrder
     blockchainTxHash?: SortOrder
     prizeDistribution?: SortOrder
+    paymentMethod?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12184,6 +12332,8 @@ export namespace Prisma {
     entryFeeUsd?: SortOrder
     totalPoolUsd?: SortOrder
     currentParticipants?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
   }
 
@@ -12204,6 +12354,9 @@ export namespace Prisma {
     totalPoolUsd?: SortOrder
     currentParticipants?: SortOrder
     blockchainTxHash?: SortOrder
+    paymentMethod?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12226,6 +12379,9 @@ export namespace Prisma {
     totalPoolUsd?: SortOrder
     currentParticipants?: SortOrder
     blockchainTxHash?: SortOrder
+    paymentMethod?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12237,6 +12393,8 @@ export namespace Prisma {
     entryFeeUsd?: SortOrder
     totalPoolUsd?: SortOrder
     currentParticipants?: SortOrder
+    commissionRate?: SortOrder
+    creatorCommission?: SortOrder
     gameweekId?: SortOrder
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
@@ -12530,6 +12688,14 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type DecimalFieldUpdateOperationsInput = {
     set?: Decimal | DecimalJsLike | number | string
     increment?: Decimal | DecimalJsLike | number | string
@@ -12678,14 +12844,6 @@ export namespace Prisma {
     set?: $Enums.RealLifeLeague
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type TeamUpdateteamPlayersInput = {
     set?: number[]
     push?: number | number[]
@@ -12756,10 +12914,12 @@ export namespace Prisma {
     push?: string | string[]
   }
 
-  export type UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput = {
+  export type UserUpdateOneWithoutOwnedLeaguesNestedInput = {
     create?: XOR<UserCreateWithoutOwnedLeaguesInput, UserUncheckedCreateWithoutOwnedLeaguesInput>
     connectOrCreate?: UserCreateOrConnectWithoutOwnedLeaguesInput
     upsert?: UserUpsertWithoutOwnedLeaguesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOwnedLeaguesInput, UserUpdateWithoutOwnedLeaguesInput>, UserUncheckedUpdateWithoutOwnedLeaguesInput>
   }
@@ -12954,6 +13114,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedDecimalFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
@@ -12993,17 +13164,6 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -13030,6 +13190,33 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
@@ -13102,33 +13289,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
     _max?: NestedEnumRealLifeLeagueFilter<$PrismaModel>
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -13309,6 +13469,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
@@ -13334,6 +13497,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13468,7 +13634,7 @@ export namespace Prisma {
     leagueMode?: StringFilter<"FantasyLeague"> | string
     winners?: IntFilter<"FantasyLeague"> | number
     code?: StringFilter<"FantasyLeague"> | string
-    ownerId?: StringFilter<"FantasyLeague"> | string
+    ownerId?: StringNullableFilter<"FantasyLeague"> | string | null
     realLifeLeague?: EnumRealLifeLeagueFilter<"FantasyLeague"> | $Enums.RealLifeLeague
     status?: StringFilter<"FantasyLeague"> | string
     winnersArray?: StringNullableListFilter<"FantasyLeague">
@@ -13477,6 +13643,9 @@ export namespace Prisma {
     currentParticipants?: IntFilter<"FantasyLeague"> | number
     blockchainTxHash?: StringNullableFilter<"FantasyLeague"> | string | null
     prizeDistribution?: JsonNullableFilter<"FantasyLeague">
+    paymentMethod?: StringFilter<"FantasyLeague"> | string
+    commissionRate?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFilter<"FantasyLeague"> | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFilter<"FantasyLeague"> | number
     createdAt?: DateTimeFilter<"FantasyLeague"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeague"> | Date | string
@@ -13519,6 +13688,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -13540,6 +13710,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -13577,6 +13748,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -13598,6 +13770,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -13619,6 +13792,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -13640,6 +13814,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -13677,6 +13852,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -13698,6 +13874,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -13719,6 +13896,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -13740,6 +13918,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -13876,6 +14055,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -13897,6 +14077,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -13994,6 +14175,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -14015,6 +14197,7 @@ export namespace Prisma {
     password?: string | null
     country?: string | null
     currency?: string | null
+    coins?: number
     balanceUsd?: Decimal | DecimalJsLike | number | string
     totalDeposited?: Decimal | DecimalJsLike | number | string
     totalWithdrawn?: Decimal | DecimalJsLike | number | string
@@ -14051,9 +14234,12 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    owner: UserCreateNestedOneWithoutOwnedLeaguesInput
+    owner?: UserCreateNestedOneWithoutOwnedLeaguesInput
     gameweek: GameweekCreateNestedOneWithoutLeaguesInput
     transactions?: TransactionCreateNestedManyWithoutLeagueInput
   }
@@ -14068,7 +14254,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId?: string | null
     realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
@@ -14077,6 +14263,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14107,6 +14296,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -14128,6 +14318,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
     currency?: NullableStringFieldUpdateOperationsInput | string | null
+    coins?: IntFieldUpdateOperationsInput | number
     balanceUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalDeposited?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     totalWithdrawn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -14170,9 +14361,12 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
+    owner?: UserUpdateOneWithoutOwnedLeaguesNestedInput
     gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
     transactions?: TransactionUpdateManyWithoutLeagueNestedInput
   }
@@ -14187,7 +14381,7 @@ export namespace Prisma {
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
@@ -14196,6 +14390,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14220,9 +14417,12 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    owner: UserCreateNestedOneWithoutOwnedLeaguesInput
+    owner?: UserCreateNestedOneWithoutOwnedLeaguesInput
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
     transactions?: TransactionCreateNestedManyWithoutLeagueInput
   }
@@ -14237,7 +14437,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId?: string | null
     realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
@@ -14246,6 +14446,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: FantasyLeagueMembershipUncheckedCreateNestedManyWithoutLeagueInput
@@ -14296,9 +14499,12 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    owner: UserCreateNestedOneWithoutOwnedLeaguesInput
+    owner?: UserCreateNestedOneWithoutOwnedLeaguesInput
     members?: FantasyLeagueMembershipCreateNestedManyWithoutLeagueInput
     gameweek: GameweekCreateNestedOneWithoutLeaguesInput
   }
@@ -14313,7 +14519,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId?: string | null
     realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
@@ -14322,6 +14528,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14362,9 +14571,12 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
+    owner?: UserUpdateOneWithoutOwnedLeaguesNestedInput
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
     gameweek?: GameweekUpdateOneRequiredWithoutLeaguesNestedInput
   }
@@ -14379,7 +14591,7 @@ export namespace Prisma {
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
@@ -14388,6 +14600,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14437,6 +14652,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     gameweekId: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14535,6 +14753,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
@@ -14560,6 +14781,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14585,6 +14809,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     gameweekId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14720,7 +14947,7 @@ export namespace Prisma {
     leagueMode: string
     winners: number
     code: string
-    ownerId: string
+    ownerId?: string | null
     realLifeLeague?: $Enums.RealLifeLeague
     status?: string
     winnersArray?: FantasyLeagueCreatewinnersArrayInput | string[]
@@ -14729,6 +14956,9 @@ export namespace Prisma {
     currentParticipants?: number
     blockchainTxHash?: string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: string
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    creatorCommission?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -14751,9 +14981,12 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    owner?: UserUpdateOneRequiredWithoutOwnedLeaguesNestedInput
+    owner?: UserUpdateOneWithoutOwnedLeaguesNestedInput
     members?: FantasyLeagueMembershipUpdateManyWithoutLeagueNestedInput
     transactions?: TransactionUpdateManyWithoutLeagueNestedInput
   }
@@ -14768,7 +15001,7 @@ export namespace Prisma {
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
@@ -14777,6 +15010,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: FantasyLeagueMembershipUncheckedUpdateManyWithoutLeagueNestedInput
@@ -14793,7 +15029,7 @@ export namespace Prisma {
     leagueMode?: StringFieldUpdateOperationsInput | string
     winners?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     realLifeLeague?: EnumRealLifeLeagueFieldUpdateOperationsInput | $Enums.RealLifeLeague
     status?: StringFieldUpdateOperationsInput | string
     winnersArray?: FantasyLeagueUpdatewinnersArrayInput | string[]
@@ -14802,6 +15038,9 @@ export namespace Prisma {
     currentParticipants?: IntFieldUpdateOperationsInput | number
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
     prizeDistribution?: NullableJsonNullValueInput | InputJsonValue
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    creatorCommission?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

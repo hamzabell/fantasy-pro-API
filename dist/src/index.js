@@ -33,6 +33,8 @@ app.use('/api/*', cors({
 }));
 // Create the application environment for dependency injection
 const env = createEnvironment(prisma, createLogger(), defaultConfig);
+// Start Automated Services
+env.publicLeagueService.startScheduler();
 // Inject environment into all requests
 app.use('*', (c, next) => {
     c.set('env', env);

@@ -36,9 +36,7 @@ RTE.chainW((players) => {
         positions['Defender'] === 1 &&
         positions['Midfielder'] === 1 &&
         positions['Forward'] === 2;
-    return isValid
-        ? RTE.of(players)
-        : RTE.left(businessRuleError('InvalidPositions', 'Team must have 1 GK, 1 DEF, 1 MID, and 2 FWDs.'));
+    return RTE.of(players);
 }), 
 // 5. Calculate total cost
 RTE.chainW((players) => pipe(RTE.fromTaskEither(fetchTotalCostTE(playerIds)), RTE.map((totalCost) => ({ players, totalCost })))), 
@@ -63,11 +61,11 @@ export const getTeamService = (userId, realLifeLeague = 'PREMIER_LEAGUE') => pip
 // 1. Find team
 findTeamByUserAndLeague(userId, realLifeLeague), 
 // 2. Fetch players
-RTE.chainW((team) => pipe(RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)), RTE.map((players) => ({
+RTE.chainW((team) => pipe(RTE.ask(), RTE.chainW(({ config }) => pipe(RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)), RTE.map((players) => ({
     team,
     players,
-    balance: 100 - team.teamValue
-})))));
+    balance: config.budgetLimit - team.teamValue
+})))))));
 // Update team with new players
 export const updateTeamService = (userId, playerIds, realLifeLeague = 'PREMIER_LEAGUE') => pipe(
 // 1. Find existing team
@@ -92,9 +90,7 @@ RTE.chainW((players) => {
         positions['Defender'] === 1 &&
         positions['Midfielder'] === 1 &&
         positions['Forward'] === 2;
-    return isValid
-        ? RTE.of(players)
-        : RTE.left(businessRuleError('InvalidPositions', 'Team must have 1 GK, 1 DEF, 1 MID, and 2 FWDs.'));
+    return RTE.of(players);
 }), 
 // 5. Calculate total cost
 RTE.chainW((players) => pipe(RTE.fromTaskEither(fetchTotalCostTE(playerIds)), RTE.map((totalCost) => ({ players, totalCost })))), 
@@ -103,14 +99,14 @@ RTE.chainW(({ players, totalCost }) => pipe(RTE.ask(), RTE.chainW(({ config }) =
     ? RTE.of({ players, totalCost })
     : RTE.left(businessRuleError('BudgetExceeded', `Total cost ${totalCost}M exceeds budget. Budget: ${config.budgetLimit}M`))))), 
 // 7. Update team in database
-RTE.chainW(({ players, totalCost }) => pipe(findTeamByUserAndLeague(userId, realLifeLeague), RTE.chainW((team) => updateTeamRepo(team.id, {
+RTE.chainW(({ players, totalCost }) => pipe(RTE.ask(), RTE.chainW(({ config }) => pipe(findTeamByUserAndLeague(userId, realLifeLeague), RTE.chainW((team) => updateTeamRepo(team.id, {
     teamValue: totalCost,
     teamPlayers: playerIds
 })), RTE.map((team) => ({
     team,
     players,
-    balance: 100 - totalCost
-})))));
+    balance: config.budgetLimit - totalCost
+})))))));
 // Update team captain
 export const updateTeamCaptainService = (userId, captainId, realLifeLeague = 'PREMIER_LEAGUE') => pipe(
 // 1. Find team
@@ -126,9 +122,9 @@ export const getAllTeamsService = (realLifeLeague = 'PREMIER_LEAGUE') => pipe(
 // 1. Fetch all teams filtered by league
 findAllTeams(realLifeLeague), 
 // 2. Transform/Enrich teams
-RTE.chainW((teams) => pipe(teams, RTE.traverseArray((team) => pipe(RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)), RTE.map((players) => ({
+RTE.chainW((teams) => pipe(RTE.ask(), RTE.chainW(({ config }) => pipe(teams, RTE.traverseArray((team) => pipe(RTE.fromTaskEither(fetchPlayersTE(team.teamPlayers)), RTE.map((players) => ({
     userId: team.userId,
-    balance: 100 - team.teamValue,
+    balance: config.budgetLimit - team.teamValue,
     players,
     realLifeLeague: team.realLifeLeague
-})))), RTE.map((enrichedTeams) => ({ teams: enrichedTeams })))));
+})))), RTE.map((enrichedTeams) => ({ teams: enrichedTeams })))))));

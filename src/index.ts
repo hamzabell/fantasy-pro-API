@@ -36,6 +36,9 @@ const env = createEnvironment(
 	defaultConfig
 );
 
+// Start Automated Services
+env.publicLeagueService.startScheduler();
+
 // Inject environment into all requests
 app.use('*', (c, next) => {
 	c.set('env', env);

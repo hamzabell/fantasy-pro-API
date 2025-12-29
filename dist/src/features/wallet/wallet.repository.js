@@ -14,5 +14,9 @@ export const createWalletRepository = (prisma) => ({
             balance: newBalance,
             lastBalanceUpdate: new Date()
         }
-    }), 'updateWalletBalance'))
+    }), 'updateWalletBalance')),
+    getTransactions: (userId) => safePrisma(() => prisma.transaction.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' }
+    }), 'getTransactions')
 });

@@ -13,7 +13,7 @@ import { pipe } from 'fp-ts/lib/function.js';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { authenticationError, internalError } from '../../fp/domain/errors/AppError.js';
-import { saveUserToDatabase, retrieveUserFromDatabaseByEmail } from '../users/users-model.js';
+import { saveUserToDatabase, retrieveUserFromDatabaseByEmail, updateUserInDatabaseById, incrementUserCoins } from '../users/users-model.js';
 import { createPopulatedUser } from '../users/users-factories.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
@@ -23,21 +23,26 @@ import { createWalletService } from '../wallet/wallet.service.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = '1d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'your-google-client-id';
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback';
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
 const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, REDIRECT_URI);
-const blockchainService = createBlockchainService(process.env.POLYGON_RPC_URL || 'https://rpc-mumbai.maticvigil.com', process.env.USDC_ADDRESS || '0x0', process.env.LEAGUE_ESCROW_ADDRESS || '0x0');
+const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '0x0', process.env.SERVER_MNEMONIC || '');
 const walletRepository = createWalletRepository(prisma);
 const walletService = createWalletService(walletRepository, blockchainService);
-export const generateGoogleAuthUrl = () => {
-    return client.generateAuthUrl({
+export const generateGoogleAuthUrl = (referralCode) => {
+    const options = {
         access_type: 'offline',
         scope: [
             'https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/userinfo.email',
         ],
-    });
+    };
+    if (referralCode) {
+        // Pass referralCode as state
+        options.state = JSON.stringify({ referralCode });
+    }
+    return client.generateAuthUrl(options);
 };
-export const loginWithGoogleCode = (code) => pipe(
+export const loginWithGoogleCode = (code, referralCode) => pipe(
 // 1. Exchange Code for Tokens
 TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
     const { tokens } = yield client.getToken(code);
@@ -56,7 +61,18 @@ TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
 // 2. Find or Create User
 TE.chain((payload) => pipe(retrieveUserFromDatabaseByEmail(payload.email || ''), TE.chain((existingUser) => {
     if (existingUser) {
-        return TE.right(existingUser);
+        // Always sync user details from Google on login to ensure freshness
+        console.log('[Auth] Google Login for:', existingUser.email, 'Payload Picture:', payload.picture);
+        return pipe(TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
+            return updateUserInDatabaseById({
+                userId: existingUser.id,
+                user: {
+                    name: payload.name,
+                    image: payload.picture
+                }
+            });
+        }), (e) => internalError('Failed to update user', e)), TE.map(() => existingUser) // Return original user (or updated one if we waited, but Prisma returns updated usually. updateUserInDatabaseById returns updated user)
+        );
     }
     else {
         return pipe(TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -67,7 +83,22 @@ TE.chain((payload) => pipe(retrieveUserFromDatabaseByEmail(payload.email || ''),
             });
             delete newUser.password;
             return yield saveUserToDatabase(newUser);
-        }), (e) => internalError('Failed to create user', e)), TE.chain((user) => pipe(walletService.createWalletForUser(user.id), TE.map(() => user))));
+        }), (e) => internalError('Failed to create user', e)), TE.chain((user) => pipe(walletService.createWalletForUser(user.id), 
+        // Credit Referrer
+        TE.chainFirst(() => {
+            if (referralCode) {
+                // Fire and forget or sequential? Better sequential for safety, but don't fail login if referral fails?
+                // For now, let's try to update and ignore error or log it.
+                return TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
+                    console.log(`[Referral] Crediting referrer: ${referralCode}`);
+                    yield incrementUserCoins(referralCode, 50);
+                }), (e) => {
+                    console.error('[Referral] Failed to credit referrer', e);
+                    return internalError('Referral Error', e);
+                });
+            }
+            return TE.right(undefined);
+        }), TE.map(() => user))));
     }
 }))), 
 // 3. Generate Token & Return Response

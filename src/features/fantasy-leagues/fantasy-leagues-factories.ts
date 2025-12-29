@@ -21,6 +21,9 @@ export const createPopulatedFantasyLeague = ({
     blockchainTxHash = null,
     prizeDistribution = JSON.stringify([]),
     realLifeLeague = RealLifeLeague.PREMIER_LEAGUE,
+    paymentMethod = 'UPFRONT',
+    commissionRate = new Prisma.Decimal(0),
+    creatorCommission = new Prisma.Decimal(0),
 } ={} ) => ({
 	name,
 	description,
@@ -39,6 +42,9 @@ export const createPopulatedFantasyLeague = ({
     currentParticipants,
     blockchainTxHash: blockchainTxHash as string | null,
     prizeDistribution,
-    realLifeLeague
+    realLifeLeague,
+    paymentMethod,
+    commissionRate,
+    creatorCommission
 })
 

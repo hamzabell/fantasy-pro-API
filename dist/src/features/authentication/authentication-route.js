@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import * as E from 'fp-ts/lib/Either.js';
 import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
+import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
 import { createWalletService } from '../wallet/wallet.service.js';
@@ -38,6 +39,12 @@ const UserResponseSchema = z.object({
     name: z.string().optional().nullable().openapi({ example: 'Data Boy' }),
     image: z.string().optional().nullable().openapi({ example: 'https://lh3.googleusercontent.com/...' }),
     walletAddress: z.string().optional().nullable().openapi({ example: '0x123...' }),
+    matches: z.number().optional().openapi({ example: 5 }),
+    points: z.number().optional().openapi({ example: 150 }),
+    trophies: z.number().optional().openapi({ example: 2 }),
+    referralId: z.string().openapi({ example: '123' }),
+    referralLink: z.string().openapi({ example: 'http://localhost:8100/signup?ref=123' }),
+    coins: z.number().openapi({ example: 50 }),
 }).openapi('UserResponse');
 const GoogleAuthUrlResponseSchema = z.object({
     url: z.string()
@@ -72,6 +79,11 @@ const getGoogleAuthUrlRoute = createRoute({
     method: 'get',
     path: '/google/url',
     summary: 'Get Google Auth URL for redirect',
+    request: {
+        query: z.object({
+            referralCode: z.string().optional()
+        })
+    },
     responses: {
         200: {
             content: { 'application/json': { schema: GoogleAuthUrlResponseSchema } },
@@ -80,7 +92,8 @@ const getGoogleAuthUrlRoute = createRoute({
     }
 });
 app.openapi(getGoogleAuthUrlRoute, (c) => {
-    const url = generateGoogleAuthUrl();
+    const { referralCode } = c.req.valid('query');
+    const url = generateGoogleAuthUrl(referralCode);
     return c.json({ url });
 });
 // 2. GET /auth/google/callback - Handle Redirect Code
@@ -105,8 +118,18 @@ const googleCallbackRoute = createRoute({
     }
 });
 app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
-    const { code } = c.req.valid('query');
-    const result = yield loginWithGoogleCode(code)();
+    const { code, state } = c.req.valid('query');
+    let referralCode;
+    if (state) {
+        try {
+            const parsedState = JSON.parse(state);
+            referralCode = parsedState.referralCode;
+        }
+        catch (e) {
+            // Ignore state parsing error
+        }
+    }
+    const result = yield loginWithGoogleCode(code, referralCode)();
     if (E.isRight(result)) {
         const { token } = result.right;
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';
@@ -140,7 +163,7 @@ app.openapi(getUserRoute, (c) => __awaiter(void 0, void 0, void 0, function* () 
     if (!user)
         return c.json({ error: 'Unauthorized' }, 401);
     // Initialize Wallet Service (TODO: Dependency Injection)
-    const blockchainService = createBlockchainService(process.env.POLYGON_RPC_URL || 'https://rpc-mumbai.maticvigil.com', process.env.USDC_ADDRESS || '0x0', process.env.LEAGUE_ESCROW_ADDRESS || '0x0');
+    const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '0x0', process.env.SERVER_MNEMONIC || '');
     const walletRepository = createWalletRepository(prisma);
     const walletService = createWalletService(walletRepository, blockchainService);
     const walletResult = yield walletService.getUserWallet(user.id)();
@@ -149,12 +172,28 @@ app.openapi(getUserRoute, (c) => __awaiter(void 0, void 0, void 0, function* () 
     if (!walletAddress && E.isRight(walletResult)) {
         walletAddress = walletResult.right.address;
     }
+    const statsResult = yield retrieveUserStats(user.id)();
+    let matches = 0;
+    let points = 0;
+    let trophies = 0;
+    if (E.isRight(statsResult)) {
+        matches = statsResult.right.matches;
+        points = statsResult.right.points;
+        trophies = statsResult.right.trophies;
+    }
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';
     return c.json({
         id: user.id,
         email: user.email,
         name: user.name,
         image: user.image,
-        walletAddress
+        walletAddress,
+        matches,
+        points,
+        trophies,
+        referralId: user.id,
+        referralLink: `${frontendUrl}/signup?ref=${user.id}`,
+        coins: user.coins || 0
     }, 200);
 }));
 export default app;

@@ -84,7 +84,7 @@ model FantasyLeague {
   leagueMode         String
   winners            Int
   code               String          @unique
-  ownerId            String
+  ownerId            String?
   realLifeLeague     RealLifeLeague  @default(PREMIER_LEAGUE)
   status             String          @default("pending") // creating, open, in_progress, ended, paid_out, cancelled
   winnersArray       String[]        @default([]) 
@@ -95,9 +95,12 @@ model FantasyLeague {
   currentParticipants Int        @default(0)
   blockchainTxHash   String?     @unique
   prizeDistribution  Json?       // [{position: 1, percentage: 50}, ...]
+  paymentMethod      String      @default("UPFRONT") // UPFRONT, COMMISSION
+  commissionRate     Decimal     @default(0) @db.Decimal(5, 2) // Platform Commission
+  creatorCommission  Decimal     @default(0) @db.Decimal(5, 2) // Creator Commission
   
   // Relations
-  owner              User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner              User?       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members            FantasyLeagueMembership[]
   gameweekId         Int
   gameweek           Gameweek    @relation(fields: [gameweekId], references: [id])
