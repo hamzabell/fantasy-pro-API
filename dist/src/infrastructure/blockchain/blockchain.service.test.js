@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createBlockchainService } from './blockchain.service.js';
-import * as E from 'fp-ts/es6/Either.js';
+import { either as E } from 'fp-ts';
 // Mock @ton/ton and @ton/crypto
 const mockSend = vi.fn();
 const mockOpen = vi.fn(() => ({

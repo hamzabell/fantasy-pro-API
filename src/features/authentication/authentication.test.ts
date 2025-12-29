@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import app from './authentication-route.js';
-import * as TE from 'fp-ts/es6/TaskEither.js';
+import { taskEither as TE } from 'fp-ts';
 
 // Mock dependencies
 const mockAuthService = {

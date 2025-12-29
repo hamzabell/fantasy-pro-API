@@ -7,9 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import * as TE from 'fp-ts/es6/TaskEither.js';
-import * as E from 'fp-ts/es6/Either.js';
-import { pipe } from 'fp-ts/es6/function.js';
+import { taskEither as TE } from 'fp-ts';
+import { either as E } from 'fp-ts';
+import { function as F } from 'fp-ts';
+const { pipe } = F;
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { authenticationError, internalError } from '../../fp/domain/errors/AppError.js';

@@ -69,7 +69,7 @@ app.use('*', (c, next) => __awaiter(void 0, void 0, void 0, function* () {
 // Actually, let's replace the above with a manual JWT verify middleware for simplicity and robustness in Hono.
 import jwt from 'jsonwebtoken';
 import { retrieveUserFromDatabaseById } from './features/users/users-model.js';
-import * as E from 'fp-ts/es6/Either.js';
+import { either as E } from 'fp-ts';
 app.use('/api/*', (c, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (c.req.path.startsWith('/api/webhooks') ||
         c.req.path.startsWith('/api/auth/google') ||

@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import * as TE from 'fp-ts/es6/TaskEither.js';
-import { pipe } from 'fp-ts/es6/function.js';
+import { taskEither as TE } from 'fp-ts';
+import { function as F } from 'fp-ts';
+const { pipe } = F;
 import type { AppEnvironment } from '../../fp/infrastructure/Environment.js';
 import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';

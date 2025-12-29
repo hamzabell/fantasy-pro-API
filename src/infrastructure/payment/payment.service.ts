@@ -1,4 +1,4 @@
-import * as TE from 'fp-ts/es6/TaskEither.js';
+import { taskEither as TE } from 'fp-ts';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { paymentError } from '../../fp/domain/errors/AppError.js';
 

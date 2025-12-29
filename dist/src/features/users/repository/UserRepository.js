@@ -1,7 +1,7 @@
-import * as RTE from 'fp-ts/es6/ReaderTaskEither.js';
-import * as TE from 'fp-ts/es6/TaskEither.js';
-import * as O from 'fp-ts/es6/Option.js';
-import { pipe } from 'fp-ts/es6/function.js';
+import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as O from 'fp-ts/lib/Option.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { createTE, findUniqueTE, findManyTE, updateTE, deleteTE, prismaTE } from '../../../fp/adapters/PrismaAdapter.js';
 // Repository functions - all return ReaderTaskEither
 export const createUser = (data) => ({ prisma }) => createTE('User')(prisma.user.create({ data }));

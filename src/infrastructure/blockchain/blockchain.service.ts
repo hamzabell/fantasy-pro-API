@@ -1,6 +1,6 @@
 import { TonClient, WalletContractV4, internal, SendMode, toNano, fromNano, Address, beginCell } from '@ton/ton';
 import { mnemonicToWalletKey, keyPairFromSecretKey } from '@ton/crypto';
-import * as TE from 'fp-ts/es6/TaskEither.js';
+import { taskEither as TE } from 'fp-ts';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { blockchainError } from '../../fp/domain/errors/AppError.js';
 

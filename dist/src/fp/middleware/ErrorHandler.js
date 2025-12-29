@@ -8,9 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import '../../types/hono.js'; // Import Hono type extensions
-import * as E from 'fp-ts/es6/Either.js';
-import * as RTE from 'fp-ts/es6/ReaderTaskEither.js';
-import { pipe } from 'fp-ts/es6/function.js';
+import * as E from 'fp-ts/lib/Either.js';
+import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { toHttpStatus } from '../domain/errors/ErrorMapping.js';
 import { toErrorResponse } from '../domain/errors/ErrorResponse.js';
 // Helper to run RTE programs in Hono route handlers

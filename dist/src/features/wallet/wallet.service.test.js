@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWalletService } from './wallet.service.js';
-import * as E from 'fp-ts/es6/Either.js';
-import * as TE from 'fp-ts/es6/TaskEither.js';
+import { either as E } from 'fp-ts';
+import { taskEither as TE } from 'fp-ts';
 import { ethers } from 'ethers';
 // Mock Dependencies
 vi.mock('ethers', () => ({

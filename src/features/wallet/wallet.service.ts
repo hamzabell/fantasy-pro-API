@@ -1,5 +1,6 @@
-import * as TE from 'fp-ts/es6/TaskEither.js';
-import { pipe } from 'fp-ts/es6/function.js';
+import { taskEither as TE } from 'fp-ts';
+import { function as F } from 'fp-ts';
+const { pipe } = F;
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { internalError, paymentError, insufficientBalanceError } from '../../fp/domain/errors/AppError.js';
 import type { WalletRepository } from './wallet.repository.js';
