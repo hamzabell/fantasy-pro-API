@@ -1,6 +1,6 @@
 import type { PrismaClient, Wallet, Transaction } from '../../generated/prisma/index.js';
-import * as TE from 'fp-ts/TaskEither';
-import * as F from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 
 

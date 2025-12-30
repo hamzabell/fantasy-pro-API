@@ -1,5 +1,5 @@
-import * as TE from 'fp-ts/TaskEither';
-import * as F from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library.js'
 import type { AppError } from '../domain/errors/AppError.js'

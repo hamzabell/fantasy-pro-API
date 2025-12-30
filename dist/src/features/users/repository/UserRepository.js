@@ -1,4 +1,7 @@
-import { readerTaskEither as RTE, taskEither as TE, option as O, function as F } from 'fp-ts';
+import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as O from 'fp-ts/lib/Option.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { createTE, findUniqueTE, findManyTE, updateTE, deleteTE, prismaTE } from '../../../fp/adapters/PrismaAdapter.js';
 // Repository functions - all return ReaderTaskEither

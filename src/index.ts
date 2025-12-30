@@ -79,7 +79,7 @@ app.use('*', async (c, next) => {
 // Actually, let's replace the above with a manual JWT verify middleware for simplicity and robustness in Hono.
 import jwt from 'jsonwebtoken';
 import { retrieveUserFromDatabaseById } from './features/users/users-model.js';
-import * as E from 'fp-ts/Either';
+import * as E from 'fp-ts/lib/Either.js';
 
 app.use('/api/*', async (c, next) => {
   if (c.req.path.startsWith('/api/webhooks') || 

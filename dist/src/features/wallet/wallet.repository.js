@@ -1,5 +1,6 @@
-import * as TE from "fp-ts/TaskEither";
-import { pipe } from "fp-ts/function";
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
+const { pipe } = F;
 import { notFoundError } from '../../fp/domain/errors/AppError.js';
 import { safePrisma } from '../../fp/utils/fp-utils.js';
 import { Decimal } from '../../generated/prisma/runtime/library.js';

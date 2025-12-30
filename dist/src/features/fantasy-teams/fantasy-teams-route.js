@@ -8,7 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { readerTaskEither as RTE, function as F } from 'fp-ts';
+import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { ErrorResponseSchema, TeamResponseSchema, TeamsListResponseSchema } from './fantasy-teams-schemas.js';
 import { RealLifeLeague } from '../../generated/prisma/index.js';

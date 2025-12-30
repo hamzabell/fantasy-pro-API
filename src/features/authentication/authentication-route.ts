@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import * as E from 'fp-ts/Either';
+import * as E from 'fp-ts/lib/Either.js';
 type Either<E, A> = E.Either<E, A>;
 import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';

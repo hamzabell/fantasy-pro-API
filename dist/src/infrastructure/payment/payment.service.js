@@ -1,4 +1,4 @@
-import { taskEither as TE } from 'fp-ts';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 import { paymentError } from '../../fp/domain/errors/AppError.js';
 export const createPaymentService = () => ({
     initiateDeposit: (userId, amount, currency) => TE.fromIO(() => ({

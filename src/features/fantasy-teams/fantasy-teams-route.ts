@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import * as RTE from 'fp-ts/ReaderTaskEither';
-import * as F from 'fp-ts/function';
+import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { ErrorResponseSchema, TeamResponseSchema, TeamsListResponseSchema } from './fantasy-teams-schemas.js';
 import type { User } from '../../generated/prisma/index.js';

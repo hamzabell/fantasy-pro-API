@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { either as E } from 'fp-ts';
+import * as E from 'fp-ts/lib/Either.js';
 import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';

@@ -1,4 +1,6 @@
-import { taskEither as TE, either as E, function as F } from 'fp-ts';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as E from 'fp-ts/lib/Either.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { databaseError, validationError } from '../domain/errors/AppError.js';
 // Helper to wrap Prisma calls

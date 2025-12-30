@@ -1,4 +1,5 @@
-import { taskEither as TE, function as F } from 'fp-ts';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library.js';
 import { databaseError, notFoundError } from '../domain/errors/AppError.js';

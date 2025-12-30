@@ -7,7 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { either as E, taskEither as TE, function as F } from 'fp-ts';
+import * as E from 'fp-ts/lib/Either.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { z } from 'zod';
 import { validationError } from '../domain/errors/AppError.js';

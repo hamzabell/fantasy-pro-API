@@ -8,7 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import '../../types/hono.js'; // Import Hono type extensions
-import { either as E, readerTaskEither as RTE, function as F } from 'fp-ts';
+import * as E from 'fp-ts/lib/Either.js';
+import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
+import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { toHttpStatus } from '../domain/errors/ErrorMapping.js';
 import { toErrorResponse } from '../domain/errors/ErrorResponse.js';

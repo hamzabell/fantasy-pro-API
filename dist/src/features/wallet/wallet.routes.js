@@ -9,7 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { createRoute, z } from '@hono/zod-openapi';
-import { function as F, taskEither as TE } from 'fp-ts';
+import * as F from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 const { pipe } = F;
 import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 const app = new OpenAPIHono();
