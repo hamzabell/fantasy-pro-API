@@ -37,7 +37,6 @@ const env = createEnvironment(
 
 // Start Automated Services
 env.publicLeagueService.startScheduler();
-env.transactionMonitorService.startScheduler();
 
 // Inject environment into all requests
 app.use('*', (c, next) => {

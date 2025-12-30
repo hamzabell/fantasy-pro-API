@@ -11,8 +11,6 @@ import { createPaymentService } from '../../infrastructure/payment/payment.servi
 import type { PublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 
-import { TransactionMonitorService } from '../../features/blockchain/TransactionMonitorService.js'
-
 // The environment that all ReaderTaskEither functions depend on
 export interface AppEnvironment {
 	prisma: PrismaClient
@@ -23,7 +21,6 @@ export interface AppEnvironment {
 	blockchainService: BlockchainService
 	paymentService: PaymentService
 	publicLeagueService: PublicLeagueService
-	transactionMonitorService: TransactionMonitorService
 }
 
 // Application configuration
@@ -53,7 +50,6 @@ export const createEnvironment = (
 	const walletService = createWalletService(walletRepo, blockchainService)
 	const paymentService = createPaymentService()
 	const publicLeagueService = createPublicLeagueService(prisma, walletService)
-    const transactionMonitorService = new TransactionMonitorService(prisma)
 
 	return {
 		prisma,
@@ -63,8 +59,7 @@ export const createEnvironment = (
 		walletService,
 		blockchainService,
 		paymentService,
-		publicLeagueService,
-		transactionMonitorService
+		publicLeagueService
 	}
 }
 

@@ -1,18 +1,16 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import prisma from '../../prisma.js';
-import { zValidator } from '@hono/zod-validator';
 
 const paymentApp = new OpenAPIHono();
 
 // Schema for payment webhook payload
 const PaymentWebhookSchema = z.object({
-  txHash: z.string().describe('Blockchain transaction hash'),
-  event: z.enum(['LeagueCreated', 'LeagueJoined']),
-  userId: z.string().uuid().optional(), // Or whatever ID format used by the listener
-  leagueId: z.string(), // CUID or internal ID
-  amount: z.string(), // Amount in POL
-  userAddress: z.string(),
-  isSuccess: z.boolean()
+  eventType: z.enum(['league_created', 'league_joined']).describe('Type of payment event'),
+  status: z.enum(['success', 'failed']).describe('Payment status'),
+  leagueId: z.string().describe('League ID'),
+  membershipId: z.string().optional().describe('Membership ID (for league_joined)'),
+  transactionHash: z.string().describe('Blockchain transaction hash'),
+  userId: z.string().optional().describe('User ID (for league_joined)')
 });
 
 const PaymentWebhookResponseSchema = z.object({
@@ -23,7 +21,7 @@ const PaymentWebhookResponseSchema = z.object({
 // Route to handle payment confirmations
 const paymentConfirmationRoute = createRoute({
   method: 'post',
-  path: '/webhook', // Explicitly named webhook under payment section
+  path: '/webhook',
   request: {
     body: {
       content: {
@@ -60,56 +58,90 @@ paymentApp.openapi(paymentConfirmationRoute, async (c) => {
     }
 
     const payload = c.req.valid('json');
-    console.log(`[Payment Webhook] Received event: ${payload.event} for league ${payload.leagueId}`);
+    console.log(`[Payment Webhook] Received: ${payload.eventType} - ${payload.status} for league ${payload.leagueId}`);
     
-    if (!payload.isSuccess) {
-         console.log(`[Payment Webhook] Info: Transaction failed on chain: ${payload.txHash}`);
-         return c.json({ message: 'Logged failure', success: true }, 200);
-    }
-
     try {
-        if (payload.event === 'LeagueCreated') {
-            const league = await prisma.fantasyLeague.update({
-                where: { id: payload.leagueId },
-                data: {
-                    status: 'open',
-                    blockchainTxHash: payload.txHash
-                }
-            });
-            console.log(`[Payment Webhook] Activated league: ${league.id}`);
-            
-            if (league.ownerId) {
-                await prisma.fantasyLeagueMembership.updateMany({
-                   where: { 
-                       leagueId: league.id, 
-                       userId: league.ownerId 
-                   },
-                   data: {
-                       blockchainTxHash: payload.txHash
-                   }
-                });
-            }
-
-        } else if (payload.event === 'LeagueJoined') {
-            if (payload.userId) {
-                const membership = await prisma.fantasyLeagueMembership.updateMany({
-                    where: {
-                        leagueId: payload.leagueId,
-                        userId: payload.userId,
-                        blockchainTxHash: null // Update only pending ones
-                    },
+        if (payload.eventType === 'league_created') {
+            if (payload.status === 'success') {
+                // Update league status from pending to open
+                const league = await prisma.fantasyLeague.update({
+                    where: { id: payload.leagueId },
                     data: {
-                        blockchainTxHash: payload.txHash
+                        status: 'open',
+                        blockchainTxHash: payload.transactionHash
                     }
                 });
                 
-                if (membership.count > 0) {
-                     console.log(`[Payment Webhook] Confirmed membership for user ${payload.userId}`);
+                // Update owner's membership status to active
+                await prisma.fantasyLeagueMembership.updateMany({
+                    where: { 
+                        leagueId: league.id,
+                        userId: league.ownerId || undefined
+                    },
+                    data: {
+                        status: 'active',
+                        blockchainTxHash: payload.transactionHash
+                    }
+                });
+                
+                console.log(`[Payment Webhook] League ${league.id} activated`);
+            } else {
+                // Mark league as failed
+                await prisma.fantasyLeague.update({
+                    where: { id: payload.leagueId },
+                    data: {
+                        status: 'failed',
+                        blockchainTxHash: payload.transactionHash
+                    }
+                });
+                
+                // Mark owner's membership as failed
+                await prisma.fantasyLeagueMembership.updateMany({
+                    where: { leagueId: payload.leagueId },
+                    data: { status: 'failed' }
+                });
+                
+                console.log(`[Payment Webhook] League ${payload.leagueId} marked as failed`);
+            }
+        } else if (payload.eventType === 'league_joined') {
+            if (payload.status === 'success') {
+                // Update membership status to active and increment participants
+                if (payload.membershipId) {
+                    await prisma.fantasyLeagueMembership.update({
+                        where: { id: payload.membershipId },
+                        data: {
+                            status: 'active',
+                            blockchainTxHash: payload.transactionHash
+                        }
+                    });
+                    
+                    // Increment league participants
+                    await prisma.fantasyLeague.update({
+                        where: { id: payload.leagueId },
+                        data: {
+                            currentParticipants: { increment: 1 }
+                        }
+                    });
+                    
+                    console.log(`[Payment Webhook] Membership ${payload.membershipId} activated`);
                 } else {
-                    console.warn(`[Payment Webhook] No pending membership found for ${payload.userId} in league ${payload.leagueId}`);
+                    console.warn(`[Payment Webhook] Missing membershipId for league_joined success`);
                 }
             } else {
-                 console.warn(`[Payment Webhook] Join event missing userID`);
+                // Mark membership as failed (do not increment participants)
+                if (payload.membershipId) {
+                    await prisma.fantasyLeagueMembership.update({
+                        where: { id: payload.membershipId },
+                        data: {
+                            status: 'failed',
+                            blockchainTxHash: payload.transactionHash
+                        }
+                    });
+                    
+                    console.log(`[Payment Webhook] Membership ${payload.membershipId} marked as failed`);
+                } else {
+                    console.warn(`[Payment Webhook] Missing membershipId for league_joined failure`);
+                }
             }
         }
         

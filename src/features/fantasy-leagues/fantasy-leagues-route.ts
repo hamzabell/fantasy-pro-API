@@ -93,8 +93,7 @@ const createFantasyLeagueRoute = createRoute({
             teamName: z.string().min(1, "Team name cannot be empty"),
             realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE'),
             paymentMethod: z.enum(['UPFRONT', 'COMMISSION']).optional().default('UPFRONT'),
-            creatorCommission: z.coerce.number().min(0).max(50).default(0),
-            transactionHash: z.string().optional().describe('Blockchain transaction hash for league creation fee')
+            creatorCommission: z.coerce.number().min(0).max(50).default(0)
           }),
         },
       },
@@ -237,18 +236,15 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
                   realLifeLeague: body.realLifeLeague,
                   prizeDistribution: calculatePrizeDistribution(body.winners),
                   totalPoolUsd: 0, // Initial pool is 0
-                  blockchainTxHash: body.transactionHash || null, // Store if provided
+                  blockchainTxHash: null,
                   members: {
                       create: {
                           userId: user.id,
                           teamName: body.teamName,
                           position: 0,
                           score: 0,
-                          blockchainTxHash: body.transactionHash || null, // Assuming creator pays for both? Or separate? 
-                          // Creator pays League Creation Fee + Entry Fee in one go usually, 
-                          // OR just Creation Fee and gets free entry? 
-                          // Assuming single TX covers it.
-                          status: body.transactionHash ? 'pending' : 'active' // If tx provided, pending verification. If free/system, active.
+                          blockchainTxHash: null,
+                          status: 'pending'
                       }
                   },
                   currentParticipants: 1,
@@ -511,7 +507,7 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
           'getLeagueById'
       ),
       TE.chain((league) => {
-          if (!league) return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
+          if (!league || league.status === 'failed') return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
           
           // Check Access
           if (league.leagueType === 'private') {
@@ -554,7 +550,7 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByCodeRoute, async (c) => {
           'getLeagueByCode'
       ),
       TE.chain((league) => {
-          if (!league) return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
+          if (!league || league.status === 'failed') return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
           return TE.right(league);
       })
   )();
@@ -583,8 +579,7 @@ const joinFantasyLeagueRoute = createRoute({
         'application/json': {
           schema: z.object({
             code: z.string().min(1, "Code cannot be empty"),
-            teamName: z.string().min(1, "Team name cannot be empty"),
-            transactionHash: z.string().optional().describe('Blockchain transaction hash for joining fee')
+            teamName: z.string().min(1, "Team name cannot be empty")
           }),
         },
       },
@@ -617,7 +612,7 @@ const joinFantasyLeagueRoute = createRoute({
 fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
   const env = c.get('env');
   const user = c.get('user') as any;
-  const { code, teamName, transactionHash } = c.req.valid('json');
+  const { code, teamName } = c.req.valid('json');
 
   const result = await pipe(
     // 1. Get League by Code
@@ -647,39 +642,27 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
     TE.chainW(({ league, membership }) => {
         // 3. (Skipped) Validate User MATIC Balance (handled by frontend)
         
-        return TE.right({ league, txHash: transactionHash || null });
+        return TE.right({ league });
     }),
-    // 5. Update DB (Membership + League Pool)
-    TE.chain(({ league, txHash }) => 
+    // 5. Create Membership (do NOT increment participants - webhook will do that)
+    TE.chain(({ league }) => 
         safePrisma(
-            () => env.prisma.$transaction([
-                // Create Membership
-                env.prisma.fantasyLeagueMembership.create({
-                    data: {
-                        userId: user.id,
-                        leagueId: league.id,
-                        teamName: teamName,
-                        stakeAmount: league.entryFeeUsd,
-                        blockchainTxHash: txHash,
-                        status: txHash && (!league.entryFeeUsd || Number(league.entryFeeUsd) > 0) ? 'pending' : 'active',
-                        position: 0,
-                        score: 0
-                    }
-                }),
-                // Update League Pool
-                env.prisma.fantasyLeague.update({
-                    where: { id: league.id },
-                    data: {
-                        currentParticipants: { increment: 1 },
-                        totalPoolUsd: { increment: league.entryFeeUsd }
-                    }
-                })
-            ]),
-            'joinLeagueTx'
+            () => env.prisma.fantasyLeagueMembership.create({
+                data: {
+                    userId: user.id,
+                    leagueId: league.id,
+                    teamName: teamName,
+                    stakeAmount: league.entryFeeUsd,
+                    blockchainTxHash: null,
+                    status: 'pending',
+                    position: 0,
+                    score: 0
+                }
+            }),
+            'createMembership'
         )
     ),
-    TE.map((results) => {
-        const membership = (results as [FantasyLeagueMembership, ...any[]])[0];
+    TE.map((membership) => {
         return {
              message: 'Successfully joined league',
              membership: {
@@ -687,7 +670,7 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
                  leagueId: membership.leagueId,
                  userId: membership.userId,
                  teamName: membership.teamName || '',
-                 status: membership.payoutStatus,
+                 status: membership.status,
                  txHash: membership.blockchainTxHash || undefined,
                  createdAt: membership.createdAt.toISOString(),
                  updatedAt: membership.updatedAt.toISOString(),
