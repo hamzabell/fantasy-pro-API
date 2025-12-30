@@ -81,7 +81,8 @@ const getGoogleAuthUrlRoute = createRoute({
     summary: 'Get Google Auth URL for redirect',
     request: {
         query: z.object({
-            referralCode: z.string().optional()
+            referralCode: z.string().optional(),
+            platform: z.enum(['web', 'mobile']).optional().default('web')
         })
     },
     responses: {
@@ -92,8 +93,8 @@ const getGoogleAuthUrlRoute = createRoute({
     }
 });
 app.openapi(getGoogleAuthUrlRoute, (c) => {
-    const { referralCode } = c.req.valid('query');
-    const url = generateGoogleAuthUrl(referralCode);
+    const { referralCode, platform } = c.req.valid('query');
+    const url = generateGoogleAuthUrl(referralCode, platform);
     return c.json({ url });
 });
 // 2. GET /auth/google/callback - Handle Redirect Code
@@ -121,10 +122,13 @@ app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, functi
     const { code, state } = c.req.valid('query');
     console.log('[Auth] Google Callback received. Code:', code ? 'present' : 'missing', 'State:', state);
     let referralCode;
+    let platform = 'web';
     if (state) {
         try {
             const parsedState = JSON.parse(state);
             referralCode = parsedState.referralCode;
+            if (parsedState.platform)
+                platform = parsedState.platform;
         }
         catch (e) {
             // Ignore state parsing error
@@ -133,6 +137,9 @@ app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, functi
     const result = yield loginWithGoogleCode(code, referralCode)();
     if (E.isRight(result)) {
         const { token } = result.right;
+        if (platform === 'mobile') {
+            return c.redirect(`fantasypro://auth/callback?token=${token}`);
+        }
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';
         return c.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     }

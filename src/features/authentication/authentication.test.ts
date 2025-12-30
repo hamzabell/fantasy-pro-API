@@ -16,7 +16,7 @@ const mockWalletService = {
 
 // Mock service imports
 vi.mock('./auth.service.js', () => ({
-  generateGoogleAuthUrl: (referralCode?: string) => mockAuthService.generateGoogleAuthUrl(referralCode),
+  generateGoogleAuthUrl: (referralCode?: string, platform?: 'web' | 'mobile') => mockAuthService.generateGoogleAuthUrl(referralCode, platform),
   loginWithGoogleCode: (code: string, referralCode?: string) => mockAuthService.loginWithGoogleCode(code, referralCode),
 }));
 
@@ -58,7 +58,14 @@ describe('Authentication Routes', () => {
         mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
         
         await testApp.request('/google/url?referralCode=REF123');
-        expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123');
+        expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123', 'web');
+    });
+    it('should pass platform to generateGoogleAuthUrl', async () => {
+        const mockUrl = 'https://google.com/auth';
+        mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
+        
+        await testApp.request('/google/url?platform=mobile');
+        expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith(undefined, 'mobile');
     });
   });
 
@@ -79,6 +86,19 @@ describe('Authentication Routes', () => {
 
       expect(res.status).toBe(302);
       expect(res.headers.get('Location')).toBe(`http://localhost:8100/auth/callback?token=${mockToken}`);
+    });
+
+    it('should redirect to app scheme if platform is mobile', async () => {
+        const mockCode = 'auth_code';
+        const mockToken = 'jwt_token';
+        const mockUser = { id: '1', email: 'test@examples.com' };
+        mockAuthService.loginWithGoogleCode.mockReturnValue(TE.right({ token: mockToken, user: mockUser }));
+        
+        const state = JSON.stringify({ platform: 'mobile' });
+        const res = await testApp.request(`/google/callback?code=${mockCode}&state=${state}`);
+        
+        expect(res.status).toBe(302);
+        expect(res.headers.get('Location')).toBe(`fantasypro://auth/callback?token=${mockToken}`);
     });
 
     it('should return 400 on failure', async () => {

@@ -21,7 +21,7 @@ const mockWalletService = {
 };
 // Mock service imports
 vi.mock('./auth.service.js', () => ({
-    generateGoogleAuthUrl: (referralCode) => mockAuthService.generateGoogleAuthUrl(referralCode),
+    generateGoogleAuthUrl: (referralCode, platform) => mockAuthService.generateGoogleAuthUrl(referralCode, platform),
     loginWithGoogleCode: (code, referralCode) => mockAuthService.loginWithGoogleCode(code, referralCode),
 }));
 vi.mock('../wallet/wallet.repository.js', () => ({
@@ -53,7 +53,13 @@ describe('Authentication Routes', () => {
             const mockUrl = 'https://google.com/auth';
             mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
             yield testApp.request('/google/url?referralCode=REF123');
-            expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123');
+            expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123', 'web');
+        }));
+        it('should pass platform to generateGoogleAuthUrl', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockUrl = 'https://google.com/auth';
+            mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
+            yield testApp.request('/google/url?platform=mobile');
+            expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith(undefined, 'mobile');
         }));
     });
     describe('GET /google/callback', () => {
@@ -70,6 +76,16 @@ describe('Authentication Routes', () => {
             const res = yield testApp.request(`/google/callback?code=${mockCode}`);
             expect(res.status).toBe(302);
             expect(res.headers.get('Location')).toBe(`http://localhost:8100/auth/callback?token=${mockToken}`);
+        }));
+        it('should redirect to app scheme if platform is mobile', () => __awaiter(void 0, void 0, void 0, function* () {
+            const mockCode = 'auth_code';
+            const mockToken = 'jwt_token';
+            const mockUser = { id: '1', email: 'test@examples.com' };
+            mockAuthService.loginWithGoogleCode.mockReturnValue(TE.right({ token: mockToken, user: mockUser }));
+            const state = JSON.stringify({ platform: 'mobile' });
+            const res = yield testApp.request(`/google/callback?code=${mockCode}&state=${state}`);
+            expect(res.status).toBe(302);
+            expect(res.headers.get('Location')).toBe(`fantasypro://auth/callback?token=${mockToken}`);
         }));
         it('should return 400 on failure', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockCode = 'bad_code';

@@ -52,7 +52,7 @@ export interface AuthResponse {
   };
 }
 
-export const generateGoogleAuthUrl = (referralCode?: string): string => {
+export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | 'mobile' = 'web'): string => {
   const options: any = {
     access_type: 'offline',
     scope: [
@@ -61,10 +61,11 @@ export const generateGoogleAuthUrl = (referralCode?: string): string => {
     ],
   };
   
+  const state: any = { platform };
   if (referralCode) {
-    // Pass referralCode as state
-    options.state = JSON.stringify({ referralCode });
+    state.referralCode = referralCode;
   }
+  options.state = JSON.stringify(state);
 
   return client.generateAuthUrl(options);
 };

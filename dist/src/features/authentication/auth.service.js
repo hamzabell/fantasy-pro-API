@@ -29,7 +29,7 @@ const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECR
 const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '0x0', process.env.SERVER_MNEMONIC || '');
 const walletRepository = createWalletRepository(prisma);
 const walletService = createWalletService(walletRepository, blockchainService);
-export const generateGoogleAuthUrl = (referralCode) => {
+export const generateGoogleAuthUrl = (referralCode, platform = 'web') => {
     const options = {
         access_type: 'offline',
         scope: [
@@ -37,10 +37,11 @@ export const generateGoogleAuthUrl = (referralCode) => {
             'https://www.googleapis.com/auth/userinfo.email',
         ],
     };
+    const state = { platform };
     if (referralCode) {
-        // Pass referralCode as state
-        options.state = JSON.stringify({ referralCode });
+        state.referralCode = referralCode;
     }
+    options.state = JSON.stringify(state);
     return client.generateAuthUrl(options);
 };
 export const loginWithGoogleCode = (code, referralCode) => pipe(
