@@ -1,32 +1,35 @@
+import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either';
+import * as F from 'fp-ts/function';
+const { pipe } = F;
+type TaskEither<E, A> = TE.TaskEither<E, A>;
 import type { ZodSchema } from 'zod';
 import type { AppError } from '../domain/errors/AppError.js';
 import { databaseError, validationError } from '../domain/errors/AppError.js';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library.js';
 
 // Helper to wrap Prisma calls
-export const safePrisma = async <T>(
+export const safePrisma = <T>(
   operation: () => Promise<T>,
   opName: string = 'unknown'
-): Promise<T> => {
-  try {
-    return await operation();
-  } catch (error: any) {
-    if (error instanceof PrismaClientKnownRequestError) {
-      throw databaseError('Read', opName, error, error.code);
-    }
-    throw databaseError('Read', opName, error);
-  }
-};
+): TaskEither<AppError, T> =>
+  TE.tryCatch(
+    operation,
+    (error) => databaseError('Read', opName, error) // Adjusted to match DatabaseError signature
+  );
 
 // Helper to validate Zod schema
-export const validateZod = <T>(schema: ZodSchema<T>) => (data: unknown): T => {
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    // Explicitly cast or access .issues, but accessing .errors on ZodError is standard.
-    // The lint might be confused or using a different Zod version expectation.
-    // Let's safe cast.
-    const err = result.error as any;
-    throw validationError('unknown', err.errors?.[0]?.message || String(result.error), err.errors?.[0]?.path?.join('.'));
-  }
-  return result.data;
-};
+export const validateZod = <T>(schema: ZodSchema<T>) => (data: unknown): TaskEither<AppError, T> =>
+  pipe(
+    E.tryCatch(
+      () => schema.parse(data),
+      (error: any) => validationError('unknown', error.errors?.[0]?.message || String(error), error.errors?.[0]?.path?.join('.')) // Adjusted to match ValidationError signature
+    ),
+    TE.fromEither
+  );
+
+// Convert standard Promise to TaskEither
+export const tryCatchK = <A extends ReadonlyArray<unknown>, B>(
+  f: (...a: A) => Promise<B>,
+  onRejected: (reason: unknown) => AppError
+): ((...a: A) => TaskEither<AppError, B>) => (...a) =>
+  TE.tryCatch(() => f(...a), onRejected);

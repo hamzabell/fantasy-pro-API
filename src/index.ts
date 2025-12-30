@@ -79,6 +79,7 @@ app.use('*', async (c, next) => {
 // Actually, let's replace the above with a manual JWT verify middleware for simplicity and robustness in Hono.
 import jwt from 'jsonwebtoken';
 import { retrieveUserFromDatabaseById } from './features/users/users-model.js';
+import * as E from 'fp-ts/Either';
 
 app.use('/api/*', async (c, next) => {
   if (c.req.path.startsWith('/api/webhooks') || 
@@ -95,15 +96,16 @@ app.use('/api/*', async (c, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { id: string };
+    console.log('[Middleware] Decoded ID:', decoded.id);
     
     // Optional: Verify user exists in DB
-    const user = await retrieveUserFromDatabaseById(decoded.id);
-    if (!user) {
-        console.log('[Middleware] User not found');
+    const userResult = await retrieveUserFromDatabaseById(decoded.id)();
+    if (E.isLeft(userResult) || !userResult.right) {
+        console.log('[Middleware] User not found or DB error', userResult);
         return c.json({ error: 'Unauthorized' }, 401);
     }
     
-    c.set('user', user);
+    c.set('user', userResult.right);
     await next();
   } catch (err) {
     return c.json({ error: 'Unauthorized' }, 401);

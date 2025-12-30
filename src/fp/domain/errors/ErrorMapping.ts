@@ -25,12 +25,6 @@ export const toHttpStatus = (error: AppError): number => {
 			return error.statusCode ?? 502
 		case 'InternalError':
 			return 500
-		case 'InsufficientBalanceError':
-			return 402
-		case 'PaymentError':
-			return 402
-		case 'BlockchainError':
-			return 502
 	}
     return 500;
 }

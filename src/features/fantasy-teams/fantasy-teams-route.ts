@@ -1,8 +1,11 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import * as RTE from 'fp-ts/ReaderTaskEither';
+import * as F from 'fp-ts/function';
+const { pipe } = F;
 import { ErrorResponseSchema, TeamResponseSchema, TeamsListResponseSchema } from './fantasy-teams-schemas.js';
 import type { User } from '../../generated/prisma/index.js';
 import { RealLifeLeague } from '../../generated/prisma/index.js';
-import { runHandler } from '../../fp/middleware/ErrorHandler.js';
+import { runProgram } from '../../fp/middleware/ErrorHandler.js';
 import { createTeamService, getTeamService, updateTeamService, updateTeamCaptainService, getAllTeamsService } from './service/TeamService.js';
 
 const fantasyTeamsApp = new OpenAPIHono();
@@ -50,9 +53,10 @@ const getAllTeamsRoute = createRoute({
 
 fantasyTeamsApp.openapi(getAllTeamsRoute, (async (c: any) => {
     const { realLifeLeague } = c.req.valid('query');
-    return runHandler(c, async () => {
-        const result = await getAllTeamsService(realLifeLeague);
-        return c.json({
+	return await runProgram(c,
+		getAllTeamsService(realLifeLeague)
+	)(
+		(result) => c.json({
 			message: 'Teams retrieved successfully',
 			teams: result.teams.map((teamData: any) => ({
                 userId: teamData.userId,
@@ -67,8 +71,8 @@ fantasyTeamsApp.openapi(getAllTeamsRoute, (async (c: any) => {
                 })),
                 realLifeLeague: teamData.realLifeLeague
             })),
-		}, 200);
-    });
+		}, 200)
+	);
 }) as any);
 
 // Define the route for creating a team
@@ -128,28 +132,6 @@ const createTeamRoute = createRoute({
 	},
 });
 
-fantasyTeamsApp.openapi(createTeamRoute, (async (c: any) => {
-    const { players, realLifeLeague } = c.req.valid('json');
-    const user = c.get('user') as User;
-    return runHandler(c, async () => {
-        const result = await createTeamService(user.id, players, realLifeLeague);
-        return c.json({
-			message: 'Team created successfully',
-			team: {
-				balance: result.balance,
-				players: result.players.map((player) => ({
-					id: player.id.toString(),
-					name: player.name,
-					teamId: player.teamId,
-					position: player.position,
-					image: player.image,
-					cost: player.cost,
-				})),
-			},
-		}, 201);
-    });
-}) as any);
-
 // Define the route for getting a user's team
 const getTeamRoute = createRoute({
 	method: 'get',
@@ -197,28 +179,6 @@ const getTeamRoute = createRoute({
 	},
 });
 
-fantasyTeamsApp.openapi(getTeamRoute, (async (c: any) => {
-    const { realLifeLeague } = c.req.valid('query');
-    const user = c.get('user') as User;
-    return runHandler(c, async () => {
-        const result = await getTeamService(user.id, realLifeLeague);
-        return c.json({
-			message: 'Team retrieved successfully',
-			team: {
-				balance: result.balance,
-				players: result.players.map((player) => ({
-					id: player.id.toString(),
-					name: player.name,
-					teamId: player.teamId,
-					position: player.position,
-					image: player.image,
-					cost: player.cost,
-				})),
-			},
-		}, 200);
-    });
-}) as any);
-
 // Define the route for getting a team by user ID
 const getTeamByUserIdRoute = createRoute({
 	method: 'get',
@@ -263,28 +223,6 @@ const getTeamByUserIdRoute = createRoute({
 		},
 	},
 });
-
-fantasyTeamsApp.openapi(getTeamByUserIdRoute, (async (c: any) => {
-    const { realLifeLeague } = c.req.valid('query');
-    const userId = c.req.param('userId');
-    return runHandler(c, async () => {
-        const result = await getTeamService(userId, realLifeLeague);
-        return c.json({
-			message: 'Team retrieved successfully',
-			team: {
-				balance: result.balance,
-				players: result.players.map((player) => ({
-					id: player.id.toString(),
-					name: player.name,
-					teamId: player.teamId,
-					position: player.position,
-					image: player.image,
-					cost: player.cost,
-				})),
-			},
-		}, 200);
-    });
-}) as any);
 
 // Define the route for updating a user's team
 const updateTeamRoute = createRoute({
@@ -343,12 +281,86 @@ const updateTeamRoute = createRoute({
 	},
 });
 
+fantasyTeamsApp.openapi(createTeamRoute, (async (c: any) => {
+	return await runProgram(c,
+		pipe(
+			RTE.of(c.req.valid('json') as { players: number[], realLifeLeague: RealLifeLeague }),
+			RTE.chainW(({ players, realLifeLeague }) =>
+				createTeamService((c.get('user') as User).id, players, realLifeLeague)
+			)
+		)
+	)(
+		(result) => c.json({
+			message: 'Team created successfully',
+			team: {
+				balance: result.balance,
+				players: result.players.map((player) => ({
+					id: player.id.toString(),
+					name: player.name,
+					teamId: player.teamId,
+					position: player.position,
+					image: player.image,
+					cost: player.cost,
+				})),
+			},
+		}, 201)
+	);
+}) as any);
+
+fantasyTeamsApp.openapi(getTeamRoute, (async (c: any) => {
+    const { realLifeLeague } = c.req.valid('query');
+	return await runProgram(c,
+		getTeamService((c.get('user') as User).id, realLifeLeague)
+	)(
+		(result) => c.json({
+			message: 'Team retrieved successfully',
+			team: {
+				balance: result.balance,
+				players: result.players.map((player) => ({
+					id: player.id.toString(),
+					name: player.name,
+					teamId: player.teamId,
+					position: player.position,
+					image: player.image,
+					cost: player.cost,
+				})),
+			},
+		}, 200)
+	);
+}) as any);
+
+fantasyTeamsApp.openapi(getTeamByUserIdRoute, (async (c: any) => {
+    const { realLifeLeague } = c.req.valid('query');
+	return await runProgram(c,
+		getTeamService(c.req.param('userId') as string, realLifeLeague)
+	)(
+		(result) => c.json({
+			message: 'Team retrieved successfully',
+			team: {
+				balance: result.balance,
+				players: result.players.map((player) => ({
+					id: player.id.toString(),
+					name: player.name,
+					teamId: player.teamId,
+					position: player.position,
+					image: player.image,
+					cost: player.cost,
+				})),
+			},
+		}, 200)
+	);
+}) as any);
+
 fantasyTeamsApp.openapi(updateTeamRoute, (async (c: any) => {
-    const { players, realLifeLeague } = c.req.valid('json');
-    const user = c.get('user') as User;
-    return runHandler(c, async () => {
-        const result = await updateTeamService(user.id, players, realLifeLeague);
-        return c.json({
+	return await runProgram(c,
+		pipe(
+			RTE.of(c.req.valid('json') as { players: number[], realLifeLeague: RealLifeLeague }),
+			RTE.chainW(({ players, realLifeLeague }) =>
+				updateTeamService((c.get('user') as User).id, players, realLifeLeague)
+			)
+		)
+	)(
+		(result) => c.json({
 			message: 'Team updated successfully',
 			team: {
 				balance: result.balance,
@@ -361,8 +373,8 @@ fantasyTeamsApp.openapi(updateTeamRoute, (async (c: any) => {
 					cost: player.cost,
 				})),
 			},
-		}, 200);
-    });
+		}, 200)
+	);
 }) as any);
 
 export default fantasyTeamsApp;

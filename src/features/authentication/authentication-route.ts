@@ -1,4 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import * as E from 'fp-ts/Either';
+type Either<E, A> = E.Either<E, A>;
 import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
@@ -48,8 +50,26 @@ const GoogleAuthUrlResponseSchema = z.object({
   url: z.string()
 }).openapi('GoogleAuthUrlResponse');
 
-const getErrorMessage = (error: any): string => {
-  if (error && typeof error === 'object' && 'message' in error) return error.message;
+// Helper to convert AppError to HTTP status
+const toHttpStatus = (error: AppError): number => {
+  switch (error._tag) {
+    case 'AuthenticationError':
+      return 401;
+    case 'NotFoundError':
+      return 404;
+    case 'ValidationError':
+      return 400;
+    case 'DatabaseError':
+      return 500;
+    default:
+      return 500;
+  }
+};
+
+const getErrorMessage = (error: AppError): string => {
+  if ('message' in error) return error.message;
+  if (error._tag === 'NotFoundError') return `${error.resource} not found`;
+  if (error._tag === 'DatabaseError') return 'Database error';
   return 'Unknown error';
 };
 
@@ -115,14 +135,16 @@ app.openapi(googleCallbackRoute, async (c) => {
         }
     }
 
-    try {
-        const result = await loginWithGoogleCode(code, referralCode);
-        const { token } = result;
+    const result = await loginWithGoogleCode(code, referralCode)();
+
+    if (E.isRight(result)) {
+        const { token } = result.right;
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';
         return c.redirect(`${frontendUrl}/auth/callback?token=${token}`);
-    } catch (e: any) {
-        const msg = getErrorMessage(e);
-        return c.json({ error: msg }, 400); 
+    } else {
+        const error = result.left;
+        const msg = getErrorMessage(error);
+        return c.json({ error: msg }, 400); // Or redirect to frontend error page
     }
 });
 
@@ -158,30 +180,24 @@ app.openapi(getUserRoute, async (c) => {
   );
   const walletRepository = createWalletRepository(prisma);
   const walletService = createWalletService(walletRepository, blockchainService);
+  const walletResult = await walletService.getUserWallet(user.id)();
   
   let walletAddress: string | undefined | null = user.walletAddress;
   
   // If not already on user object, fetch it
-  if (!walletAddress) {
-      try {
-          const wallet = await walletService.getUserWallet(user.id);
-          walletAddress = wallet.address;
-      } catch (e) {
-          // Ignore wallet fetch error probably
-      }
+  if (!walletAddress && E.isRight(walletResult)) {
+    walletAddress = walletResult.right.address;
   }
 
+  const statsResult = await retrieveUserStats(user.id)();
   let matches = 0;
   let points = 0;
   let trophies = 0;
 
-  try {
-      const stats = await retrieveUserStats(user.id);
-      matches = stats.matches;
-      points = stats.points;
-      trophies = stats.trophies;
-  } catch(e) {
-      // Ignore stats error
+  if (E.isRight(statsResult)) {
+      matches = statsResult.right.matches;
+      points = statsResult.right.points;
+      trophies = statsResult.right.trophies;
   }
 
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';

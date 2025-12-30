@@ -1,64 +1,91 @@
+import * as RTE from 'fp-ts/ReaderTaskEither';
+import * as TE from 'fp-ts/TaskEither';
+import * as O from 'fp-ts/Option';
+import * as F from 'fp-ts/function';
+const { pipe } = F;
 import type { User } from '../../../generated/prisma/index.js'
 import type { AppEnvironment } from '../../../fp/infrastructure/Environment.js'
+import type { AppError } from '../../../fp/domain/errors/AppError.js'
 import {
-	prismaPromise,
-	findUniquePromise
+	createTE,
+	findUniqueTE,
+	findManyTE,
+	updateTE,
+	deleteTE,
+	prismaTE
 } from '../../../fp/adapters/PrismaAdapter.js'
 
-// Let's use `safePrisma` style or `prismaPromise` from adapter.
-// The adapter has `prismaPromise`, `findUniquePromise`, `findFirstPromise`.
-
+// Repository functions - all return ReaderTaskEither
 export const createUser = (
 	data: Omit<User, 'createdAt' | 'updatedAt'>
-) => (env: AppEnvironment): Promise<User> =>
-    prismaPromise<User>('Create', 'User')(
-        env.prisma.user.create({ data })
-    );
+): RTE.ReaderTaskEither<AppEnvironment, AppError, User> =>
+	({ prisma }) =>
+		createTE('User')(
+			prisma.user.create({ data })
+		)
 
 export const findUserById = (
 	id: string
-) => (env: AppEnvironment): Promise<User> =>
-    findUniquePromise<User>('User', id)(
-        env.prisma.user.findUnique({ where: { id } })
-    );
+): RTE.ReaderTaskEither<AppEnvironment, AppError, User> =>
+	({ prisma }) =>
+		findUniqueTE<User>('User', id)(
+			prisma.user.findUnique({ where: { id } })
+		)
 
+// Optional version - returns Option instead of failing when not found
 export const findUserByIdOptional = (
 	userId: string
-) => async (env: AppEnvironment): Promise<User | null> => {
-    // We can just call prisma directly for optional
-    return await env.prisma.user.findUnique({ where: { id: userId } });
-};
+): RTE.ReaderTaskEither<AppEnvironment, AppError, O.Option<User>> =>
+	({ prisma }) =>
+		pipe(
+			prismaTE<User | null>('Read', 'User')(
+				prisma.user.findUnique({ where: { id: userId } })
+			),
+			TE.map(O.fromNullable)
+		) as TE.TaskEither<AppError, O.Option<User>>
 
-
-export const findAllUsers = () => (env: AppEnvironment): Promise<User[]> =>
-    prismaPromise<User[]>('Read', 'User')(
-        env.prisma.user.findMany()
-    );
+export const findAllUsers = (): RTE.ReaderTaskEither<AppEnvironment, AppError, User[]> =>
+	({ prisma }) =>
+		findManyTE('User')(
+			prisma.user.findMany()
+		)
 
 export const updateUser = (
 	id: string,
 	data: Partial<User>
-) => (env: AppEnvironment): Promise<User> =>
-    prismaPromise<User>('Update', 'User')(
-        env.prisma.user.update({ where: { id }, data })
-    );
+): RTE.ReaderTaskEither<AppEnvironment, AppError, User> =>
+	({ prisma }) =>
+		updateTE('User')(
+			prisma.user.update({ where: { id }, data })
+		)
 
 export const deleteUser = (
 	id: string
-) => (env: AppEnvironment): Promise<User> =>
-    prismaPromise<User>('Delete', 'User')(
-        env.prisma.user.delete({ where: { id } })
-    );
+): RTE.ReaderTaskEither<AppEnvironment, AppError, User> =>
+	({ prisma }) =>
+		deleteTE('User')(
+			prisma.user.delete({ where: { id } })
+		)
 
-export const deleteAllUsers = () => (env: AppEnvironment): Promise<{ count: number }> =>
-    prismaPromise<{ count: number }>('Delete', 'User')(
-        env.prisma.user.deleteMany()
-    );
+export const deleteAllUsers = (): RTE.ReaderTaskEither<AppEnvironment, AppError, { count: number }> =>
+	({ prisma }) =>
+		prismaTE<{ count: number }>('Delete', 'User')(
+			prisma.user.deleteMany()
+		)
 
+// Get or create user (JIT provisioning pattern from auth middleware)
 export const getOrCreateUser = (
 	userData: Omit<User, 'createdAt' | 'updatedAt'>
-) => async (env: AppEnvironment): Promise<User> => {
-    const existing = await env.prisma.user.findUnique({ where: { id: userData.id } });
-    if (existing) return existing;
-    return await env.prisma.user.create({ data: userData });
-};
+): RTE.ReaderTaskEither<AppEnvironment, AppError, User> =>
+	pipe(
+		findUserByIdOptional(userData.id),
+		RTE.chainW((maybeUser) =>
+			pipe(
+				maybeUser,
+				O.fold(
+					() => createUser(userData),
+					(user) => RTE.of(user)
+				)
+			)
+		)
+	)

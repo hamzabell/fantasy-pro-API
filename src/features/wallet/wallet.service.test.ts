@@ -1,44 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWalletService } from './wallet.service.js';
-import { Decimal } from '../../generated/prisma/runtime/library.js';
-import type { AppError } from '../../fp/domain/errors/AppError.js';
+import { either as E } from 'fp-ts';
+import { taskEither as TE } from 'fp-ts';
+import { ethers } from 'ethers';
 
 // Mock Dependencies
+vi.mock('ethers', () => ({
+  ethers: {
+    Wallet: {
+      createRandom: vi.fn(),
+    },
+  },
+}));
+
 vi.mock('./encryption.js', () => ({
   encrypt: vi.fn((key) => `encrypted_${key}`),
   decrypt: vi.fn((key) => `decrypted_${key}`),
 }));
 
-// Mock @ton/ton and @ton/crypto
-vi.mock('@ton/ton', async () => {
-    return {
-        TonClient: vi.fn(),
-        WalletContractV4: {
-            create: vi.fn(() => ({
-                address: { toString: () => 'UQAddress' },
-                getSeqno: vi.fn(),
-                createTransfer: vi.fn(),
-                send: vi.fn()
-            }))
-        },
-        Address: {
-            parse: vi.fn((str) => str) 
-        },
-        toNano: vi.fn((val) => BigInt(100000000)),
-        fromNano: vi.fn((val) => '1'), 
-        internal: vi.fn(),
-        SendMode: { PAY_GAS_SEPARATELY: 1, IGNORE_ERRORS: 2 },
-        beginCell: vi.fn(),
-    };
-});
-
-vi.mock('@ton/crypto', () => ({
-    mnemonicNew: vi.fn().mockResolvedValue(['word1', 'word2']),
-    mnemonicToWalletKey: vi.fn().mockResolvedValue({
-        secretKey: Buffer.from('mockSecret'),
-        publicKey: Buffer.from('mockPublic')
-    }),
-}));
+import { Decimal } from '../../generated/prisma/runtime/library.js';
 
 describe('WalletService', () => {
   let mockRepo: any;
@@ -57,7 +37,6 @@ describe('WalletService', () => {
 
     mockBlockchainService = {
       getGasCost: vi.fn(),
-      transferTON: vi.fn(),
       transferMATIC: vi.fn(),
     };
 
@@ -66,46 +45,52 @@ describe('WalletService', () => {
 
   describe('createWalletForUser', () => {
     it('should create and encrypt a new wallet', async () => {
-      const mockWalletAddress = 'UQAddress';
-      // Mocks are already set in vi.mock
+      const mockWallet = {
+        address: '0xNewWallet',
+        privateKey: 'private_key',
+      };
+      (ethers.Wallet.createRandom as any).mockReturnValue(mockWallet);
 
       const userId = 'user123';
       const expectedWalletInDb = { 
         id: 'wallet1', 
         userId, 
-        address: mockWalletAddress, 
+        address: mockWallet.address, 
         balance: 0 
       };
 
       // Repo should be called with encrypted key
-      mockRepo.create.mockResolvedValue(expectedWalletInDb);
+      mockRepo.create.mockReturnValue(TE.right(expectedWalletInDb));
 
-      const result = await service.createWalletForUser(userId);
+      const result = await service.createWalletForUser(userId)();
 
-      expect(result).toEqual(expectedWalletInDb);
+      expect(E.isRight(result)).toBe(true);
+      if (E.isRight(result)) {
+        expect(result.right).toEqual(expectedWalletInDb);
+      }
       
-      // Dynamic import mocks check?
-      // Since we mocked at top level, even dynamic imports return mocked modules in Jest/Vitest usually.
-      // We can verify repo call.
+      expect(ethers.Wallet.createRandom).toHaveBeenCalled();
       expect(mockRepo.create).toHaveBeenCalledWith({
         userId,
-        address: mockWalletAddress,
-        encryptedPrivateKey: expect.stringMatching(/^encrypted_/),
+        address: mockWallet.address,
+        encryptedPrivateKey: 'encrypted_private_key', // Based on mock implementation
       });
     });
 
     it('should handle generation errors', async () => {
-      // Import mocked module to override for this test
-      const crypto = await import('@ton/crypto');
-      (crypto.mnemonicNew as any).mockRejectedValueOnce(new Error('Random generation failed'));
+      (ethers.Wallet.createRandom as any).mockImplementation(() => {
+        throw new Error('Random generation failed');
+      });
 
-      try {
-        await service.createWalletForUser('user123');
-        expect.fail('Should have thrown');
-      } catch (e: any) {
-         // AppError is plain object
-         expect(e._tag).toBe('InternalError');
-         expect(e.message).toContain('Failed to generate wallet');
+      const result = await service.createWalletForUser('user123')();
+
+      expect(E.isLeft(result)).toBe(true);
+      if (E.isLeft(result)) {
+          expect(result.left._tag).toBe('InternalError');
+          // InternalError has message
+          if (result.left._tag === 'InternalError') {
+             expect(result.left.message).toContain('Failed to generate wallet');
+          }
       }
     });
   });
@@ -113,76 +98,85 @@ describe('WalletService', () => {
   describe('getWalletBalance', () => {
     it('should return wallet balance string', async () => {
         const userId = 'user123';
-        const mockWallet = { balance: { toString: () => '150.50' } }; 
+        const mockWallet = { balance: { toString: () => '150.50' } }; // Mock Prisma Decimal behavior
         
-        mockRepo.findByUserId.mockResolvedValue(mockWallet);
+        mockRepo.findByUserId.mockReturnValue(TE.right(mockWallet));
 
-        const result = await service.getWalletBalance(userId);
+        const result = await service.getWalletBalance(userId)();
 
-        expect(result).toBe('150.50');
+        expect(E.isRight(result)).toBe(true);
+        if (E.isRight(result)) {
+            expect(result.right).toBe('150.50');
+        }
     });
 
     it('should handle repo errors', async () => {
-        mockRepo.findByUserId.mockRejectedValue(new Error('DatabaseError'));
+        mockRepo.findByUserId.mockReturnValue(TE.left({ tag: 'DatabaseError' }));
 
-        await expect(service.getWalletBalance('user123')).rejects.toThrow('DatabaseError');
+        const result = await service.getWalletBalance('user123')();
+
+        expect(E.isLeft(result)).toBe(true);
     });
   });
 
   describe('transferFunds', () => {
     it('should transfer funds successfully when balance is sufficient', async () => {
         const userId = 'user123';
-        const toAddress = 'UQRecipient';
+        const toAddress = '0xRecipient';
         const amount = '10.0';
-        const gasCost = '0.01'; // TON gas
+        const gasCost = '0.1';
         const startBalance = new Decimal('20.0');
-        const totalCost = new Decimal('10.01'); // amount + gas
+        const totalCost = new Decimal('10.1');
 
         // Mock Wallet
         const mockWallet = { 
             encryptedPrivateKey: 'encrypted_key',
             balance: startBalance 
         };
-        mockRepo.findByUserId.mockResolvedValue(mockWallet);
+        mockRepo.findByUserId.mockReturnValue(TE.right(mockWallet));
 
         // Mock Gas Cost
-        mockBlockchainService.getGasCost.mockResolvedValue(gasCost);
+        mockBlockchainService.getGasCost.mockReturnValue(TE.right(gasCost));
 
         // Mock Transfer
-        const txHash = 'seqno_2';
-        mockBlockchainService.transferTON = vi.fn().mockResolvedValue(txHash);
-        mockRepo.updateBalance.mockResolvedValue({ ...mockWallet, balance: startBalance.minus(totalCost) });
+        const txHash = '0xTxHash';
+        mockBlockchainService.transferMATIC.mockReturnValue(TE.right(txHash));
 
-        const result = await service.transferFunds(userId, toAddress, amount);
+        // Mock Balance Update
+        mockRepo.updateBalance.mockReturnValue(TE.right({ ...mockWallet, balance: startBalance.minus(totalCost) }));
 
-        expect(result).toBe(txHash);
+        const result = await service.transferFunds(userId, toAddress, amount)();
 
-        expect(mockBlockchainService.transferTON).toHaveBeenCalledWith('decrypted_encrypted_key', toAddress, amount);
+        expect(E.isRight(result)).toBe(true);
+        if (E.isRight(result)) {
+            expect(result.right).toBe(txHash);
+        }
+
+        expect(mockBlockchainService.transferMATIC).toHaveBeenCalledWith('decrypted_encrypted_key', toAddress, amount);
         expect(mockRepo.updateBalance).toHaveBeenCalledWith(userId, expect.objectContaining({ d: startBalance.minus(totalCost).d }));
     });
 
     it('should fail when balance is insufficient', async () => {
         const userId = 'user123';
         const amount = '100.0';
-        const gasCost = '0.01';
+        const gasCost = '1.0';
         const startBalance = new Decimal('50.0');
 
         const mockWallet = { 
             encryptedPrivateKey: 'key',
             balance: startBalance 
         };
-        mockRepo.findByUserId.mockResolvedValue(mockWallet);
-        mockBlockchainService.getGasCost.mockResolvedValue(gasCost);
-        mockBlockchainService.transferTON = vi.fn();
+        mockRepo.findByUserId.mockReturnValue(TE.right(mockWallet));
+        mockBlockchainService.getGasCost.mockReturnValue(TE.right(gasCost));
 
-        try {
-            await service.transferFunds(userId, 'UQRecipient', amount);
-            expect.fail('Should have thrown');
-        } catch (e: any) {
-            expect(e._tag).toBe('InsufficientBalanceError');
+        const result = await service.transferFunds(userId, '0xRecipient', amount)();
+
+        expect(E.isLeft(result)).toBe(true);
+        if (E.isLeft(result)) {
+           expect(result.left._tag).toBe('InsufficientBalanceError');
         }
         
-        expect(mockBlockchainService.transferTON).not.toHaveBeenCalled();
+        expect(mockBlockchainService.transferMATIC).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import app from './wallet.routes.js';
-import type { AppError } from '../../fp/domain/errors/AppError.js';
+import { taskEither as TE } from 'fp-ts';
+
+// We need to test the router logic. 
+// Since the router imports 'env' from context, we need to inject the mock service into the request context.
+// However, the exported 'app' is already defined. 
+// A common pattern in Hono testing is to construct a request and pass it to app.request provided we can mock the middleware/context.
+// In wallet.routes.ts: `const env = c.get('env');`
+// We can middleware to inject mocks before the route handler.
 
 describe('Wallet Routes', () => {
   let mockWalletService: any;
@@ -21,14 +28,12 @@ describe('Wallet Routes', () => {
     
     // Mock Middleware to inject env
     testApp.use('*', async (c, next) => {
-        c.set('env', { 
-            walletService: mockWalletService,
-            logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } 
-        } as any);
+        c.set('env', { walletService: mockWalletService } as any);
         await next();
     });
 
     // Mock Auth Middleware (simulating index.ts behavior)
+    // We can define different auth states per test or reuse a helper
     testApp.use('*', async (c, next) => {
         // Default to authorized for now, specific tests can override or we check header
         const authHeader = c.req.header('Authorization');
@@ -43,7 +48,7 @@ describe('Wallet Routes', () => {
 
   describe('GET /api/wallet/balance', () => {
     it('should return 200 with balance when authorized', async () => {
-        mockWalletService.getWalletBalance.mockResolvedValue('100.00');
+        mockWalletService.getWalletBalance.mockReturnValue(TE.right('100.00'));
 
         const res = await testApp.request('/api/wallet/balance', {
             method: 'GET',
@@ -70,7 +75,7 @@ describe('Wallet Routes', () => {
     });
 
     it('should return 500 on service error', async () => {
-        mockWalletService.getWalletBalance.mockRejectedValue({ _tag: 'DatabaseError', message: 'DB Fail' });
+        mockWalletService.getWalletBalance.mockReturnValue(TE.left({ _tag: 'DatabaseError', message: 'DB Fail' }));
 
         const res = await testApp.request('/api/wallet/balance', {
             method: 'GET',
@@ -90,7 +95,7 @@ describe('Wallet Routes', () => {
     };
 
     it('should return 200 with txHash when successful', async () => {
-      mockWalletService.transferFunds.mockResolvedValue('0xTxHash');
+      mockWalletService.transferFunds.mockReturnValue(TE.right('0xTxHash'));
 
       const res = await testApp.request('/api/wallet/transfer', {
         method: 'POST',
@@ -105,8 +110,7 @@ describe('Wallet Routes', () => {
     });
 
     it('should return 402 with insufficient funds', async () => {
-      // Mock InsufficientBalanceError
-      mockWalletService.transferFunds.mockRejectedValue({ _tag: 'InsufficientBalanceError', required: 10, available: 5 });
+      mockWalletService.transferFunds.mockReturnValue(TE.left({ _tag: 'InsufficientBalanceError', required: 10, available: 5 }));
 
       const res = await testApp.request('/api/wallet/transfer', {
         method: 'POST',
@@ -114,9 +118,6 @@ describe('Wallet Routes', () => {
         body: JSON.stringify(transferPayload)
       });
 
-      // Assuming runHandler maps InsufficientBalanceError to 402 or 400.
-      // If runHandler uses standard ErrorHandler which likely maps InsufficientBalanceError to 402 (Payment Required) or 400 (Bad Request).
-      // Let's assume 402 based on variable name/intent, or fallback to 400.
       expect(res.status).toBe(402);
     });
 
@@ -131,7 +132,7 @@ describe('Wallet Routes', () => {
     });
 
     it('should return 500 on generic service error', async () => {
-       mockWalletService.transferFunds.mockRejectedValue({ _tag: 'InternalError', message: 'Oops' });
+       mockWalletService.transferFunds.mockReturnValue(TE.left({ _tag: 'InternalError', message: 'Oops' }));
 
        const res = await testApp.request('/api/wallet/transfer', {
          method: 'POST',
@@ -146,7 +147,7 @@ describe('Wallet Routes', () => {
   describe('GET /api/wallet/transactions', () => {
     it('should return 200 with transactions when authorized', async () => {
         const mockTransactions = [{ id: 'tx1', amount: '10' }];
-        mockWalletService.getUserTransactions.mockResolvedValue(mockTransactions);
+        mockWalletService.getUserTransactions.mockReturnValue(TE.right(mockTransactions));
 
         const res = await testApp.request('/api/wallet/transactions', {
             method: 'GET',
@@ -171,7 +172,7 @@ describe('Wallet Routes', () => {
     });
 
     it('should return 500 on service error', async () => {
-        mockWalletService.getUserTransactions.mockRejectedValue({ _tag: 'DatabaseError', message: 'DB Fail' });
+        mockWalletService.getUserTransactions.mockReturnValue(TE.left({ _tag: 'DatabaseError', message: 'DB Fail' }));
 
         const res = await testApp.request('/api/wallet/transactions', {
             method: 'GET',

@@ -1,44 +1,41 @@
 import '../../types/hono.js' // Import Hono type extensions
-import '../../types/hono.js' // Import Hono type extensions
+import * as E from 'fp-ts/Either';
+import * as RTE from 'fp-ts/ReaderTaskEither';
+import * as F from 'fp-ts/function';
+const { pipe } = F;
 import type { Context } from 'hono'
 import type { AppEnvironment } from '../infrastructure/Environment.js'
+import type { AppError } from '../domain/errors/AppError.js'
 import { toHttpStatus } from '../domain/errors/ErrorMapping.js'
 import { toErrorResponse } from '../domain/errors/ErrorResponse.js'
 
-// Helper to run async handlers in Hono
-export const runHandler = async (
+// Helper to run RTE programs in Hono route handlers
+export const runProgram = <A>(
 	c: Context,
-	handler: (env: AppEnvironment) => Promise<Response>
+	program: RTE.ReaderTaskEither<AppEnvironment, AppError, A>
+) => async (
+	onSuccess: (result: A) => Response | Promise<Response>,
+	statusCode: number = 200
 ): Promise<Response> => {
 	const env = c.get('env') as AppEnvironment
-	
-	try {
-		return await handler(env)
-	} catch (error: any) {
-		// Log error if it's an AppError-like object, or just general error
-		env.logger.error('Request failed', {
-			error: error._tag || 'UnknownError',
-			message: error.message,
-			path: c.req.path,
-			method: c.req.method
-		})
+	const result = await program(env)()
 
-		// If it's a known AppError (has _tag), use it. Otherwise, wrap in InternalError logic or similar.
-		if (error._tag) {
-			const statusCode = toHttpStatus(error)
-			return c.json(
-				toErrorResponse(error),
-				statusCode as any
-			)
-		}
-
-		// Fallback for unknown errors
-		return c.json(
-			{
-				error: 'InternalServerError',
-				message: error.message || 'An unexpected error occurred'
+	return pipe(
+		result,
+		E.fold(
+			(error) => {
+				env.logger.error('Request failed', {
+					error: error._tag,
+					path: c.req.path,
+					method: c.req.method
+				})
+				const statusCode = toHttpStatus(error)
+				return c.json(
+					toErrorResponse(error),
+					statusCode as any
+				)
 			},
-			500
+			onSuccess
 		)
-	}
+	)
 }
