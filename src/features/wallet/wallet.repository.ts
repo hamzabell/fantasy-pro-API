@@ -1,6 +1,7 @@
 import type { PrismaClient, Wallet, Transaction } from '../../generated/prisma/index.js';
-import * as TE from "fp-ts/TaskEither";
-import {pipe} from "fp-ts/function";
+import * as TE from 'fp-ts/TaskEither';
+import * as F from 'fp-ts/function';
+const { pipe } = F;
 
 
 type TaskEither<E, A> = TE.TaskEither<E, A>;

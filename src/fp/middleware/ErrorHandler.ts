@@ -1,5 +1,7 @@
 import '../../types/hono.js' // Import Hono type extensions
-import { either as E, readerTaskEither as RTE, function as F } from 'fp-ts';
+import * as E from 'fp-ts/Either';
+import * as RTE from 'fp-ts/ReaderTaskEither';
+import * as F from 'fp-ts/function';
 const { pipe } = F;
 import type { Context } from 'hono'
 import type { AppEnvironment } from '../infrastructure/Environment.js'

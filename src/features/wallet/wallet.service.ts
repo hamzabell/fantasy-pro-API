@@ -1,4 +1,5 @@
-import { taskEither as TE, function as F } from 'fp-ts';
+import * as TE from 'fp-ts/TaskEither';
+import * as F from 'fp-ts/function';
 const { pipe } = F;
 type TaskEither<E, A> = TE.TaskEither<E, A>;
 import type { AppError } from '../../fp/domain/errors/AppError.js';

@@ -1,4 +1,6 @@
-import { taskEither as TE, either as E, function as F } from 'fp-ts';
+import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either';
+import * as F from 'fp-ts/function';
 const { pipe } = F;
 type TaskEither<E, A> = TE.TaskEither<E, A>;
 import type { ZodSchema } from 'zod';

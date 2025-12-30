@@ -1,5 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { taskEither as TE, either as E, function as F } from 'fp-ts';
+import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either';
+import * as F from 'fp-ts/function';
 const { pipe } = F;
 type TaskEither<E, A> = TE.TaskEither<E, A>;
 type Either<E, A> = E.Either<E, A>;
