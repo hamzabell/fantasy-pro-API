@@ -1,42 +1,38 @@
-import * as E from 'fp-ts/Either';
-import * as TE from 'fp-ts/TaskEither';
-import * as F from 'fp-ts/function';
-const { pipe } = F;
-import { z } from 'zod'
-import type { AppError } from '../domain/errors/AppError.js'
-import { validationError } from '../domain/errors/AppError.js'
+import type { ZodSchema, ZodError } from 'zod';
+import { validationError } from '../domain/errors/AppError.js';
 
-// Sync validation: Zod → Either
-export const validateSync = <T>(schema: z.ZodSchema<T>) =>
-	(data: unknown): E.Either<AppError, T> => {
-		const result = schema.safeParse(data)
+export const validateSync = <T>(schema: ZodSchema<T>) => (data: unknown): T => {
+    const result = schema.safeParse(data);
+    if (!result.success) {
+        const err = result.error as ZodError;
+        const msg = err.errors[0]?.message || 'Validation failed';
+        const path = err.errors[0]?.path.join('.') || 'unknown';
+        // Original returned Either.Left. Here we throw AppError.
+        throw validationError(path, msg, data);
+    }
+    return result.data;
+};
 
-		return result.success
-			? E.right(result.data)
-			: E.left(validationError(
-				result.error.issues[0]?.path.join('.') ?? 'unknown',
-				result.error.issues[0]?.message ?? 'Validation failed',
-				data
-			))
-	}
+// Async validation: Zod → Promise
+export const validateAsync = <T>(schema: ZodSchema<T>) => async (data: unknown): Promise<T> => {
+    return validateSync(schema)(data);
+}
 
-// Async validation: Zod → TaskEither
-export const validateTE = <T>(schema: z.ZodSchema<T>) =>
-	(data: unknown): TE.TaskEither<AppError, T> =>
-		TE.fromEither(validateSync(schema)(data))
+// Keep validateTE name if used elsewhere but make it return Promise?
+// Or better, alias it to validateAsync for compatibility during transition, 
+// though I should have refactored usages.
+// I'll keep the name but return Promise.
+export const validateTE = validateAsync;
 
 // Parse JSON body with validation
-export const parseJsonBody = <T>(schema: z.ZodSchema<T>) =>
-	(body: unknown): TE.TaskEither<AppError, T> =>
-		pipe(
-			TE.tryCatch(
-				async () => {
-					if (typeof body === 'string') {
-						return JSON.parse(body)
-					}
-					return body
-				},
-				() => validationError('body', 'Invalid JSON in request body')
-			),
-			TE.chainW(validateTE(schema))
-		)
+export const parseJsonBody = <T>(schema: ZodSchema<T>) => async (body: unknown): Promise<T> => {
+    let parsed: unknown = body;
+    if (typeof body === 'string') {
+        try {
+            parsed = JSON.parse(body);
+        } catch (e) {
+            throw validationError('body', 'Invalid JSON in request body');
+        }
+    }
+    return validateSync(schema)(parsed);
+}

@@ -1,76 +1,44 @@
-import * as TE from 'fp-ts/TaskEither';
-import * as F from 'fp-ts/function';
-const { pipe } = F;
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library.js'
 import type { AppError } from '../domain/errors/AppError.js'
 import { databaseError, notFoundError } from '../domain/errors/AppError.js'
 
 export type DatabaseOperation = 'Create' | 'Read' | 'Update' | 'Delete'
 
-// Core wrapper: Wrap Prisma operations in TaskEither
-export const prismaTE = <T>(
+// Core wrapper
+export const prismaPromise = <T>(
 	operation: DatabaseOperation,
 	model: string
-) => (promise: Promise<T>): TE.TaskEither<AppError, T> =>
-	TE.tryCatch(
-		() => promise,
-		(error) => {
-			// Handle Prisma-specific errors
-			if (error instanceof PrismaClientKnownRequestError) {
-				return databaseError(operation, model, error, error.code)
-			}
-			return databaseError(operation, model, error)
+) => async (promise: Promise<T>): Promise<T> => {
+	try {
+		return await promise
+	} catch (error) {
+		if (error instanceof PrismaClientKnownRequestError) {
+			throw databaseError(operation, model, error, error.code)
 		}
-	)
+		throw databaseError(operation, model, error)
+	}
+}
 
-// Helper for findUnique (nullable results → Either)
-export const findUniqueTE = <T>(
+// Helper for findUnique (nullable results -> throws if null)
+export const findUniquePromise = <T>(
 	model: string,
 	id: string
-) => (promise: Promise<T | null>): TE.TaskEither<AppError, T> =>
-	pipe(
-		prismaTE<T | null>('Read', model)(promise),
-		TE.chainW((result) =>
-			result === null
-				? TE.left(notFoundError(model, id))
-				: TE.right(result)
-		)
-	)
+) => async (promise: Promise<T | null>): Promise<T> => {
+	const result = await prismaPromise<T | null>('Read', model)(promise)
+	if (result === null) {
+		throw notFoundError(model, id)
+	}
+	return result
+}
 
-// Helper for findFirst (nullable results → Either)
-export const findFirstTE = <T>(
+// Helper for findFirst (nullable results -> throws if null)
+export const findFirstPromise = <T>(
 	model: string,
 	criteria: string
-) => (promise: Promise<T | null>): TE.TaskEither<AppError, T> =>
-	pipe(
-		prismaTE<T | null>('Read', model)(promise),
-		TE.chainW((result) =>
-			result === null
-				? TE.left(notFoundError(model, criteria))
-				: TE.right(result)
-		)
-	)
-
-// Helper for create operations
-export const createTE = <T = any>(
-	model: string
-): ((promise: Promise<T>) => TE.TaskEither<AppError, T>) =>
-	(promise: Promise<T>) => prismaTE<T>('Create', model)(promise)
-
-// Helper for update operations
-export const updateTE = <T = any>(
-	model: string
-): ((promise: Promise<T>) => TE.TaskEither<AppError, T>) =>
-	(promise: Promise<T>) => prismaTE<T>('Update', model)(promise)
-
-// Helper for delete operations
-export const deleteTE = <T = any>(
-	model: string
-): ((promise: Promise<T>) => TE.TaskEither<AppError, T>) =>
-	(promise: Promise<T>) => prismaTE<T>('Delete', model)(promise)
-
-// Helper for findMany operations
-export const findManyTE = <T = any>(
-	model: string
-): ((promise: Promise<T[]>) => TE.TaskEither<AppError, T[]>) =>
-	(promise: Promise<T[]>) => prismaTE<T[]>('Read', model)(promise)
+) => async (promise: Promise<T | null>): Promise<T> => {
+	const result = await prismaPromise<T | null>('Read', model)(promise)
+	if (result === null) {
+		throw notFoundError(model, criteria)
+	}
+	return result
+}

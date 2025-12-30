@@ -207,7 +207,7 @@ export class PublicLeagueService {
             // Credit User
             try {
                 // We await inside loop or collect tasks. Await is safer for transactions.
-                await this.walletService.creditUser(member.userId, prizeAmount.toString())(); // TaskEither execution
+                await this.walletService.creditUser(member.userId, prizeAmount.toString()); // Promise execution
                 
                 // Update Membership Payout Info
                 payoutUpdates.push(

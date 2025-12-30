@@ -1,19 +1,6 @@
-import * as RTE from 'fp-ts/ReaderTaskEither';
-import * as TE from 'fp-ts/TaskEither';
-import * as O from 'fp-ts/Option';
-import * as F from 'fp-ts/function';
-const { pipe } = F;
 import type { Team, RealLifeLeague } from '../../../generated/prisma/index.js'
-import type { AppEnvironment } from '../../../fp/infrastructure/Environment.js'
-import type { AppError } from '../../../fp/domain/errors/AppError.js'
-import {
-	createTE,
-	findUniqueTE,
-	findManyTE,
-	updateTE,
-	deleteTE,
-	prismaTE
-} from '../../../fp/adapters/PrismaAdapter.js'
+import prisma from '../../../prisma.js' // Importing global prisma instance
+import { databaseError, notFoundError } from '../../../fp/domain/errors/AppError.js'
 
 // Types for repository operations
 export interface CreateTeamData {
@@ -30,88 +17,111 @@ export interface UpdateTeamData {
     realLifeLeague?: RealLifeLeague 
 }
 
-// Repository functions - all return ReaderTaskEither
-export const createTeam = (
+// Repository functions - returning Promise
+
+export const createTeam = async (
 	data: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>
-): RTE.ReaderTaskEither<AppEnvironment, AppError, Team> =>
-	({ prisma }) =>
-		createTE('Team')(
-			prisma.team.create({ data })
-		)
+): Promise<Team> => {
+    try {
+        return await prisma.team.create({ data });
+    } catch (e: any) {
+        throw databaseError('Create', 'Team', e);
+    }
+}
 
-export const findTeamById = (
+export const findTeamById = async (
 	id: string
-): RTE.ReaderTaskEither<AppEnvironment, AppError, Team> =>
-	({ prisma }) =>
-		findUniqueTE<Team>('Team', id)(
-			prisma.team.findUnique({ where: { id } })
-		)
+): Promise<Team> => {
+    try {
+        const team = await prisma.team.findUnique({ where: { id } });
+        if (!team) throw notFoundError('Team', id);
+        return team;
+    } catch (e: any) {
+        // If it's already an AppError, rethrow. Otherwise wrap.
+        // Simplified for now.
+        if (e._tag) throw e;
+        throw databaseError('Read', 'Team', e);
+    }
+}
 
-export const findTeamByUserAndLeague = (
+
+export const findTeamByUserAndLeague = async (
 	userId: string,
     realLifeLeague: RealLifeLeague
-): RTE.ReaderTaskEither<AppEnvironment, AppError, Team> =>
-	({ prisma }) =>
-		findUniqueTE<Team>('Team', `${userId}-${realLifeLeague}`)(
-			prisma.team.findUnique({ 
-                where: { 
-                    userId_realLifeLeague: {
-                        userId,
-                        realLifeLeague
-                    }
-                } 
-            })
-		)
+): Promise<Team> => {
+    try {
+        const team = await prisma.team.findUnique({ 
+            where: { 
+                userId_realLifeLeague: {
+                    userId,
+                    realLifeLeague
+                }
+            } 
+        });
+        if (!team) throw notFoundError('Team', `${userId}-${realLifeLeague}`);
+        return team;
+    } catch (e: any) {
+        if (e._tag) throw e;
+        throw databaseError('Read', 'Team', e);
+    }
+}
 
-// Optional version - returns Option instead of failing when not found
-export const findTeamByUserAndLeagueOptional = (
+// Optional version - returns null instead of throwing when not found
+export const findTeamByUserAndLeagueOptional = async (
 	userId: string,
     realLifeLeague: RealLifeLeague
-): RTE.ReaderTaskEither<AppEnvironment, AppError, O.Option<Team>> =>
-	({ prisma }) =>
-		pipe(
-			prismaTE<Team | null>('Read', 'Team')(
-				prisma.team.findUnique({ 
-                    where: { 
-                        userId_realLifeLeague: {
-                            userId,
-                            realLifeLeague
-                        }
-                    } 
-                })
-			),
-			TE.map(O.fromNullable)
-		) as TE.TaskEither<AppError, O.Option<Team>>
+): Promise<Team | null> => {
+    try {
+        return await prisma.team.findUnique({ 
+            where: { 
+                userId_realLifeLeague: {
+                    userId,
+                    realLifeLeague
+                }
+            } 
+        });
+    } catch (e: any) {
+        throw databaseError('Read', 'Team', e);
+    }
+}
 
-export const findAllTeams = (
+export const findAllTeams = async (
     realLifeLeague?: RealLifeLeague
-): RTE.ReaderTaskEither<AppEnvironment, AppError, Team[]> =>
-	({ prisma }) =>
-		findManyTE('Team')(
-			prisma.team.findMany({
-                where: realLifeLeague ? { realLifeLeague } : undefined
-            })
-		)
+): Promise<Team[]> => {
+    try {
+        return await prisma.team.findMany({
+            where: realLifeLeague ? { realLifeLeague } : undefined
+        });
+    } catch (e: any) {
+        throw databaseError('Read', 'Team', e);
+    }
+}
 
-export const updateTeam = (
+export const updateTeam = async (
 	id: string,
 	data: Partial<Team>
-): RTE.ReaderTaskEither<AppEnvironment, AppError, Team> =>
-	({ prisma }) =>
-		updateTE('Team')(
-			prisma.team.update({ where: { id }, data })
-		)
+): Promise<Team> => {
+    try {
+        return await prisma.team.update({ where: { id }, data });
+    } catch (e: any) {
+        throw databaseError('Update', 'Team', e);
+    }
+}
 
-export const deleteTeam = (
+export const deleteTeam = async (
 	id: string
-): RTE.ReaderTaskEither<AppEnvironment, AppError, Team> =>
-	({ prisma }) =>
-		deleteTE('Team')(
-			prisma.team.delete({ where: { id } })
-		)
+): Promise<Team> => {
+    try {
+        return await prisma.team.delete({ where: { id } });
+    } catch (e: any) {
+        throw databaseError('Delete', 'Team', e);
+    }
+}
 
-export const deleteAllTeams = (): RTE.ReaderTaskEither<AppEnvironment, AppError, { count: number }> =>
-	({ prisma }) =>
-		prismaTE<{ count: number }>('Delete', 'Team')(
-			prisma.team.deleteMany()
-		)
+export const deleteAllTeams = async (): Promise<{ count: number }> => {
+    try {
+        return await prisma.team.deleteMany();
+    } catch (e: any) {
+        throw databaseError('Delete', 'Team', e);
+    }
+}

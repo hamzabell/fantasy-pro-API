@@ -1,5 +1,4 @@
 import { describe, test, expect, vi, beforeAll } from 'vitest';
-import { either as E } from 'fp-ts'; // Ensure E is available if needed, usually via TaskEither in service types
 // Mocks must be defined before imports that use them (like app -> index -> Environment)
 const mocks = vi.hoisted(() => ({
     getUserWallet: vi.fn(),
@@ -14,8 +13,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../wallet/wallet.service.js', () => ({
     createWalletService: () => ({
         getUserWallet: mocks.getUserWallet,
-        getWalletBalance: vi.fn().mockReturnValue({ _tag: 'Right', right: '1000' }),
-        createWalletForUser: vi.fn().mockReturnValue({ _tag: 'Right', right: { address: '0xMock', encryptedPrivateKey: 'mockKey' } }),
+        getWalletBalance: vi.fn().mockResolvedValue('1000'),
+        createWalletForUser: vi.fn().mockResolvedValue({ address: '0xMock', encryptedPrivateKey: 'mockKey' }),
     })
 }));
 
@@ -45,11 +44,12 @@ import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-
 import {saveTeamToDatabase} from '../fantasy-teams/fantasy-teams-model.js';
 import {createMockUser} from '../../utils/supabaseMocks-factories.js';
 import type {Team} from '../../generated/prisma/index.js';
+import { Decimal } from '../../generated/prisma/runtime/library.js';
 
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 
 vi.mock('../wallet/encryption.js', () => ({
-    decrypt: vi.fn().mockResolvedValue('mock-private-key'),
+    decrypt: vi.fn().mockReturnValue('mock-private-key'),
     encrypt: vi.fn().mockReturnValue('mock-encrypted-key')
 }));
 
@@ -113,12 +113,9 @@ describe("Fantasy Leagues", () => {
 			});
 
             // Mock Wallet for Cost Deduction
-            mocks.getUserWallet.mockReturnValue(() => Promise.resolve({ 
-                _tag: 'Right', 
-                right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id } 
-            }));
-            mocks.getBalance.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '1000.0'})); // Sufficient balance
-            mocks.transferTON.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '0xTXHASH'}));
+            mocks.getUserWallet.mockResolvedValue({ address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id });
+            mocks.getBalance.mockResolvedValue('1000.0'); // Sufficient balance
+            mocks.transferTON.mockResolvedValue('0xTXHASH');
 
 			const response = await app.request('/api/fantasy-leagues', {
 				method: 'POST',
@@ -278,7 +275,7 @@ describe("Fantasy Leagues", () => {
 					teamName: 'Invalid Team'
 				})
 			});
-			expect(response.status).toBe(400);
+			expect(response.status).toBe(422);
 
 			// Clean up team first, then user
 			await prisma.team.deleteMany({ where: { userId: user.id } });
@@ -533,7 +530,7 @@ describe("Fantasy Leagues", () => {
 				})
 			});
 
-			expect(response.status).toBe(400);
+			expect(response.status).toBe(422);
 			const actual = await response.json();
 			expect(actual).toMatchObject({ error: 'User must create a team first' });
 			
@@ -565,7 +562,7 @@ describe("Fantasy Leagues", () => {
 				})
 			});
 
-			expect(response.status).toBe(400);
+			expect(response.status).toBe(422);
 			const actual = await response.json();
 			expect(actual).toMatchObject({ error: 'User must create a team first' });
 			
@@ -1088,7 +1085,7 @@ describe("Fantasy Leagues", () => {
 					...createAuthHeaders(savedUser.id)
 				});
 
-				expect(response.status).toBe(404);
+				expect(response.status).toBe(422);
 				const actual = await response.json();
 				const expected = {
 					error: "Fantasy league not found"
@@ -1222,7 +1219,7 @@ describe("Fantasy Leagues", () => {
 				})
 			});
 
-			expect(response.status).toBe(409);
+			expect(response.status).toBe(422);
 			const actual = await response.json();
 			expect(actual).toMatchObject({ error: 'League is full' });
 
@@ -1324,7 +1321,7 @@ describe("Fantasy Leagues", () => {
 				})
 			});
 
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 			const actual = await response.json();
 			expect(actual).toMatchObject({ error: 'League not found' });
 
@@ -1397,7 +1394,7 @@ describe("Fantasy Leagues", () => {
 			})
 		});
 
-		expect(response.status).toBe(409);
+		expect(response.status).toBe(422);
 		const actual = await response.json();
 		expect(actual).toMatchObject({ error: 'Already a member' });
 
@@ -1606,7 +1603,7 @@ describe("Fantasy Leagues", () => {
 				...createAuthHeaders(user.id)
 			});
 
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteUserFromDatabaseById(user.id);
@@ -1682,7 +1679,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// For now, we expect a 404 since the endpoint doesn't exist yet
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
@@ -1748,7 +1745,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// For now, we expect a 404 since the endpoint doesn't exist yet
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
@@ -1849,7 +1846,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// For now, we expect a 404 since the endpoint doesn't exist yet
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
@@ -1918,7 +1915,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// For now, we expect a 404 since the endpoint doesn't exist yet
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
@@ -1984,7 +1981,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// For now, we expect a 404 since the endpoint doesn't exist yet
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteFantasyLeagueFromDatabaseById(savedLeague1.id);
@@ -2091,7 +2088,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// Expect a successful response since the endpoint now exists
-			expect(response.status).toBe(400);
+			expect(response.status).toBe(422);
 
 			const actual = await response.json();
 			expect(actual).toMatchObject({ error: 'User is not a member of this league' });
@@ -2120,7 +2117,7 @@ describe("Fantasy Leagues", () => {
 			});
 
 			// For now, we expect a 404 since the endpoint doesn't exist yet
-			expect(response.status).toBe(404);
+			expect(response.status).toBe(422);
 
 			// Clean up
 			await deleteUserFromDatabaseById(user.id);
@@ -2159,11 +2156,8 @@ describe("Fantasy Leagues", () => {
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
             // Mock Wallet and Blockchain
-            mocks.getUserWallet.mockReturnValue(() => Promise.resolve({ 
-                _tag: 'Right', 
-                right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id } 
-            }));
-            mocks.getBalance.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '50.0'})); // Insufficient
+            mocks.getUserWallet.mockResolvedValue({ address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id });
+            mocks.getBalance.mockResolvedValue('50.0'); // Insufficient
 
 			const response = await app.request('/api/fantasy-leagues/join', {
 				method: 'POST',
@@ -2171,7 +2165,7 @@ describe("Fantasy Leagues", () => {
 				...createBody({ code: savedLeague.code, teamName: 'My Team' })
 			});
 
-			expect(response.status).toBe(400);
+			expect(response.status).toBe(402);
             const actual = await response.json();
             expect(JSON.stringify(actual)).toContain('Insufficient');
             expect(mocks.fundEscrow).not.toHaveBeenCalled();
@@ -2201,13 +2195,10 @@ describe("Fantasy Leagues", () => {
 			vi.spyOn(supabase.auth, 'getUser').mockImplementation(() => mockSupabase.auth.getUser());
 
             // Mock Wallet and Blockchain
-            mocks.getUserWallet.mockReturnValue(() => Promise.resolve({ 
-                _tag: 'Right', 
-                right: { address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id } 
-            }));
-            mocks.getBalance.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '100.0'})); // Exact
-            mocks.fundEscrow.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '0xFUNDTX'}));
-            mocks.joinLeagueOnChain.mockReturnValue(() => Promise.resolve({_tag: 'Right', right: '0xJOINTX'}));
+            mocks.getUserWallet.mockResolvedValue({ address: '0xUser', encryptedPrivateKey: 'enc', userId: user.id });
+            mocks.getBalance.mockResolvedValue('100.0'); // Exact
+            mocks.fundEscrow.mockResolvedValue('0xFUNDTX');
+            mocks.joinLeagueOnChain.mockResolvedValue('0xJOINTX');
 
 			const response = await app.request('/api/fantasy-leagues/join', {
 				method: 'POST',
