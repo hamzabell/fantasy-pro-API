@@ -20,12 +20,12 @@ async function main() {
   });
   console.log(`Deleted ${deletedLeagues.count} public leagues.`);
 
-  // Initialize dependencies for PublicLeagueService
+  // Initialize Services (Mocking Environment injection)
   const blockchainService = createBlockchainService(
-    process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC',
-    process.env.TON_API_KEY || '',
-    process.env.LEAGUE_ESCROW_ADDRESS || '',
-    process.env.SERVER_MNEMONIC || ''
+    process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
+    process.env.POLYGON_API_KEY || '',
+    process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
+    process.env.SERVER_PRIVATE_KEY || ''
   );
 
   const walletRepo = createWalletRepository(prisma);

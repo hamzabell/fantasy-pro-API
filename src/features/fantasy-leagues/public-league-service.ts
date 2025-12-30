@@ -252,7 +252,7 @@ export class PublicLeagueService {
     
     const paddedGw = gameweekId.toString().padStart(2, '0');
     // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in MATIC]
-    const leagueName = `GW${paddedGw} Premier League ${stake} TON`;
+    const leagueName = `GW${paddedGw} Premier League ${stake} POL`;
 
     await this.prisma.fantasyLeague.create({
         data: {

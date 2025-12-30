@@ -3,7 +3,16 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create some gameweeks for testing
+  // 1. Clear existing Data
+  console.log('Clearing old data...');
+  await prisma.transaction.deleteMany({});
+  await prisma.fantasyLeagueMembership.deleteMany({});
+  await prisma.fantasyLeague.deleteMany({});
+  await prisma.wallet.deleteMany({});
+  await prisma.team.deleteMany({});
+  await prisma.user.deleteMany({});
+  
+  // 2. Seed Gameweeks
   const gameweeks = [
     { id: 1, deadline: new Date('2025-08-10T10:00:00Z'), isActive: false },
     { id: 2, deadline: new Date('2025-08-17T10:00:00Z'), isActive: false },
@@ -20,7 +29,17 @@ async function main() {
     });
   }
 
-  console.log('Seeded gameweeks');
+  // 3. Seed Test User
+  const user = await prisma.user.create({
+      data: {
+          email: 'test@fantasypro.app',
+          name: 'Test User',
+          coins: 1000,
+          walletAddress: '0x1234567890abcdef1234567890abcdef12345678' // Mock POL address
+      }
+  });
+
+  console.log('Seeded gameweeks and test user:', user.email);
 }
 
 main()

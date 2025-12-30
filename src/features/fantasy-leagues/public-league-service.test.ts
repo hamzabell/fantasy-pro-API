@@ -84,6 +84,7 @@ describe('PublicLeagueService', () => {
                      limit: 100,
                      leagueType: 'public',
                      gameweekId: 21,
+                     commissionRate: 10, // Add commission 10% so calculation results in 90 payout
                      members: [
                          { id: 'mem1', userId: 'user1', score: new Decimal(50) },
                          { id: 'mem2', userId: 'user2', score: new Decimal(40) }

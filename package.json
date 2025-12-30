@@ -11,7 +11,8 @@
     "prisma:studio": "npx prisma studio",
     "prisma:seed": "tsx prisma/seed.ts && tsx src/utils/reseed-public-leagues.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
-    "get-auth-token": "tsx src/utils/get-auth-token.ts"
+    "get-auth-token": "tsx src/utils/get-auth-token.ts",
+    "generate:api-key": "tsx scripts/generate-api-key.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.17.0",

@@ -32,10 +32,10 @@ const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/a
 const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, REDIRECT_URI);
 
 const blockchainService = createBlockchainService(
-    process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC',
-    process.env.TON_API_KEY || '',
-    process.env.LEAGUE_ESCROW_ADDRESS || '0x0',
-    process.env.SERVER_MNEMONIC || ''
+    process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
+    process.env.POLYGON_API_KEY || '',
+    process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
+    process.env.SERVER_PRIVATE_KEY || ''
 );
 const walletRepository = createWalletRepository(prisma);
 const walletService = createWalletService(walletRepository, blockchainService);
@@ -96,10 +96,10 @@ export const loginWithGoogleCode = (code: string, referralCode?: string): TaskEi
       }
     ),
     // 2. Find or Create User
-    TE.chain((payload) => 
+    TE.chainW((payload) => 
       pipe(
         retrieveUserFromDatabaseByEmail(payload.email || ''),
-        TE.chain((existingUser) => {
+        TE.chainW((existingUser) => {
             if (existingUser) {
                 // Always sync user details from Google on login to ensure freshness
                 console.log('[Auth] Google Login for:', existingUser.email, 'Payload Picture:', payload.picture);
@@ -131,30 +131,36 @@ export const loginWithGoogleCode = (code: string, referralCode?: string): TaskEi
                         },
                         (e) => internalError('Failed to create user', e)
                     ),
-                    TE.chain((user) => 
-                        pipe(
-                             walletService.createWalletForUser(user.id),
-                             // Credit Referrer
-                             TE.chainFirst(() => {
-                                if (referralCode) {
-                                    // Fire and forget or sequential? Better sequential for safety, but don't fail login if referral fails?
-                                    // For now, let's try to update and ignore error or log it.
-                                    return TE.tryCatch(
-                                        async () => {
-                                            console.log(`[Referral] Crediting referrer: ${referralCode}`);
-                                            await incrementUserCoins(referralCode, 50);
-                                        },
-                                        (e) => {
-                                            console.error('[Referral] Failed to credit referrer', e);
-                                            return internalError('Referral Error', e); 
-                                        }
-                                    );
-                                }
-                                return TE.right(undefined);
-                             }),
-                             TE.map(() => user)
-                        )
-                    )
+                    TE.chain((user) => {
+                         // Credit Referrer
+                         if (referralCode) {
+                            // Fire and forget or sequential? Better sequential for safety, but don't fail login if referral fails?
+                            // For now, let's try to update and ignore error or log it.
+                            return pipe(
+                                TE.tryCatch(
+                                    async () => {
+                                        console.log(`[Referral] Crediting referrer: ${referralCode}`);
+                                        await incrementUserCoins(referralCode, 50);
+                                    },
+                                    (e: unknown) => {
+                                        console.error('[Referral] Failed to credit referrer', e);
+                                        return internalError('Referral Error', e instanceof Error ? e : new Error(String(e))); 
+                                    }
+                                ),
+                                TE.map(() => user),
+                                // If referral fails effectively, we still return user. 
+                                // TE.chain above would fail the whole flow if left returns.
+                                // So we need to handle the Left case of referral to NOT block login?
+                                // Actually TE.tryCatch returns Left on error.
+                                // We should recover from referral error.
+                                TE.orElse((e) => {
+                                    console.warn('Referral failed but proceeding with login', e);
+                                    return TE.right(user);
+                                })
+                            );
+                         }
+                         return TE.right(user);
+                    })
                 );
             }
         })

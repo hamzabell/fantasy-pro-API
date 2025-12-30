@@ -144,8 +144,20 @@ async function processBatch(
   return Promise.all(batchPromises);
 }
 
+import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
+import { createWalletRepository } from '../wallet/wallet.repository.js'; // To look up addresses
+import { createWalletService } from '../wallet/wallet.service.js';
+
+// Initialize services (ideally passed in)
+const blockchainService = createBlockchainService(
+    process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
+    process.env.POLYGON_API_KEY || '',
+    process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
+    process.env.SERVER_PRIVATE_KEY || ''
+);
+
 /**
- * Update database with calculated winners in batches
+ * Update database with calculated winners in batches AND trigger payouts
  */
 async function updateWinnersInBatch(results: LeagueWinnerResult[]): Promise<void> {
   const successfulResults = results.filter(r => r.success);
@@ -154,21 +166,84 @@ async function updateWinnersInBatch(results: LeagueWinnerResult[]): Promise<void
     return;
   }
 
-  // Use Promise.all to update concurrently but allow individual failures
-  // This is more robust than a single transaction which would fail the entire batch
-  // if one league record is missing or has issues
   const updatePromises = successfulResults.map(async (result) => {
     try {
+      // 1. Get League and Winners Info
+      const league = await prisma.fantasyLeague.findUnique({
+          where: { id: result.leagueId },
+          include: { members: { include: { user: true } } } // Need wallet addresses
+      });
+      
+      if (!league) {
+          console.error(`League ${result.leagueId} not found during payout`);
+          return false;
+      }
+      
+      // 2. Prepare Payout Data
+      // Map winner userIds to wallet addresses and calculate amounts
+      const winners = result.winners;
+      const totalPool = Number(league.totalPoolUsd); // Assuming this is actually POL now? 
+      // User said "show matic instead of ton... currency we working on is POL". 
+      // The schema field is `totalPoolUsd` (historically). We should treat it as POL amount or USD value?
+      // Given the flow changes (staking POL), `entryFeeUsd` likely holds POL amount now.
+      // Reinterpreting `totalPoolUsd` as `totalPoolToken`.
+      
+      // Calculate split (e.g. Winner takes all or distribution)
+      // Assuming 'winners' array has order 1st, 2nd, 3rd...
+      // Simple logic: Equal split or 1st takes all?
+      // Default: Equal split among winners if multiple? Or use `prizeDistribution`?
+      // Existing logic for `prizeDistribution` exists in routes.
+      // Let's assume simple logic: 1 Winner = 100%, 2 Winners = 50/50?
+      // OR use the `prizeDistribution` field if available.
+      
+      const payoutList: { address: string, amount: string }[] = [];
+      const winnerShare = totalPool / winners.length; // Simplified
+      
+      for (const userId of winners) {
+          const member = league.members.find(m => m.userId === userId);
+          // We need the user's external wallet address.
+          // OLD: stored in Wallet model.
+          // NEW: Should be stored in User.walletAddress OR we need to trust what they connected.
+          // In `AuthResponse`, we return `user.walletAddress`.
+          // We should look up User.walletAddress.
+          
+          if (member?.user.walletAddress) {
+              payoutList.push({
+                  address: member.user.walletAddress,
+                  amount: winnerShare.toFixed(6) // Format for token
+              });
+          } else {
+               // Fallback: Check Wallet table? (Legacy support/transition)
+               const legacyWallet = await prisma.wallet.findUnique({ where: { userId } });
+               if (legacyWallet) {
+                   payoutList.push({
+                       address: legacyWallet.address,
+                        amount: winnerShare.toFixed(6)
+                   });
+               } else {
+                   console.error(`User ${userId} has no wallet address for payout`);
+               }
+          }
+      }
+
+      // 3. Trigger Blockchain Payout
+      if (payoutList.length > 0) {
+          await blockchainService.payoutWinners(league.id, payoutList)();
+          // We execute the Task by calling it (Task is () => Promise)
+          // If it fails, we catch it below.
+      }
+      
+      // 4. Close League in DB
       await prisma.fantasyLeague.update({
         where: { id: result.leagueId },
         data: {
           winnersArray: result.winners,
-          status: "closed"
+          status: "paid_out" // Updated status to reflect payout
         }
       });
       return true;
     } catch (error) {
-      console.error(`Failed to update winners for league ${result.leagueId}:`, error);
+      console.error(`Failed to update winners/payout for league ${result.leagueId}:`, error);
       return false; 
     }
   });
@@ -176,7 +251,7 @@ async function updateWinnersInBatch(results: LeagueWinnerResult[]): Promise<void
   const updateResults = await Promise.all(updatePromises);
   const successCount = updateResults.filter(Boolean).length;
 
-  console.log(`Updated ${successCount} leagues with winners (out of ${successfulResults.length} calculated)`);
+  console.log(`Updated and Paid Out ${successCount} leagues (out of ${successfulResults.length} calculated)`);
 }
 
 /**

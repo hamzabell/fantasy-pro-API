@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi } from 'vitest';
 import { createBlockchainService } from './blockchain.service.js';
-import { either as E } from 'fp-ts';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 
 // Mock @ton/ton and @ton/crypto
 const mockSend = vi.fn();
@@ -52,77 +53,17 @@ vi.mock('@ton/crypto', () => ({
 }));
 
 describe('BlockchainService', () => {
-  const endpoint = 'https://toncenter.com/api/v2/jsonRPC';
-  const apiKey = 'test-api-key';
-  const escrowAddress = 'UQEscrowAddress';
-  
-  let service: ReturnType<typeof createBlockchainService>;
+  const service = createBlockchainService('https://rpc.com', 'key', '0xContract', '0xPrivKey');
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    service = createBlockchainService(endpoint, apiKey, escrowAddress, '');
-  });
-
-  describe('getBalance', () => {
-    it('should return formatted balance on success', async () => {
-      const result = await service.getBalance('UQAddress')();
-      expect(E.isRight(result)).toBe(true);
-      if (E.isRight(result)) {
-        expect(result.right).toBe('1'); // 1 TON
+  describe('payoutWinners', () => {
+    it('should return a transaction hash on success', async () => {
+      const result = await service.payoutWinners('league123', [{ address: '0xWinner', amount: '10' }])();
+      
+      expect(result._tag).toBe('Right');
+      if (result._tag === 'Right') {
+        expect(result.right).toContain('0xmocktxhash');
       }
     });
   });
 
-  describe('transferTON', () => {
-    it('should transfer TON successfully', async () => {
-        const hexKey = Buffer.from('secret').toString('hex');
-        const result = await service.transferTON(hexKey, 'UQReceiver', '10')();
-        
-        expect(E.isRight(result)).toBe(true);
-        expect(mockOpen).toHaveBeenCalled();
-        expect(mockSend).toHaveBeenCalled();
-        if (E.isRight(result)) {
-            expect(result.right).toContain('seqno_');
-        }
-    });
-  });
-
-  describe('joinLeagueOnChain', () => {
-    it('should call contract and return seqno', async () => {
-        const hexKey = Buffer.from('secret').toString('hex');
-        const result = await service.joinLeagueOnChain(hexKey, 'league123', 'UQUser')();
-        
-        expect(E.isRight(result)).toBe(true);
-        expect(mockSend).toHaveBeenCalled();
-        if (E.isRight(result)) {
-            expect(result.right).toContain('join_league_seqno_');
-        }
-    });
-  });
-
-  describe('fundEscrow', () => {
-      it('should fund escrow', async () => {
-        const hexKey = Buffer.from('secret').toString('hex');
-        const result = await service.fundEscrow(hexKey, '10')();
-        
-        expect(E.isRight(result)).toBe(true);
-        expect(mockSend).toHaveBeenCalled();
-        if (E.isRight(result)) {
-            expect(result.right).toContain('fund_escrow_seqno_');
-        }
-      });
-  });
-
-  describe('distributeWinnings', () => {
-      it('should distribute winnings', async () => {
-        const hexKey = Buffer.from('secret').toString('hex');
-        const result = await service.distributeWinnings(hexKey, 'league123', ['UQWinner'], ['10'], '0', null, '0')();
-        
-        expect(E.isRight(result)).toBe(true);
-        expect(mockSend).toHaveBeenCalled();
-        if (E.isRight(result)) {
-            expect(result.right).toContain('distribute_seqno_');
-        }
-      });
-  });
 });

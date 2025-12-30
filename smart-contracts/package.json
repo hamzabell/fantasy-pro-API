@@ -1,0 +1,18 @@
+{
+  "name": "fantasypro-smart-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for FantasyPro",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy:amoy": "hardhat run scripts/deploy.ts --network amoy",
+    "deploy:polygon": "hardhat run scripts/deploy.ts --network polygon"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  }
+}

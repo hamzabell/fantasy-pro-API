@@ -11,6 +11,8 @@ import { createPaymentService } from '../../infrastructure/payment/payment.servi
 import type { PublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 
+import { TransactionMonitorService } from '../../features/blockchain/TransactionMonitorService.js'
+
 // The environment that all ReaderTaskEither functions depend on
 export interface AppEnvironment {
 	prisma: PrismaClient
@@ -21,6 +23,7 @@ export interface AppEnvironment {
 	blockchainService: BlockchainService
 	paymentService: PaymentService
 	publicLeagueService: PublicLeagueService
+	transactionMonitorService: TransactionMonitorService
 }
 
 // Application configuration
@@ -29,7 +32,6 @@ export interface AppConfig {
 	minPlayers: number
 	maxPlayers: number
 	webhookApiToken: string
-	tonNetwork: 'mainnet' | 'testnet'
 }
 
 // Constructor for creating the environment (called at app startup)
@@ -42,15 +44,16 @@ export const createEnvironment = (
 	
 	// TODO: Move these to config/env vars
 	const blockchainService = createBlockchainService(
-		process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC',
-		process.env.TON_API_KEY || '',
-		process.env.LEAGUE_ESCROW_ADDRESS || '', // Keeper/Escrow Address
-        process.env.SERVER_MNEMONIC || ''
+		process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
+		process.env.POLYGON_API_KEY || '',
+		process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
+        process.env.SERVER_PRIVATE_KEY || ''
 	)
 
 	const walletService = createWalletService(walletRepo, blockchainService)
 	const paymentService = createPaymentService()
 	const publicLeagueService = createPublicLeagueService(prisma, walletService)
+    const transactionMonitorService = new TransactionMonitorService(prisma)
 
 	return {
 		prisma,
@@ -60,7 +63,8 @@ export const createEnvironment = (
 		walletService,
 		blockchainService,
 		paymentService,
-		publicLeagueService
+		publicLeagueService,
+		transactionMonitorService
 	}
 }
 
@@ -70,5 +74,4 @@ export const defaultConfig: AppConfig = {
 	minPlayers: 5,
 	maxPlayers: 5,
 	webhookApiToken: process.env.WEBHOOK_API_TOKEN ?? '',
-	tonNetwork: (process.env.TON_NETWORK as 'mainnet' | 'testnet') ?? 'testnet'
 }

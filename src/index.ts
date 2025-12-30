@@ -15,7 +15,6 @@ import gameweekWebhookApp from './features/webhooks/gameweek-webhook-route.js';
 import leagueIntegrationApp from './features/league-integration/league-integration-route.js';
 import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
-import walletApp from './features/wallet/wallet.routes.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
 
 import { cors } from 'hono/cors';
@@ -29,7 +28,7 @@ app.use('/api/*', cors({
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
-// Create the application environment for dependency injection
+	// Create the application environment for dependency injection
 const env = createEnvironment(
 	prisma,
 	createLogger(),
@@ -38,6 +37,7 @@ const env = createEnvironment(
 
 // Start Automated Services
 env.publicLeagueService.startScheduler();
+env.transactionMonitorService.startScheduler();
 
 // Inject environment into all requests
 app.use('*', (c, next) => {
@@ -113,13 +113,21 @@ app.use('/api/*', async (c, next) => {
 });
 
 
+import paymentApp from './features/payments/payment.routes.js';
+
+// ... (existing imports)
+
+// ...
+
 // app.route('/api/fantasy-premier-league', fantasyPremierLeagueApp);
 app.route('/api/fantasy-teams', fantasyTeamsApp);
 app.route('/api/auth', authenticationApp);
-app.route('/api/webhooks', gameweekWebhookApp);
+app.route('/api/payment', paymentApp); // Mount payment webhook section
+app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
 app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint
-app.route('/api/wallet', walletApp);
+// Wallet routes removed (custodial only)
+// app.route('/api/wallet', walletApp); 
 // Deposits and Withdrawals removed
 
 

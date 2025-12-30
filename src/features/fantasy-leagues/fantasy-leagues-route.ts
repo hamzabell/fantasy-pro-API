@@ -93,7 +93,8 @@ const createFantasyLeagueRoute = createRoute({
             teamName: z.string().min(1, "Team name cannot be empty"),
             realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE'),
             paymentMethod: z.enum(['UPFRONT', 'COMMISSION']).optional().default('UPFRONT'),
-            creatorCommission: z.coerce.number().min(0).max(50).default(0)
+            creatorCommission: z.coerce.number().min(0).max(50).default(0),
+            transactionHash: z.string().optional().describe('Blockchain transaction hash for league creation fee')
           }),
         },
       },
@@ -211,55 +212,13 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
          (e: any) => businessRuleError('InvalidGameweek', e.message || 'Invalid gameweek')
       )
     ),
-    // 4. Calculate Cost and Check Balance logic
+    // 4. Calculate Cost (Informational)
     TE.bindTo('gameweekId'),
     TE.bind('cost', () => TE.of(calculateLeagueCreationCost(body.limit))),
-    TE.chainW(({ gameweekId, cost }) => {
-       const shouldChargeUpfront = body.paymentMethod === 'UPFRONT' || body.limit < 5;
-       if (cost > 0 && shouldChargeUpfront) {
-           return pipe(
-               // Get User Wallet
-               env.walletService.getUserWallet(user.id),
-               TE.chainW((wallet) => {
-                  // Decrypt Private Key
-                  return pipe(
-                      TE.tryCatch(async () => {
-                          const { decrypt } = await import('../wallet/encryption.js');
-                          return decrypt(wallet.encryptedPrivateKey);
-                      }, (e) => businessRuleError('DecryptionError', 'Decryption failed') as AppError),
-                      TE.map((privateKey) => ({ wallet, privateKey }))
-                  );
-               }),
-               TE.chainW(({ wallet, privateKey }) => 
-                   pipe(
-                       // Check On-Chain Balance
-                       env.blockchainService.getBalance(wallet.address),
-                       TE.chainW((balanceStr) => {
-                           const balance = parseFloat(balanceStr);
-                           // Estimate gas for transfer? For now, we assume user needs cost + minimal gas. 
-                           // But to keep it robust, simpler check first:
-                           if (balance < cost) {
-                               return TE.left(insufficientBalanceError(cost, balance) as AppError);
-                           }
-                           
-                           // Transfer Cost to Platform Wallet
-                           const platformWallet = process.env.PLATFORM_WALLET_ADDRESS; 
-                           if (!platformWallet) {
-                               return TE.left(businessRuleError('ConfigurationError', 'Platform wallet not configured') as AppError);
-                           }
-                           
-                           return env.blockchainService.transferTON(privateKey, platformWallet, cost.toString());
-                       }),
-                       TE.map((txHash) => ({ txHash }))
-                   )
-               ),
-               TE.map(({ txHash }) => ({ gameweekId, cost, txHash }))
-           );
-       }
-        return TE.right({ gameweekId, cost, txHash: undefined as string | undefined });
-    }),
+    // Note: We no longer charge upfront here. The frontend will handle the transaction.
+    
     // 5. Create League and Membership
-    TE.chainW(({ gameweekId, cost, txHash }) => {
+    TE.chainW(({ gameweekId, cost }) => {
        const code = body.code || Math.random().toString(36).substring(2, 8).toUpperCase();
        return safePrisma(
           () => env.prisma.fantasyLeague.create({
@@ -278,34 +237,18 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
                   realLifeLeague: body.realLifeLeague,
                   prizeDistribution: calculatePrizeDistribution(body.winners),
                   totalPoolUsd: 0, // Initial pool is 0
+                  blockchainTxHash: body.transactionHash || null, // Store if provided
                   members: {
                       create: {
                           userId: user.id,
                           teamName: body.teamName,
                           position: 0,
                           score: 0,
-                          // If creation cost was paid, store txHash? 
-                          // The membership table has blockchainTxHash but that's for joining fee usually.
-                          // We can reuse it or leave it null for owner if they didn't pay 'entry fee' but 'creation fee'.
-                          // Typically owner joins automatically. If league has entry fee, does owner pay it too?
-                          // Usually owner pays entry fee too if they participate.
-                          // Logic below assumes owner joins as member. Logic for joining fee for owner?
-                          // The user prompt said: "first 5 users will be free... for 10 users we charge...".
-                          // The creation fee is separate from entry fee.
-                          // If there's an entry fee (fee > 0), the owner should probably pay it too to join?
-                          // The current 'create' flow automatically adds owner as member.
-                          // Does owner pay entry fee? 
-                          // Let's assume for now owner just creates. If entry fee > 0, owner might need to pay that separately 
-                          // or we auto-deduct both?
-                          // To keep it simple and safe: 
-                          // The existing code just created membership. 
-                          // If we strictly follow "Create League" fee logic, we deducted creation cost.
-                          // If owner also needs to pay entry fee, that's another transaction.
-                          // For now, let's assume owner is added as member without paying ENTRY fee automatically here?
-                          // Or should we fail if they can't pay entry fee too?
-                          // Existing code didn't check entry fee for creator.
-                          // Let's stick to Creation Fee logic requested.
-                          blockchainTxHash: txHash
+                          blockchainTxHash: body.transactionHash || null, // Assuming creator pays for both? Or separate? 
+                          // Creator pays League Creation Fee + Entry Fee in one go usually, 
+                          // OR just Creation Fee and gets free entry? 
+                          // Assuming single TX covers it.
+                          status: body.transactionHash ? 'pending' : 'active' // If tx provided, pending verification. If free/system, active.
                       }
                   },
                   currentParticipants: 1,
@@ -641,6 +584,7 @@ const joinFantasyLeagueRoute = createRoute({
           schema: z.object({
             code: z.string().min(1, "Code cannot be empty"),
             teamName: z.string().min(1, "Team name cannot be empty"),
+            transactionHash: z.string().optional().describe('Blockchain transaction hash for joining fee')
           }),
         },
       },
@@ -673,7 +617,7 @@ const joinFantasyLeagueRoute = createRoute({
 fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
   const env = c.get('env');
   const user = c.get('user') as any;
-  const { code, teamName } = c.req.valid('json');
+  const { code, teamName, transactionHash } = c.req.valid('json');
 
   const result = await pipe(
     // 1. Get League by Code
@@ -701,66 +645,11 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
         )
     ),
     TE.chainW(({ league, membership }) => {
-        if (membership) return TE.left(businessRuleError('AlreadyMember', 'Already a member') as AppError);
+        // 3. (Skipped) Validate User MATIC Balance (handled by frontend)
         
-        // CHECK IF USER HAS TEAM IN THIS REAL LIFE LEAGUE (Missing check added)
-        // This should theoretically be done before, but let's do it here or assume UI handles it.
-        // But for safety, we should validte.
-        // However, TE.chain is linear.
-        // Let's assume validation passes or add another TE.chain before this block?
-        // Since I can't easily insert a block without rewriting the whole pipe,
-        // and user didn't strictly ask for it here but logic demands it.
-        // I will trust that 'Create Team' flow enforces having a team.
-        // But user *enters* a league. If they don't have a team for EPL, they shouldn't join EPL league.
-        // Let's add a quick check if possible or leave it for now.
-        // Given complexity of refactoring huge pipe in 'replace_chunks', I'll leave the team check impl to 'Create League' route which has it updated,
-        // and assume joining implies user knows context.
-        // OR better: Update the prompt task later if needed.
-        
-        // 3. Validate User MATIC Balance and Perform Blockchain Operations (if fee > 0)
-        // We combine these steps because we need the wallet for both balance check and transfer
-        const fee = Number(league.entryFeeUsd);
-        if (fee > 0) {
-            return pipe(
-                // Get User Wallet
-                env.walletService.getUserWallet(user.id),
-                TE.chain((wallet) => {
-                    // Decrypt Private Key
-                    return pipe(
-                        TE.tryCatch(async () => {
-                            const { decrypt } = await import('../wallet/encryption.js');
-                            return decrypt(wallet.encryptedPrivateKey);
-                        }, (e) => businessRuleError('DecryptionError', 'Decryption failed') as AppError),
-                        TE.map((privateKey) => ({ wallet, privateKey }))
-                    );
-                }),
-                TE.chain(({ wallet, privateKey }) => 
-                    pipe(
-                        // Check On-Chain Balance
-                        env.blockchainService.getBalance(wallet.address),
-                        TE.chain((balanceStr) => {
-                            const balance = parseFloat(balanceStr);
-                            if (balance < fee) {
-                                return TE.left(insufficientBalanceError(fee, balance) as AppError);
-                            }
-                            return TE.right({ wallet, privateKey });
-                        })
-                    )
-                ),
-                TE.chain(({ wallet, privateKey }) => 
-                    // Fund Escrow
-                    pipe(
-                        env.blockchainService.fundEscrow(privateKey, fee.toString()),
-                        TE.chain(() => env.blockchainService.joinLeagueOnChain(privateKey, league.id, wallet.address))
-                    )
-                ),
-                TE.map((txHash) => ({ league, txHash }))
-            );
-        }
-        return TE.right({ league, txHash: undefined as string | undefined });
+        return TE.right({ league, txHash: transactionHash || null });
     }),
     // 5. Update DB (Membership + League Pool)
-    // Note: We no longer deduct from User.balanceUsd as we used MATIC
     TE.chain(({ league, txHash }) => 
         safePrisma(
             () => env.prisma.$transaction([
@@ -772,6 +661,7 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
                         teamName: teamName,
                         stakeAmount: league.entryFeeUsd,
                         blockchainTxHash: txHash,
+                        status: txHash && (!league.entryFeeUsd || Number(league.entryFeeUsd) > 0) ? 'pending' : 'active',
                         position: 0,
                         score: 0
                     }
