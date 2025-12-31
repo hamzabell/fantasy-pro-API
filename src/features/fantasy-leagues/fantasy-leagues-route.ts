@@ -158,6 +158,7 @@ fantasyLeaguesApp.openapi(getLeagueCreationCostRoute, (c) => {
 fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
   const env = c.get('env');
   const user = c.get('user') as any;
+  if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
   const body = c.req.valid('json');
 
   const result: any = await pipe(
@@ -614,6 +615,7 @@ const joinFantasyLeagueRoute = createRoute({
 fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
   const env = c.get('env');
   const user = c.get('user') as any;
+  if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
   const { code, teamName } = c.req.valid('json');
 
   const result = await pipe(
@@ -828,6 +830,7 @@ fantasyLeaguesApp.openapi(getLeagueHistoryRoute, async (c) => {
     // Simplified history: Just return leagues user has participated in
     const env = c.get('env');
     const user = c.get('user') as any;
+    if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
     const { leagueId, status, search } = c.req.valid('query');
 
     const result = await pipe(
