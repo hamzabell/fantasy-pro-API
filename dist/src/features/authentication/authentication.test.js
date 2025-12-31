@@ -42,20 +42,20 @@ describe('Authentication Routes', () => {
         testApp.route('/', app);
     });
     describe('GET /google/url', () => {
-        it('should return google auth url', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a request for google auth url: it should return the url', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockUrl = 'https://accounts.google.com/o/oauth2/v2/auth?...';
             mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
             const res = yield testApp.request('/google/url');
             expect(res.status).toBe(200);
             expect(yield res.json()).toEqual({ url: mockUrl });
         }));
-        it('should pass referralCode to generateGoogleAuthUrl', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a referralCode: it should pass it to generateGoogleAuthUrl', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockUrl = 'https://google.com/auth';
             mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
             yield testApp.request('/google/url?referralCode=REF123');
             expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123', 'web');
         }));
-        it('should pass platform to generateGoogleAuthUrl', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a mobile platform param: it should pass platform to generateGoogleAuthUrl', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockUrl = 'https://google.com/auth';
             mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
             yield testApp.request('/google/url?platform=mobile');
@@ -63,7 +63,7 @@ describe('Authentication Routes', () => {
         }));
     });
     describe('GET /google/callback', () => {
-        it('should redirect to frontend with token on success', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a successful login: it should redirect to frontend with token', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockCode = 'auth_code';
             const mockToken = 'jwt_token';
             const mockUser = {
@@ -77,7 +77,7 @@ describe('Authentication Routes', () => {
             expect(res.status).toBe(302);
             expect(res.headers.get('Location')).toBe(`http://localhost:8100/auth/callback?token=${mockToken}`);
         }));
-        it('should redirect to app scheme if platform is mobile', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a mobile platform: it should redirect to app scheme', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockCode = 'auth_code';
             const mockToken = 'jwt_token';
             const mockUser = { id: '1', email: 'test@examples.com' };
@@ -87,7 +87,7 @@ describe('Authentication Routes', () => {
             expect(res.status).toBe(302);
             expect(res.headers.get('Location')).toBe(`fantasypro://auth/callback?token=${mockToken}`);
         }));
-        it('should return 400 on failure', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a login failure: it should return 400', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockCode = 'bad_code';
             mockAuthService.loginWithGoogleCode.mockReturnValue(TE.left({ _tag: 'AuthenticationError', message: 'Failed' }));
             const res = yield testApp.request(`/google/callback?code=${mockCode}`);
@@ -97,7 +97,7 @@ describe('Authentication Routes', () => {
         }));
     });
     describe('GET /user', () => {
-        it('should return user details with wallet address if authorized', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given an authorized user: it should return user details with wallet address', () => __awaiter(void 0, void 0, void 0, function* () {
             const authApp = new Hono();
             authApp.use('*', (c, next) => __awaiter(void 0, void 0, void 0, function* () {
                 c.set('user', {
@@ -130,7 +130,7 @@ describe('Authentication Routes', () => {
                 coins: 50
             });
         }));
-        it('should return 401 if not authorized', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given an unauthorized request: it should return 401', () => __awaiter(void 0, void 0, void 0, function* () {
             const res = yield testApp.request('/user', { method: 'GET' });
             expect(res.status).toBe(401); // Can be 401 or 500 depending on how passport fail is handled or mocked middleware. In plain request, no user is set, route checks user.
             // The route implementation: const user = c.get('user'); if (!user) return 401.

@@ -26,7 +26,7 @@ const JWT_EXPIRES_IN = '1d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'your-google-client-id';
 const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
 const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, REDIRECT_URI);
-const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '0x0', process.env.SERVER_MNEMONIC || '');
+const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.POLYGON_API_KEY || '', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
 const walletRepository = createWalletRepository(prisma);
 const walletService = createWalletService(walletRepository, blockchainService);
 export const generateGoogleAuthUrl = (referralCode, platform = 'web') => {
@@ -65,7 +65,7 @@ TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
     return authenticationError('Google Auth Failed', 'InvalidToken');
 }), 
 // 2. Find or Create User
-TE.chain((payload) => pipe(retrieveUserFromDatabaseByEmail(payload.email || ''), TE.chain((existingUser) => {
+TE.chainW((payload) => pipe(retrieveUserFromDatabaseByEmail(payload.email || ''), TE.chainW((existingUser) => {
     if (existingUser) {
         // Always sync user details from Google on login to ensure freshness
         console.log('[Auth] Google Login for:', existingUser.email, 'Payload Picture:', payload.picture);
@@ -89,22 +89,30 @@ TE.chain((payload) => pipe(retrieveUserFromDatabaseByEmail(payload.email || ''),
             });
             delete newUser.password;
             return yield saveUserToDatabase(newUser);
-        }), (e) => internalError('Failed to create user', e)), TE.chain((user) => pipe(walletService.createWalletForUser(user.id), 
-        // Credit Referrer
-        TE.chainFirst(() => {
+        }), (e) => internalError('Failed to create user', e)), TE.chain((user) => {
+            // Credit Referrer
             if (referralCode) {
                 // Fire and forget or sequential? Better sequential for safety, but don't fail login if referral fails?
                 // For now, let's try to update and ignore error or log it.
-                return TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
+                return pipe(TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
                     console.log(`[Referral] Crediting referrer: ${referralCode}`);
                     yield incrementUserCoins(referralCode, 50);
                 }), (e) => {
                     console.error('[Referral] Failed to credit referrer', e);
-                    return internalError('Referral Error', e);
-                });
+                    return internalError('Referral Error', e instanceof Error ? e : new Error(String(e)));
+                }), TE.map(() => user), 
+                // If referral fails effectively, we still return user. 
+                // TE.chain above would fail the whole flow if left returns.
+                // So we need to handle the Left case of referral to NOT block login?
+                // Actually TE.tryCatch returns Left on error.
+                // We should recover from referral error.
+                TE.orElse((e) => {
+                    console.warn('Referral failed but proceeding with login', e);
+                    return TE.right(user);
+                }));
             }
-            return TE.right(undefined);
-        }), TE.map(() => user))));
+            return TE.right(user);
+        }));
     }
 }))), 
 // 3. Generate Token & Return Response

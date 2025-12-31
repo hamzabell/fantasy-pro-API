@@ -1,4 +1,4 @@
-var _a, _b;
+var _a;
 import { createWalletRepository } from '../../features/wallet/wallet.repository.js';
 import { createWalletService } from '../../features/wallet/wallet.service.js';
 import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
@@ -7,9 +7,14 @@ import { createPublicLeagueService } from '../../features/fantasy-leagues/public
 // Constructor for creating the environment (called at app startup)
 export const createEnvironment = (prisma, logger, config) => {
     const walletRepo = createWalletRepository(prisma);
-    // TODO: Move these to config/env vars
-    const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '', // Keeper/Escrow Address
-    process.env.SERVER_MNEMONIC || '');
+    // User provided Alchemy Key: 
+    const alchemyKey = process.env.ALCHEMY_API_KEY;
+    const networkName = process.env.NETWORK_NAME;
+    const alchemyRpcUrl = `https://${networkName}.g.alchemy.com/v2/${alchemyKey}`;
+    const alchemyWsUrl = `wss://${networkName}.g.alchemy.com/v2/${alchemyKey}`;
+    const rpcEndpoint = process.env.POLYGON_RPC_ENDPOINT || alchemyRpcUrl;
+    const wsEndpoint = process.env.ALCHEMY_WEBSOCKET_URL || alchemyWsUrl;
+    const blockchainService = createBlockchainService(rpcEndpoint, process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '', wsEndpoint);
     const walletService = createWalletService(walletRepo, blockchainService);
     const paymentService = createPaymentService();
     const publicLeagueService = createPublicLeagueService(prisma, walletService);
@@ -30,5 +35,4 @@ export const defaultConfig = {
     minPlayers: 5,
     maxPlayers: 5,
     webhookApiToken: (_a = process.env.WEBHOOK_API_TOKEN) !== null && _a !== void 0 ? _a : '',
-    tonNetwork: (_b = process.env.TON_NETWORK) !== null && _b !== void 0 ? _b : 'testnet'
 };

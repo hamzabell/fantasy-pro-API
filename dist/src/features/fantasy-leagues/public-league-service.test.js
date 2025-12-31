@@ -46,7 +46,7 @@ describe('PublicLeagueService', () => {
         service = new PublicLeagueService(prisma, walletService);
     });
     describe('checkAndCreateWeeklyLeagues', () => {
-        it('should create leagues if none exist', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given no weekly leagues exist: it should create them', () => __awaiter(void 0, void 0, void 0, function* () {
             fetchGameweek.mockResolvedValue({ id: 22, deadlineTime: new Date() }); // Fix: deadlineTime
             // prisma.user.findUnique removed
             prisma.fantasyLeague.findFirst.mockResolvedValue(null);
@@ -58,7 +58,7 @@ describe('PublicLeagueService', () => {
             expect(firstCallArg.data.entryFeeUsd).toBe(10);
             expect(firstCallArg.data.ownerId).toBeUndefined();
         }));
-        it('should not create leagues if they already exist', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given weekly leagues exist: it should not create them', () => __awaiter(void 0, void 0, void 0, function* () {
             fetchGameweek.mockResolvedValue({ id: 22, deadlineTime: new Date() });
             // prisma.user.findUnique removed
             prisma.fantasyLeague.findFirst.mockResolvedValue({ id: 'existing-league-id' });
@@ -68,7 +68,7 @@ describe('PublicLeagueService', () => {
         }));
     });
     describe('checkAndProcessPayouts', () => {
-        it('should payout winners correctly', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given leagues are completed: it should payout winners correctly', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock leagues returned
             prisma.fantasyLeague.findMany.mockResolvedValue([
                 {
@@ -78,6 +78,7 @@ describe('PublicLeagueService', () => {
                     limit: 100,
                     leagueType: 'public',
                     gameweekId: 21,
+                    commissionRate: 10, // Add commission 10% so calculation results in 90 payout
                     members: [
                         { id: 'mem1', userId: 'user1', score: new Decimal(50) },
                         { id: 'mem2', userId: 'user2', score: new Decimal(40) }
@@ -96,7 +97,7 @@ describe('PublicLeagueService', () => {
                 data: { status: 'completed' }
             }));
         }));
-        it('should handle no winners/members by closing league', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given league has no winners/members: it should close the league', () => __awaiter(void 0, void 0, void 0, function* () {
             prisma.fantasyLeague.findMany.mockResolvedValue([
                 {
                     id: 'league-empty',

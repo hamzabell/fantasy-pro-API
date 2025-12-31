@@ -198,6 +198,7 @@ exports.Prisma.FantasyLeagueMembershipScalarFieldEnum = {
   payoutAmount: 'payoutAmount',
   payoutStatus: 'payoutStatus',
   blockchainTxHash: 'blockchainTxHash',
+  status: 'status',
   joinedAt: 'joinedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

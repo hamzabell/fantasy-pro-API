@@ -2,13 +2,13 @@
  * Calculates the cost of creating a league based on the participant limit.
  *
  * Cost Logic:
- * - Limit <= 5: 0 MATIC
- * - Limit 6-10: 10 MATIC
- * - Limit > 10: Exponential growth starting from 10 MATIC
+ * - Limit <= 5: 0 POL
+ * - Limit 6-10: 10 POL
+ * - Limit > 10: Exponential growth starting from 10 POL
  *   Formula: 10 * (1.05 ^ (limit - 10))
  *
  * @param limit - The maximum number of participants in the league.
- * @returns The cost in MATIC, rounded to 2 decimal places.
+ * @returns The cost in POL, rounded to 2 decimal places.
  */
 export function calculateLeagueCreationCost(limit) {
     if (limit <= 5)

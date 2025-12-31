@@ -236,7 +236,7 @@ export class PublicLeagueService {
             const winners = Math.ceil(PUBLIC_LEAGUE_LIMIT * 0.20); // Top 20% win
             const paddedGw = gameweekId.toString().padStart(2, '0');
             // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in MATIC]
-            const leagueName = `GW${paddedGw} Premier League ${stake} TON`;
+            const leagueName = `GW${paddedGw} Premier League ${stake} POL`;
             yield this.prisma.fantasyLeague.create({
                 data: {
                     name: leagueName,

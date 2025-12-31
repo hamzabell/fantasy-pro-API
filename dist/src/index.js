@@ -21,8 +21,8 @@ import gameweekWebhookApp from './features/webhooks/gameweek-webhook-route.js';
 import leagueIntegrationApp from './features/league-integration/league-integration-route.js';
 import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
-import walletApp from './features/wallet/wallet.routes.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
+import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
 import { cors } from 'hono/cors';
 const app = new OpenAPIHono();
 // Add cors middleware
@@ -35,6 +35,10 @@ app.use('/api/*', cors({
 const env = createEnvironment(prisma, createLogger(), defaultConfig);
 // Start Automated Services
 env.publicLeagueService.startScheduler();
+if (process.env.NODE_ENV !== 'test') {
+    env.blockchainService.listenForEvents();
+    payoutScheduler.initializeScheduler(); // Start Payout Scheduler
+}
 // Inject environment into all requests
 app.use('*', (c, next) => {
     c.set('env', env);
@@ -97,13 +101,18 @@ app.use('/api/*', (c, next) => __awaiter(void 0, void 0, void 0, function* () {
         return c.json({ error: 'Unauthorized' }, 401);
     }
 }));
+import paymentApp from './features/payments/payment.routes.js';
+// ... (existing imports)
+// ...
 // app.route('/api/fantasy-premier-league', fantasyPremierLeagueApp);
 app.route('/api/fantasy-teams', fantasyTeamsApp);
 app.route('/api/auth', authenticationApp);
-app.route('/api/webhooks', gameweekWebhookApp);
+app.route('/api/payment', paymentApp); // Mount payment webhook section
+app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
 app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint
-app.route('/api/wallet', walletApp);
+// Wallet routes removed (custodial only)
+// app.route('/api/wallet', walletApp); 
 // Deposits and Withdrawals removed
 app.get('/swagger', swaggerUI({ url: '/doc' }));
 app.get('/', (c) => c.text('Welcome to the API!'));

@@ -4,5 +4,6 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         setupFiles: './test/setup.ts',
+        exclude: ['**/node_modules/**', '**/dist/**', '**/smart-contracts/**'],
     },
 });

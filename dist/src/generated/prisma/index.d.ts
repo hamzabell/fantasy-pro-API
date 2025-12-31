@@ -6609,6 +6609,7 @@ export namespace Prisma {
     payoutAmount: Decimal | null
     payoutStatus: string | null
     blockchainTxHash: string | null
+    status: string | null
     joinedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6625,6 +6626,7 @@ export namespace Prisma {
     payoutAmount: Decimal | null
     payoutStatus: string | null
     blockchainTxHash: string | null
+    status: string | null
     joinedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6641,6 +6643,7 @@ export namespace Prisma {
     payoutAmount: number
     payoutStatus: number
     blockchainTxHash: number
+    status: number
     joinedAt: number
     createdAt: number
     updatedAt: number
@@ -6673,6 +6676,7 @@ export namespace Prisma {
     payoutAmount?: true
     payoutStatus?: true
     blockchainTxHash?: true
+    status?: true
     joinedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -6689,6 +6693,7 @@ export namespace Prisma {
     payoutAmount?: true
     payoutStatus?: true
     blockchainTxHash?: true
+    status?: true
     joinedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -6705,6 +6710,7 @@ export namespace Prisma {
     payoutAmount?: true
     payoutStatus?: true
     blockchainTxHash?: true
+    status?: true
     joinedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -6808,6 +6814,7 @@ export namespace Prisma {
     payoutAmount: Decimal | null
     payoutStatus: string
     blockchainTxHash: string | null
+    status: string
     joinedAt: Date
     createdAt: Date
     updatedAt: Date
@@ -6843,6 +6850,7 @@ export namespace Prisma {
     payoutAmount?: boolean
     payoutStatus?: boolean
     blockchainTxHash?: boolean
+    status?: boolean
     joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6861,6 +6869,7 @@ export namespace Prisma {
     payoutAmount?: boolean
     payoutStatus?: boolean
     blockchainTxHash?: boolean
+    status?: boolean
     joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6879,6 +6888,7 @@ export namespace Prisma {
     payoutAmount?: boolean
     payoutStatus?: boolean
     blockchainTxHash?: boolean
+    status?: boolean
     joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6897,12 +6907,13 @@ export namespace Prisma {
     payoutAmount?: boolean
     payoutStatus?: boolean
     blockchainTxHash?: boolean
+    status?: boolean
     joinedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FantasyLeagueMembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "leagueId" | "teamName" | "stakeAmount" | "position" | "score" | "payoutAmount" | "payoutStatus" | "blockchainTxHash" | "joinedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeagueMembership"]>
+  export type FantasyLeagueMembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "leagueId" | "teamName" | "stakeAmount" | "position" | "score" | "payoutAmount" | "payoutStatus" | "blockchainTxHash" | "status" | "joinedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fantasyLeagueMembership"]>
   export type FantasyLeagueMembershipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     league?: boolean | FantasyLeagueDefaultArgs<ExtArgs>
@@ -6933,6 +6944,7 @@ export namespace Prisma {
       payoutAmount: Prisma.Decimal | null
       payoutStatus: string
       blockchainTxHash: string | null
+      status: string
       joinedAt: Date
       createdAt: Date
       updatedAt: Date
@@ -7371,6 +7383,7 @@ export namespace Prisma {
     readonly payoutAmount: FieldRef<"FantasyLeagueMembership", 'Decimal'>
     readonly payoutStatus: FieldRef<"FantasyLeagueMembership", 'String'>
     readonly blockchainTxHash: FieldRef<"FantasyLeagueMembership", 'String'>
+    readonly status: FieldRef<"FantasyLeagueMembership", 'String'>
     readonly joinedAt: FieldRef<"FantasyLeagueMembership", 'DateTime'>
     readonly createdAt: FieldRef<"FantasyLeagueMembership", 'DateTime'>
     readonly updatedAt: FieldRef<"FantasyLeagueMembership", 'DateTime'>
@@ -10198,6 +10211,7 @@ export namespace Prisma {
     payoutAmount: 'payoutAmount',
     payoutStatus: 'payoutStatus',
     blockchainTxHash: 'blockchainTxHash',
+    status: 'status',
     joinedAt: 'joinedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -10825,6 +10839,7 @@ export namespace Prisma {
     payoutAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFilter<"FantasyLeagueMembership"> | string
     blockchainTxHash?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    status?: StringFilter<"FantasyLeagueMembership"> | string
     joinedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
@@ -10843,6 +10858,7 @@ export namespace Prisma {
     payoutAmount?: SortOrderInput | SortOrder
     payoutStatus?: SortOrder
     blockchainTxHash?: SortOrderInput | SortOrder
+    status?: SortOrder
     joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10865,6 +10881,7 @@ export namespace Prisma {
     payoutAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFilter<"FantasyLeagueMembership"> | string
     blockchainTxHash?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    status?: StringFilter<"FantasyLeagueMembership"> | string
     joinedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
@@ -10883,6 +10900,7 @@ export namespace Prisma {
     payoutAmount?: SortOrderInput | SortOrder
     payoutStatus?: SortOrder
     blockchainTxHash?: SortOrderInput | SortOrder
+    status?: SortOrder
     joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10907,6 +10925,7 @@ export namespace Prisma {
     payoutAmount?: DecimalNullableWithAggregatesFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringWithAggregatesFilter<"FantasyLeagueMembership"> | string
     blockchainTxHash?: StringNullableWithAggregatesFilter<"FantasyLeagueMembership"> | string | null
+    status?: StringWithAggregatesFilter<"FantasyLeagueMembership"> | string
     joinedAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FantasyLeagueMembership"> | Date | string
@@ -11559,6 +11578,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11577,6 +11597,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11591,6 +11612,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11609,6 +11631,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11625,6 +11648,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11639,6 +11663,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11655,6 +11680,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12456,6 +12482,7 @@ export namespace Prisma {
     payoutAmount?: SortOrder
     payoutStatus?: SortOrder
     blockchainTxHash?: SortOrder
+    status?: SortOrder
     joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12479,6 +12506,7 @@ export namespace Prisma {
     payoutAmount?: SortOrder
     payoutStatus?: SortOrder
     blockchainTxHash?: SortOrder
+    status?: SortOrder
     joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12495,6 +12523,7 @@ export namespace Prisma {
     payoutAmount?: SortOrder
     payoutStatus?: SortOrder
     blockchainTxHash?: SortOrder
+    status?: SortOrder
     joinedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13420,6 +13449,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13436,6 +13466,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13600,6 +13631,7 @@ export namespace Prisma {
     payoutAmount?: DecimalNullableFilter<"FantasyLeagueMembership"> | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFilter<"FantasyLeagueMembership"> | string
     blockchainTxHash?: StringNullableFilter<"FantasyLeagueMembership"> | string | null
+    status?: StringFilter<"FantasyLeagueMembership"> | string
     joinedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     createdAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
     updatedAt?: DateTimeFilter<"FantasyLeagueMembership"> | Date | string
@@ -13946,6 +13978,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13962,6 +13995,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14629,6 +14663,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14699,6 +14734,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14715,6 +14751,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14730,6 +14767,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14827,6 +14865,7 @@ export namespace Prisma {
     payoutAmount?: Decimal | DecimalJsLike | number | string | null
     payoutStatus?: string
     blockchainTxHash?: string | null
+    status?: string
     joinedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14856,6 +14895,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14872,6 +14912,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14887,6 +14928,7 @@ export namespace Prisma {
     payoutAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     payoutStatus?: StringFieldUpdateOperationsInput | string
     blockchainTxHash?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

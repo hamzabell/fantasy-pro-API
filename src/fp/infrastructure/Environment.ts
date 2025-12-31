@@ -39,7 +39,7 @@ export const createEnvironment = (
 ): AppEnvironment => {
 	const walletRepo = createWalletRepository(prisma)
 	
-	// User provided Alchemy Key: 2KTOEy6Vli3xLEGPjC_Nb
+	// User provided Alchemy Key: 
 	const alchemyKey = process.env.ALCHEMY_API_KEY;
 	const networkName = process.env.NETWORK_NAME 
 	;

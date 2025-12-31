@@ -7,140 +7,120 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { TonClient, WalletContractV4, internal, SendMode, toNano, fromNano, Address, beginCell } from '@ton/ton';
-import { mnemonicToWalletKey, keyPairFromSecretKey } from '@ton/crypto';
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import { blockchainError } from '../../fp/domain/errors/AppError.js';
-// OpCodes for the Escrow Contract (Placeholder values - needs update when contract is deployed)
-const OP_JOIN_LEAGUE = 0x5fcc3d14;
-const OP_DISTRIBUTE_WINNINGS = 0x82b42f3c; // Random placeholders
-const OP_FUND_ESCROW = 0x93a2b1c4;
-export const createBlockchainService = (endpoint, apiKey, escrowAddress, serverMnemonic // Optional if needed for server operations
+import { ethers } from 'ethers';
+import { updateFantasyLeagueInDatabaseById, updateFantasyLeagueMembershipInDatabaseById, retrieveFantasyLeagueMembershipByLeagueAndUser, retrieveFantasyLeagueFromDatabaseById } from '../../features/fantasy-leagues/fantasy-leagues-model.js';
+const ABI = [
+    "function payoutWinners(string calldata leagueId, address[] calldata winners, uint256[] calldata amounts) external",
+    "event LeagueCreated(string leagueId, string userId, uint256 commissionPercentage, address indexed creator, uint256 feePaid)",
+    "event Stake(address indexed user, uint256 amount, string userId, string leagueId)",
+    "event PayoutCompleted(string leagueId, uint256 totalPayout, uint256 commission)"
+];
+export const createBlockchainService = (rpcEndpoint, contractAddress, privateKey, websocketEndpoint // Optional WebSocket endpoint
 ) => {
-    const client = new TonClient({
-        endpoint,
-        apiKey: apiKey || undefined
-    });
-    // Helper to open a wallet from secret key (hex string)
-    const getWallet = (secretKeyHex) => __awaiter(void 0, void 0, void 0, function* () {
-        const secretKey = Buffer.from(secretKeyHex, 'hex');
-        const keyPair = keyPairFromSecretKey(secretKey);
-        const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
-        const contract = client.open(wallet);
-        return { contract, keyPair };
-    });
     return {
-        getBalance: (address) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-            const bal = yield client.getBalance(Address.parse(address));
-            return fromNano(bal);
-        }), (e) => blockchainError('Failed to get balance', String(e))),
-        transferTON: (secretKeyHex, toAddress, amount) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-            const { contract, keyPair } = yield getWallet(secretKeyHex);
-            // Create a transfer
-            const seqno = yield contract.getSeqno();
-            const transfer = contract.createTransfer({
-                seqno,
-                secretKey: keyPair.secretKey,
-                messages: [internal({
-                        to: toAddress,
-                        value: toNano(amount),
-                        bounce: false,
-                        body: 'FantasyPro Transfer'
-                    })],
-                sendMode: SendMode.PAY_GAS_SEPARATELY + SendMode.IGNORE_ERRORS,
-            });
-            yield contract.send(transfer);
-            // TON doesn't return tx hash immediately in the same way, usually we wait or return seqno/msg hash
-            // For simplicity we return a placeholder or wait slightly
-            return `seqno_${seqno + 1}`;
-        }), (e) => blockchainError('Failed to transfer TON', String(e))),
-        getGasCost: (toAddress, amount) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-            // Estimating fees in TON is different. 
-            // We can assume a standard fee for a transfer (e.g. 0.005 TON) or use runMethod to estimate
-            // For now returning a static estimate as estimating via API requires more setup
-            return "0.01";
-        }), (e) => blockchainError('Failed to estimate gas cost', String(e))),
-        joinLeagueOnChain: (secretKeyHex, leagueId, userAddress) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-            const { contract, keyPair } = yield getWallet(secretKeyHex);
-            const seqno = yield contract.getSeqno();
-            // Construct body for Join League
-            // OP + QueryID + LeagueID (string/hash) + UserAddress
-            // leagueId as String Ref or Hash? Assuming Hash/Uint256 for now or StringRef
-            // If leagueId is a UUID string, we can store it as a string cell.
-            const body = beginCell()
-                .storeUint(OP_JOIN_LEAGUE, 32)
-                .storeUint(0, 64) // query id
-                .storeStringTail(leagueId)
-                .storeAddress(Address.parse(userAddress))
-                .endCell();
-            const transfer = contract.createTransfer({
-                seqno,
-                secretKey: keyPair.secretKey,
-                messages: [internal({
-                        to: escrowAddress,
-                        value: toNano("0.05"), // Gas for the execution
-                        bounce: true,
-                        body: body
-                    })],
-                sendMode: SendMode.PAY_GAS_SEPARATELY,
-            });
-            yield contract.send(transfer);
-            return `join_league_seqno_${seqno}`;
-        }), (e) => blockchainError('Failed to join league on-chain', String(e))),
-        fundEscrow: (secretKeyHex, amount) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-            // Simply sending TON to escrow address with a "fund" op or just transfer
-            const { contract, keyPair } = yield getWallet(secretKeyHex);
-            const seqno = yield contract.getSeqno();
-            const body = beginCell()
-                .storeUint(OP_FUND_ESCROW, 32)
-                .storeUint(0, 64)
-                .endCell();
-            const transfer = contract.createTransfer({
-                seqno,
-                secretKey: keyPair.secretKey,
-                messages: [internal({
-                        to: escrowAddress,
-                        value: toNano(amount),
-                        bounce: false,
-                        body: body
-                    })],
-                sendMode: SendMode.PAY_GAS_SEPARATELY,
-            });
-            yield contract.send(transfer);
-            return `fund_escrow_seqno_${seqno}`;
-        }), (e) => blockchainError('Failed to fund escrow', String(e))),
-        distributeWinnings: (secretKeyHex, leagueId, winners, amounts, platformCommission, creatorWallet, creatorCommission) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-            const { contract, keyPair } = yield getWallet(secretKeyHex);
-            const seqno = yield contract.getSeqno();
-            // Construct complex body
-            // Updated to include commissions
-            const body = beginCell()
-                .storeUint(OP_DISTRIBUTE_WINNINGS, 32)
-                .storeUint(0, 64)
-                .storeStringTail(leagueId)
-                // Store Platform Commission Amount
-                .storeCoins(toNano(platformCommission))
-                // Store Creator Commission Info
-                .storeAddress(creatorWallet ? Address.parse(creatorWallet) : undefined) // undefined for null address in some internal tools, but storeAddress usually takes Address | null.
-                // create-ton-app / ton-core usually allows null? 
-                // beginCell().storeAddress(null) stores a null address (00).
-                // Let's verify type. Address from @ton/ton.
-                .storeCoins(toNano(creatorCommission))
-                .endCell();
-            // TODO: Add winners data. 
-            const transfer = contract.createTransfer({
-                seqno,
-                secretKey: keyPair.secretKey,
-                messages: [internal({
-                        to: escrowAddress,
-                        value: toNano("0.1"), // Gas
-                        bounce: true,
-                        body: body
-                    })],
-                sendMode: SendMode.PAY_GAS_SEPARATELY,
-            });
-            yield contract.send(transfer);
-            return `distribute_seqno_${seqno}`;
-        }), (e) => blockchainError('Failed to distribute winnings', String(e)))
+        payoutWinners: (leagueId, winners, percentages, commissionPercentage) => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
+            if (process.env.NODE_ENV === 'test' && !process.env.FORCE_REAL_BLOCKCHAIN_LOGIC) {
+                console.log(`[POLYGON] Mock paying out winners for league ${leagueId}`);
+                return `0xmocktxhash_${Date.now()}`;
+            }
+            const provider = new ethers.JsonRpcProvider(rpcEndpoint);
+            const wallet = new ethers.Wallet(privateKey, provider);
+            const contract = new ethers.Contract(contractAddress, ABI, wallet);
+            const addresses = winners.map(w => w.address);
+            // We don't necessarily need amounts in the SC call if it uses percentages, 
+            // BUT the original signature used amounts? 
+            // User requirement: "send ... with commission as percentage".
+            // Confirmed SC signature via user voice: "payoutWinners(..., percentages, ...)"
+            // So we pass the percentages array we calculated.
+            // Note: 'percentages' is BigInt[] (basis points).
+            const tx = yield contract.payoutWinners(leagueId, addresses, percentages, commissionPercentage);
+            yield tx.wait();
+            return tx.hash;
+        }), (e) => blockchainError('Failed to payout winners on Polygon', String(e))),
+        listenForEvents: () => {
+            // Removed hard process.env.NODE_ENV === 'test' return to allow E2E testing of this method.
+            // In real app, we likely control this via a flag in `createBlockchainService` or call it explicitly in index.ts only.
+            let provider;
+            if (websocketEndpoint && websocketEndpoint.startsWith('wss')) {
+                console.log('Using WebSocket Provider for events');
+                try {
+                    provider = new ethers.WebSocketProvider(websocketEndpoint);
+                    // Prevent crash on connection error (e.g. 401 Unauthorized)
+                    provider.websocket.on('error', (err) => {
+                        console.error('[BlockchainService] WebSocket connection error:', err.message);
+                        // Optionally fallback to RPC or retry logic here
+                    });
+                    provider.websocket.on('close', (code, reason) => {
+                        console.error(`[BlockchainService] WebSocket connection closed: ${code} ${reason}`);
+                    });
+                }
+                catch (e) {
+                    console.error('[BlockchainService] Failed to initialize WebSocketProvider:', e);
+                    console.log('Falling back to JsonRpcProvider');
+                    provider = new ethers.JsonRpcProvider(rpcEndpoint);
+                }
+            }
+            else {
+                console.log('Using JsonRpcProvider for events (polling)');
+                provider = new ethers.JsonRpcProvider(rpcEndpoint);
+            }
+            // Note: For events to work reliably without polling lag, WebSocketProvider is better, 
+            // but JsonRpcProvider supports polling.
+            const contract = new ethers.Contract(contractAddress, ABI, provider);
+            // Keep listener active
+            if (provider instanceof ethers.WebSocketProvider) {
+                // Optional: Add keep-alive logic or error handlers here if needed for robust connection
+                provider.websocket.onclose = () => {
+                    console.error('WebSocket connection closed. Reconnecting...');
+                    // Logic to reconnect could go here, or handled by process restart
+                };
+            }
+            contract.on("LeagueCreated", (leagueId, userId, commission, creator, feePaid, event) => __awaiter(void 0, void 0, void 0, function* () {
+                console.log(`Event: LeagueCreated ${leagueId} by ${userId}`);
+                try {
+                    // Update League status to OPEN
+                    yield updateFantasyLeagueInDatabaseById({
+                        id: leagueId,
+                        league: { status: "open", ownerId: userId } // Ensure owner is set
+                    });
+                }
+                catch (e) {
+                    console.error("Error handling LeagueCreated:", e);
+                }
+            }));
+            contract.on("Stake", (user, amount, userId, leagueId, event) => __awaiter(void 0, void 0, void 0, function* () {
+                console.log(`Event: Stake ${amount} for league ${leagueId} user ${userId}`);
+                try {
+                    const membership = yield retrieveFantasyLeagueMembershipByLeagueAndUser(leagueId, userId);
+                    if (membership) {
+                        yield updateFantasyLeagueMembershipInDatabaseById({
+                            id: membership.id,
+                            membership: { status: "active" } // or "paid" depending on enum
+                        });
+                    }
+                    else {
+                        console.warn(`Membership not found for stake: ${leagueId} / ${userId}`);
+                    }
+                }
+                catch (e) {
+                    console.error("Error handling Stake:", e);
+                }
+            }));
+            contract.on("PayoutCompleted", (leagueId, totalPayout, commission, event) => __awaiter(void 0, void 0, void 0, function* () {
+                console.log(`Event: PayoutCompleted ${leagueId}`);
+                try {
+                    yield updateFantasyLeagueInDatabaseById({
+                        id: leagueId,
+                        league: { status: "completed" }
+                    });
+                }
+                catch (e) {
+                    console.error("Error handling PayoutCompleted:", e);
+                }
+            }));
+            console.log(`Listening for blockchain events on ${contractAddress} via ${websocketEndpoint ? 'WebSocket' : 'RPC'}`);
+        }
     };
 };

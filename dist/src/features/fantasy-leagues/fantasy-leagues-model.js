@@ -99,6 +99,23 @@ export function retrieveFantasyLeagueMembershipsByLeagueId(leagueId) {
     });
 }
 /**
+ * Retrieves a FantasyLeagueMembership record from the database based on leagueId and userId.
+ *
+ * @param leagueId - The id of the FantasyLeague.
+ * @param userId - The id of the User.
+ * @returns The FantasyLeagueMembership or null.
+ */
+export function retrieveFantasyLeagueMembershipByLeagueAndUser(leagueId, userId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.fantasyLeagueMembership.findFirst({
+            where: {
+                leagueId,
+                userId
+            }
+        });
+    });
+}
+/**
  * Counts the number of FantasyLeagueMembership records for a specific league.
  *
  * @param leagueId - The id of the FantasyLeague whose memberships to count.

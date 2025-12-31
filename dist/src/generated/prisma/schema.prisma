@@ -125,6 +125,7 @@ model FantasyLeagueMembership {
   payoutAmount     Decimal? @db.Decimal(18, 6)
   payoutStatus     String   @default("pending") // pending, completed, failed
   blockchainTxHash String?
+  status           String   @default("pending") // pending, active, failed
   joinedAt         DateTime @default(now()) // alias for createdAt
 
   user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)

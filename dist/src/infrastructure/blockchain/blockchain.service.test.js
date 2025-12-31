@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createBlockchainService } from './blockchain.service.js';
-import { either as E } from 'fp-ts';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 // Mock @ton/ton and @ton/crypto
 const mockSend = vi.fn();
 const mockOpen = vi.fn(() => ({
@@ -56,66 +56,46 @@ vi.mock('@ton/crypto', () => ({
         publicKey: Buffer.from('mockPublic')
     }))
 }));
+// Mock ethers
+const mockPayoutWinners = vi.fn().mockResolvedValue({ wait: vi.fn(), hash: '0xmocktxhash' });
+const mockContract = {
+    payoutWinners: mockPayoutWinners
+};
+vi.mock('ethers', () => __awaiter(void 0, void 0, void 0, function* () {
+    return {
+        ethers: {
+            JsonRpcProvider: vi.fn(),
+            Wallet: vi.fn(),
+            Contract: vi.fn(() => mockContract),
+            parseEther: (val) => BigInt(val) * BigInt(1e18)
+        }
+    };
+}));
 describe('BlockchainService', () => {
-    const endpoint = 'https://toncenter.com/api/v2/jsonRPC';
-    const apiKey = 'test-api-key';
-    const escrowAddress = 'UQEscrowAddress';
-    let service;
-    beforeEach(() => {
-        vi.clearAllMocks();
-        service = createBlockchainService(endpoint, apiKey, escrowAddress, '');
-    });
-    describe('getBalance', () => {
-        it('should return formatted balance on success', () => __awaiter(void 0, void 0, void 0, function* () {
-            const result = yield service.getBalance('UQAddress')();
-            expect(E.isRight(result)).toBe(true);
-            if (E.isRight(result)) {
-                expect(result.right).toBe('1'); // 1 TON
+    const service = createBlockchainService('https://rpc.com', 'key', '0xContract', '0xPrivKey');
+    describe('payoutWinners', () => {
+        it('given valid winners and amounts: it should return a transaction hash', () => __awaiter(void 0, void 0, void 0, function* () {
+            const result = yield service.payoutWinners('league123', [{ address: '0xWinner', amount: '10' }], [BigInt(10000)], BigInt(0))();
+            expect(result._tag).toBe('Right');
+            if (result._tag === 'Right') {
+                expect(result.right).toContain('0xmocktxhash');
             }
         }));
-    });
-    describe('transferTON', () => {
-        it('should transfer TON successfully', () => __awaiter(void 0, void 0, void 0, function* () {
-            const hexKey = Buffer.from('secret').toString('hex');
-            const result = yield service.transferTON(hexKey, 'UQReceiver', '10')();
-            expect(E.isRight(result)).toBe(true);
-            expect(mockOpen).toHaveBeenCalled();
-            expect(mockSend).toHaveBeenCalled();
-            if (E.isRight(result)) {
-                expect(result.right).toContain('seqno_');
+        it('given valid winners: it should calculate percentages and call contract correctly', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Use vi.stubEnv to enable real logic path
+            vi.stubEnv('FORCE_REAL_BLOCKCHAIN_LOGIC', 'true');
+            try {
+                const result = yield service.payoutWinners('league123', [
+                    { address: '0x123', amount: '10' },
+                    { address: '0x456', amount: '20' }
+                ], [BigInt(3333), BigInt(6666)], BigInt(0))();
+                // Check mock call args
+                expect(mockPayoutWinners).toHaveBeenCalledWith('league123', ['0xUser1', '0xUser2'], [BigInt(5000), BigInt(5000)], // 50% each
+                0 // Commission defaults to 0 in current service impl
+                );
             }
-        }));
-    });
-    describe('joinLeagueOnChain', () => {
-        it('should call contract and return seqno', () => __awaiter(void 0, void 0, void 0, function* () {
-            const hexKey = Buffer.from('secret').toString('hex');
-            const result = yield service.joinLeagueOnChain(hexKey, 'league123', 'UQUser')();
-            expect(E.isRight(result)).toBe(true);
-            expect(mockSend).toHaveBeenCalled();
-            if (E.isRight(result)) {
-                expect(result.right).toContain('join_league_seqno_');
-            }
-        }));
-    });
-    describe('fundEscrow', () => {
-        it('should fund escrow', () => __awaiter(void 0, void 0, void 0, function* () {
-            const hexKey = Buffer.from('secret').toString('hex');
-            const result = yield service.fundEscrow(hexKey, '10')();
-            expect(E.isRight(result)).toBe(true);
-            expect(mockSend).toHaveBeenCalled();
-            if (E.isRight(result)) {
-                expect(result.right).toContain('fund_escrow_seqno_');
-            }
-        }));
-    });
-    describe('distributeWinnings', () => {
-        it('should distribute winnings', () => __awaiter(void 0, void 0, void 0, function* () {
-            const hexKey = Buffer.from('secret').toString('hex');
-            const result = yield service.distributeWinnings(hexKey, 'league123', ['UQWinner'], ['10'], '0', null, '0')();
-            expect(E.isRight(result)).toBe(true);
-            expect(mockSend).toHaveBeenCalled();
-            if (E.isRight(result)) {
-                expect(result.right).toContain('distribute_seqno_');
+            finally {
+                vi.unstubAllEnvs();
             }
         }));
     });

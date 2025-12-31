@@ -178,7 +178,7 @@ describe('Optimized Winner Calculator', () => {
         });
     }
     describe('Performance Tests', () => {
-        it('should handle small batch efficiently (10 leagues, 50 users)', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a small batch of leagues: it should process them efficiently', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(50, 10, 5);
             const startTime = Date.now();
             const result = yield calculateAllLeagueWinners(testGameweek.id, {
@@ -193,7 +193,7 @@ describe('Optimized Winner Calculator', () => {
             expect(duration).toBeLessThan(5000); // Should complete in under 5 seconds
             console.log(`Small batch test completed in ${duration}ms with ${result.totalProcessed} leagues processed`);
         }));
-        it('should handle medium batch efficiently (25 leagues, 50 users)', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a medium batch of leagues: it should process them efficiently', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(50, 25, 3);
             const startTime = Date.now();
             const result = yield calculateAllLeagueWinners(testGameweek.id, {
@@ -208,7 +208,7 @@ describe('Optimized Winner Calculator', () => {
             expect(duration).toBeLessThan(10000); // Should complete in under 10 seconds
             console.log(`Medium batch test completed in ${duration}ms with ${result.totalProcessed} leagues processed`);
         }), 15000); // Increase timeout for this test
-        it('should handle error scenarios gracefully', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given processing errors: it should handle them gracefully', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(8, 4, 2);
             // Use invalid gameweek ID to trigger error in calculation
             const result = yield calculateAllLeagueWinners(99999, {
@@ -222,7 +222,7 @@ describe('Optimized Winner Calculator', () => {
         }));
     });
     describe('Processing Stats', () => {
-        it('should return accurate processing statistics', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a gameweek id: it should return accurate processing statistics', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(15, 8, 3);
             // Set some leagues to different statuses
             // Check if league exists before updating to avoid race conditions with cleanup
@@ -250,7 +250,7 @@ describe('Optimized Winner Calculator', () => {
             expect(stats.ongoing).toBe(6); // 8 - 1 closed - 1 pending
             expect(stats.processing).toBe(true); // Still has ongoing leagues
         }));
-        it('should indicate when processing is complete', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given all leagues are closed: it should indicate processing is complete', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(10, 3, 2);
             // Set all leagues to closed
             yield prisma.fantasyLeague.updateMany({
@@ -265,7 +265,7 @@ describe('Optimized Winner Calculator', () => {
         }));
     });
     describe('Configuration Options', () => {
-        it('should respect custom batch size', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a custom batch size: it should respect it', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(20, 10, 3);
             const result = yield calculateAllLeagueWinners(testGameweek.id, {
                 batchSize: 3, // Small batch size
@@ -274,7 +274,7 @@ describe('Optimized Winner Calculator', () => {
             // Expect at least some leagues to be processed (might be less due to cleanup)
             expect(result.successful).toBeGreaterThan(0);
         }));
-        it('should handle concurrent batches correctly', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given high concurrency: it should handle concurrent batches correctly', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(30, 15, 3);
             const startTime = Date.now();
             const result = yield calculateAllLeagueWinners(testGameweek.id, {
@@ -289,7 +289,7 @@ describe('Optimized Winner Calculator', () => {
         }));
     });
     describe('Database Optimization', () => {
-        it('should optimize database queries', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a processing run: it should optimize database queries', () => __awaiter(void 0, void 0, void 0, function* () {
             yield createTestData(12, 6, 2);
             // Count actual findMany queries without breaking transaction mocking
             let findManyCount = 0;

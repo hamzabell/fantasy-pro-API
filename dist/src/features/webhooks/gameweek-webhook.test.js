@@ -116,7 +116,7 @@ describe('Gameweek Webhook', () => {
         });
     }));
     describe('POST /gameweek-status', () => {
-        it('should return 401 for missing authorization header', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a request without authorization header: it should return 401', () => __awaiter(void 0, void 0, void 0, function* () {
             const response = yield client['gameweek-status'].$post({
                 json: {
                     gameweekId: testGameweek.id,
@@ -127,7 +127,7 @@ describe('Gameweek Webhook', () => {
             const data = yield response.json();
             expect(data.message).toContain('Unauthorized');
         }));
-        it('should return 401 for invalid authorization token', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given an invalid authorization token: it should return 401', () => __awaiter(void 0, void 0, void 0, function* () {
             const response = yield client['gameweek-status'].$post({
                 json: {
                     gameweekId: testGameweek.id,
@@ -141,7 +141,7 @@ describe('Gameweek Webhook', () => {
             const data = yield response.json();
             expect(data.message).toContain('Unauthorized');
         }));
-        it('should handle gameweek started status', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a gameweek started status: it should start the gameweek', () => __awaiter(void 0, void 0, void 0, function* () {
             const response = yield client['gameweek-status'].$post({
                 json: {
                     gameweekId: testGameweek.id,
@@ -163,7 +163,7 @@ describe('Gameweek Webhook', () => {
                 expect(league.status).toBe('ongoing');
             }
         }));
-        it('should handle gameweek ended status and calculate winners', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given a gameweek ended status: it should calculate winners', () => __awaiter(void 0, void 0, void 0, function* () {
             // First set leagues to ongoing status
             yield prisma.fantasyLeague.updateMany({
                 where: { gameweekId: testGameweek.id },
@@ -200,7 +200,7 @@ describe('Gameweek Webhook', () => {
                 concurrentBatches: 3
             });
         }));
-        it('should handle winner calculation errors gracefully', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given winner calculation fails: it should handle errors gracefully', () => __awaiter(void 0, void 0, void 0, function* () {
             // Set leagues to ongoing
             yield prisma.fantasyLeague.updateMany({
                 where: { gameweekId: testGameweek.id },
@@ -228,7 +228,7 @@ describe('Gameweek Webhook', () => {
             expect(data.processed.winnersCalculated).toBe(1); // Only one succeeded
             expect(data.processed.failed).toBe(1); // One failed
         }));
-        it('should return 400 for invalid gameweek ID', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given an invalid gameweek id: it should return 400', () => __awaiter(void 0, void 0, void 0, function* () {
             const response = yield client['gameweek-status'].$post({
                 json: {
                     gameweekId: 0,
@@ -240,7 +240,7 @@ describe('Gameweek Webhook', () => {
             });
             expect(response.status).toBe(400);
         }));
-        it('should return 400 for invalid status', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given an invalid status: it should return 400', () => __awaiter(void 0, void 0, void 0, function* () {
             const response = yield client['gameweek-status'].$post({
                 json: {
                     gameweekId: testGameweek.id,
@@ -252,7 +252,7 @@ describe('Gameweek Webhook', () => {
             });
             expect(response.status).toBe(400);
         }));
-        it('should handle empty gameweek (no leagues)', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given an empty gameweek: it should handle it gracefully', () => __awaiter(void 0, void 0, void 0, function* () {
             // Create a gameweek with no leagues
             const emptyGameweek = yield prisma.gameweek.create({
                 data: {
@@ -278,7 +278,7 @@ describe('Gameweek Webhook', () => {
                 where: { id: emptyGameweek.id }
             });
         }));
-        it('should only update leagues in pending status when starting', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given mixed pending/ongoing leagues: it should only update pending leagues when starting', () => __awaiter(void 0, void 0, void 0, function* () {
             // Set one league to ongoing
             yield prisma.fantasyLeague.update({
                 where: { id: testLeague1.id },
@@ -304,7 +304,7 @@ describe('Gameweek Webhook', () => {
             expect(leagues[0].status).toBe('ongoing'); // Was already ongoing
             expect(leagues[1].status).toBe('ongoing'); // Was updated from pending
         }));
-        it('should only calculate winners for ongoing leagues when ending', () => __awaiter(void 0, void 0, void 0, function* () {
+        it('given mixed closed/ongoing leagues: it should only calculate winners for ongoing leagues', () => __awaiter(void 0, void 0, void 0, function* () {
             // Set one league to closed, one to ongoing
             yield prisma.fantasyLeague.update({
                 where: { id: testLeague1.id },

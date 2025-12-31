@@ -57,7 +57,7 @@ describe('League Integration Routes', () => {
     const authHeaders = {
         'Authorization': 'Bearer valid-token'
     };
-    test('GET /api/league-data/players should return players', () => __awaiter(void 0, void 0, void 0, function* () {
+    test('given a request for players: it should return the players list', () => __awaiter(void 0, void 0, void 0, function* () {
         const mockPlayers = [{ id: 1, name: 'Player 1', teamId: 1, position: 'FWD', cost: 100 }];
         mockService.fetchPlayers.mockResolvedValue(mockPlayers);
         const res = yield app.request('/api/league-data/players?league=PREMIER_LEAGUE', {
@@ -69,7 +69,7 @@ describe('League Integration Routes', () => {
         expect(body.data).toHaveLength(1);
         expect(body.data[0].name).toBe('Player 1');
     }));
-    test('GET /api/league-data/players/{id} should return player by id', () => __awaiter(void 0, void 0, void 0, function* () {
+    test('given a player id: it should return the player details', () => __awaiter(void 0, void 0, void 0, function* () {
         const mockPlayer = { id: 1, name: 'Player 1', teamId: 1, position: 'FWD', cost: 100 };
         mockService.fetchPlayerById.mockResolvedValue(mockPlayer);
         const res = yield app.request('/api/league-data/players/1', {
@@ -81,7 +81,7 @@ describe('League Integration Routes', () => {
         expect(body.data.name).toBe('Player 1');
         expect(mockService.fetchPlayerById).toHaveBeenCalledWith(1);
     }));
-    test('POST /api/league-data/players/ids should return players by ids', () => __awaiter(void 0, void 0, void 0, function* () {
+    test('given a list of player ids: it should return the players details', () => __awaiter(void 0, void 0, void 0, function* () {
         const mockPlayers = [{ id: 1, name: 'Player 1', teamId: 1, position: 'FWD', cost: 100 }];
         mockService.fetchPlayersByIds.mockResolvedValue(mockPlayers);
         const res = yield app.request('/api/league-data/players/ids', {
@@ -94,7 +94,7 @@ describe('League Integration Routes', () => {
         expect(body.data).toHaveLength(1);
         expect(mockService.fetchPlayersByIds).toHaveBeenCalledWith([1]);
     }));
-    test('GET /api/league-data/teams/{id} should return team by id', () => __awaiter(void 0, void 0, void 0, function* () {
+    test('given a team id: it should return the team details', () => __awaiter(void 0, void 0, void 0, function* () {
         const mockTeam = { id: 1, name: 'Team 1', shortName: 'T1' };
         mockService.fetchTeamById.mockResolvedValue(mockTeam);
         const res = yield app.request('/api/league-data/teams/1', {
@@ -106,7 +106,7 @@ describe('League Integration Routes', () => {
         expect(body.data.name).toBe('Team 1');
         expect(mockService.fetchTeamById).toHaveBeenCalledWith(1);
     }));
-    test('GET /api/league-data/positions should return positions', () => __awaiter(void 0, void 0, void 0, function* () {
+    test('given a request for positions: it should return all positions', () => __awaiter(void 0, void 0, void 0, function* () {
         mockService.fetchPositions.mockResolvedValue(['GKP', 'DEF', 'MID', 'FWD']);
         const res = yield app.request('/api/league-data/positions', {
             method: 'GET',
@@ -116,7 +116,7 @@ describe('League Integration Routes', () => {
         const body = yield res.json();
         expect(body.data).toEqual(['GKP', 'DEF', 'MID', 'FWD']);
     }));
-    test('GET /api/league-data/gameweeks/future should return future gameweeks', () => __awaiter(void 0, void 0, void 0, function* () {
+    test('given a request for future gameweeks: it should return future gameweeks', () => __awaiter(void 0, void 0, void 0, function* () {
         const mockGameweeks = [{ id: 2, name: 'Gameweek 2', deadlineTime: '2024-01-01', isActive: true, isFinished: false, isCurrent: false, isNext: true }];
         mockService.fetchFutureGameweeks.mockResolvedValue(mockGameweeks);
         const res = yield app.request('/api/league-data/gameweeks/future', {
