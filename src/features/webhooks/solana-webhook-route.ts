@@ -72,7 +72,8 @@ const AlchemyActivitySchema = z.object({
 });
 
 // Alchemy sends an array of activities
-const AlchemyWebhookSchema = z.array(AlchemyActivitySchema);
+// Debugging: Accept any payload to log it
+const AlchemyWebhookSchema = z.any();
 
 const solanaWebhookRoute = createRoute({
     method: 'post',
@@ -109,12 +110,17 @@ const solanaWebhookRoute = createRoute({
 
 solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
     try {
-        const activities = c.req.valid('json');
+        const rawBody = c.req.valid('json');
+        logger.info(`Received Raw Webhook Payload: ${JSON.stringify(rawBody)}`);
+        
+        // Handle array or single object
+        const activities = Array.isArray(rawBody) ? rawBody : [rawBody];
         
         const coder = new anchor.BorshCoder(IDL);
 
         for (const activity of activities) {
-            // logger.info(`Received Alchemy Activity: ${activity.txHash}`);
+            const signature = activity.txHash || activity.signature || activity.hash;
+            // logger.info(`Received Alchemy Activity: ${signature}`);
 
             if (activity.logs) {
                 for (const log of activity.logs) {
@@ -135,7 +141,7 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
                                                 id: leagueId,
                                                 league: {
                                                     status: 'open',
-                                                    blockchainTxHash: activity.txHash
+                                                    blockchainTxHash: signature
                                                 }
                                             });
                                             logger.info(`Updated League ${leagueId} status to OPEN`);
@@ -153,7 +159,7 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
                                                     id: membership.id,
                                                     membership: {
                                                         status: 'active',
-                                                        blockchainTxHash: activity.txHash,
+                                                        blockchainTxHash: signature,
                                                         stakeAmount: new Decimal(event.data.amount.toString())
                                                     }
                                                 });
@@ -181,7 +187,7 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
                                                     membership: {
                                                         status: 'won',
                                                         payoutAmount: new Decimal(event.data.amount.toString()),
-                                                        blockchainTxHash: activity.txHash,
+                                                        blockchainTxHash: signature,
                                                         payoutStatus: 'completed'
                                                     }
                                                 });
@@ -202,7 +208,7 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
                                                 id: finalLeagueId,
                                                 league: {
                                                     status: 'completed',
-                                                    blockchainTxHash: activity.txHash
+                                                    blockchainTxHash: signature
                                                 }
                                             });
 
