@@ -74,7 +74,7 @@ describe('BlockchainService', () => {
 
   describe('payoutWinners', () => {
     it('given valid winners and amounts: it should return a transaction hash', async () => {
-      const result = await service.payoutWinners('league123', [{ address: '0xWinner', amount: '10' }])();
+      const result = await service.payoutWinners('league123', [{ address: '0xWinner', amount: '10' }], [BigInt(10000)], BigInt(0))();
       
       expect(result._tag).toBe('Right');
       if (result._tag === 'Right') {
