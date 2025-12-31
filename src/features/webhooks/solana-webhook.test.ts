@@ -61,7 +61,7 @@ vi.mock('../../fp/infrastructure/Logger.js', () => ({
 }));
 
 describe('Solana Webhook', () => {
-    const client = testClient(solanaWebhookApp);
+    const client = testClient(solanaWebhookApp) as any;
 
     beforeEach(() => {
         vi.clearAllMocks();
