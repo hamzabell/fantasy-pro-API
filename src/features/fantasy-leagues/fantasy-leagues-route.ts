@@ -924,7 +924,7 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
   const user = c.get('user') as any;
   const { id } = c.req.valid('param');
 
-  const result = await pipe(
+   const result = await pipe(
     safePrisma(
         () => env.prisma.fantasyLeague.findUnique({
             where: { id },
@@ -934,6 +934,7 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
     ),
     TE.chainW((league) => {
         if (!league) return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found') as AppError);
+        if (!user) return TE.left({ _tag: 'AuthorizationError', message: 'Unauthorized: Please log in' } as any);
         // Check membership
         const isMember = league.members.some(m => m.userId === user.id);
         if (!isMember) return TE.left(businessRuleError('NotMember', 'User is not a member of this league') as AppError);
