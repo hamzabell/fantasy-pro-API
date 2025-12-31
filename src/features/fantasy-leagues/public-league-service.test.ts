@@ -46,7 +46,7 @@ describe('PublicLeagueService', () => {
     });
 
     describe('checkAndCreateWeeklyLeagues', () => {
-        it('should create leagues if none exist', async () => {
+        it('given no weekly leagues exist: it should create them', async () => {
             (fetchGameweek as any).mockResolvedValue({ id: 22, deadlineTime: new Date() }); // Fix: deadlineTime
             // prisma.user.findUnique removed
             prisma.fantasyLeague.findFirst.mockResolvedValue(null); 
@@ -61,7 +61,7 @@ describe('PublicLeagueService', () => {
             expect(firstCallArg.data.ownerId).toBeUndefined();
         });
 
-        it('should not create leagues if they already exist', async () => {
+        it('given weekly leagues exist: it should not create them', async () => {
             (fetchGameweek as any).mockResolvedValue({ id: 22, deadlineTime: new Date() });
             // prisma.user.findUnique removed
             prisma.fantasyLeague.findFirst.mockResolvedValue({ id: 'existing-league-id' });
@@ -74,7 +74,7 @@ describe('PublicLeagueService', () => {
     });
 
     describe('checkAndProcessPayouts', () => {
-        it('should payout winners correctly', async () => {
+        it('given leagues are completed: it should payout winners correctly', async () => {
              // Mock leagues returned
              prisma.fantasyLeague.findMany.mockResolvedValue([
                  {
@@ -108,7 +108,7 @@ describe('PublicLeagueService', () => {
              }));
         });
         
-        it('should handle no winners/members by closing league', async () => {
+        it('given league has no winners/members: it should close the league', async () => {
              prisma.fantasyLeague.findMany.mockResolvedValue([
                  {
                      id: 'league-empty',

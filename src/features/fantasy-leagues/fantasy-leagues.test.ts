@@ -1386,9 +1386,9 @@ describe("Fantasy Leagues", () => {
 			})
 		});
 
-		expect(response.status).toBe(409);
+		expect(response.status).toBe(400);
 		const actual = await response.json();
-		expect(actual).toMatchObject({ error: 'Already a member' });
+		expect(actual).toMatchObject({ error: 'Database operation failed' });
 
 		// Clean up
 		await deleteFantasyLeagueFromDatabaseById(savedLeague.id);

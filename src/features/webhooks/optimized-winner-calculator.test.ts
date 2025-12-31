@@ -188,7 +188,7 @@ describe('Optimized Winner Calculator', () => {
   }
 
   describe('Performance Tests', () => {
-    it('should handle small batch efficiently (10 leagues, 50 users)', async () => {
+    it('given a small batch of leagues: it should process them efficiently', async () => {
       await createTestData(50, 10, 5);
 
       const startTime = Date.now();
@@ -209,7 +209,7 @@ describe('Optimized Winner Calculator', () => {
       console.log(`Small batch test completed in ${duration}ms with ${result.totalProcessed} leagues processed`);
     });
 
-    it('should handle medium batch efficiently (25 leagues, 50 users)', async () => {
+    it('given a medium batch of leagues: it should process them efficiently', async () => {
       await createTestData(50, 25, 3);
 
       const startTime = Date.now();
@@ -230,7 +230,7 @@ describe('Optimized Winner Calculator', () => {
       console.log(`Medium batch test completed in ${duration}ms with ${result.totalProcessed} leagues processed`);
     }, 15000); // Increase timeout for this test
 
-    it('should handle error scenarios gracefully', async () => {
+    it('given processing errors: it should handle them gracefully', async () => {
       await createTestData(8, 4, 2);
 
       // Use invalid gameweek ID to trigger error in calculation
@@ -248,7 +248,7 @@ describe('Optimized Winner Calculator', () => {
   });
 
   describe('Processing Stats', () => {
-    it('should return accurate processing statistics', async () => {
+    it('given a gameweek id: it should return accurate processing statistics', async () => {
       await createTestData(15, 8, 3);
 
       // Set some leagues to different statuses
@@ -283,7 +283,7 @@ describe('Optimized Winner Calculator', () => {
       expect(stats.processing).toBe(true); // Still has ongoing leagues
     });
 
-    it('should indicate when processing is complete', async () => {
+    it('given all leagues are closed: it should indicate processing is complete', async () => {
       await createTestData(10, 3, 2);
 
       // Set all leagues to closed
@@ -302,7 +302,7 @@ describe('Optimized Winner Calculator', () => {
   });
 
   describe('Configuration Options', () => {
-    it('should respect custom batch size', async () => {
+    it('given a custom batch size: it should respect it', async () => {
       await createTestData(20, 10, 3);
 
       const result = await calculateAllLeagueWinners(testGameweek.id, {
@@ -314,7 +314,7 @@ describe('Optimized Winner Calculator', () => {
       expect(result.successful).toBeGreaterThan(0);
     });
 
-    it('should handle concurrent batches correctly', async () => {
+    it('given high concurrency: it should handle concurrent batches correctly', async () => {
       await createTestData(30, 15, 3);
 
       const startTime = Date.now();
@@ -335,7 +335,7 @@ describe('Optimized Winner Calculator', () => {
   });
 
   describe('Database Optimization', () => {
-    it('should optimize database queries', async () => {
+    it('given a processing run: it should optimize database queries', async () => {
       await createTestData(12, 6, 2);
 
       // Count actual findMany queries without breaking transaction mocking

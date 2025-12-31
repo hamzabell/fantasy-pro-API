@@ -4,17 +4,17 @@ import { calculateLeagueCreationCost } from './league-cost-utils.js';
 
 describe('League Cost Utils', () => {
   describe('calculateLeagueCreationCost', () => {
-    it('should be free for 5 or fewer players', () => {
+    it('given 5 or fewer players: it should be free', () => {
       expect(calculateLeagueCreationCost(1)).toBe(0);
       expect(calculateLeagueCreationCost(5)).toBe(0);
     });
 
-    it('should be 10 MATIC for 6 to 10 players', () => {
+    it('given 6 to 10 players: it should be 10 MATIC', () => {
       expect(calculateLeagueCreationCost(6)).toBe(10);
       expect(calculateLeagueCreationCost(10)).toBe(10);
     });
 
-    it('should scale exponentially for > 10 players', () => {
+    it('given > 10 players: it should scale exponentially', () => {
       // 12 players: 10 * 1.05^2 = 10 * 1.1025 = 11.025 -> 11.03
       expect(calculateLeagueCreationCost(12)).toBe(11.03);
 
@@ -30,7 +30,7 @@ describe('League Cost Utils', () => {
       // Let's verify with code execution.
     });
 
-    it('should handle large numbers gracefully', () => {
+    it('given large numbers: it should handle gracefully', () => {
         const cost = calculateLeagueCreationCost(100);
         expect(cost).toBeGreaterThan(800);
     });

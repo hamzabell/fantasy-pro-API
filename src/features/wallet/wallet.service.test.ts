@@ -44,7 +44,7 @@ describe('WalletService', () => {
   });
 
   describe('createWalletForUser', () => {
-    it('should return error as it is deprecated', async () => {
+    it('given create wallet is called: it should return error as it is deprecated', async () => {
       const userId = 'user-123';
       const result = await service.createWalletForUser(userId)();
 
@@ -56,7 +56,7 @@ describe('WalletService', () => {
   });
 
   describe('getWalletBalance', () => {
-    it('should return wallet balance string', async () => {
+    it('given a user id: it should return wallet balance string', async () => {
         const userId = 'user123';
         const mockWallet = { balance: { toString: () => '150.50' } }; // Mock Prisma Decimal behavior
         
@@ -70,7 +70,7 @@ describe('WalletService', () => {
         }
     });
 
-    it('should handle repo errors', async () => {
+    it('given a repo error: it should return the error', async () => {
         mockRepo.findByUserId.mockReturnValue(TE.left({ tag: 'DatabaseError' }));
 
         const result = await service.getWalletBalance('user123')();
@@ -80,7 +80,7 @@ describe('WalletService', () => {
   });
 
   describe('transferFunds', () => {
-      it('should return error as it is deprecated', async () => {
+      it('given transfer funds is called: it should return error as it is deprecated', async () => {
           const result = await service.transferFunds('user1', 'addr2', '10')();
           expect(E.isLeft(result)).toBe(true);
           if (E.isLeft(result)) {

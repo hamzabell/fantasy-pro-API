@@ -133,7 +133,7 @@ describe('League Winner Calculator', () => {
   });
 
   describe('calculateLeagueWinners', () => {
-    it('should calculate winners correctly based on team points', async () => {
+    it('given a league with members: it should calculate winners correctly based on team points', async () => {
       const winners = await calculateLeagueWinners(testLeague.id, testGameweek.id, 2);
 
       expect(winners).toHaveLength(2);
@@ -153,14 +153,14 @@ describe('League Winner Calculator', () => {
       expect(winners).toContain(testUsers[0].id);
     });
 
-    it('should handle single winner correctly', async () => {
+    it('given a single winner requirement: it should return only the top winner', async () => {
       const winners = await calculateLeagueWinners(testLeague.id, testGameweek.id, 1);
 
       expect(winners).toHaveLength(1);
       expect(winners[0]).toBe(testUsers[1].id); // Highest scoring user
     });
 
-    it('should handle more winners than participants', async () => {
+    it('given more winners requested than participants: it should return all participants', async () => {
       const winners = await calculateLeagueWinners(testLeague.id, testGameweek.id, 10);
 
       expect(winners).toHaveLength(4); // Only 4 participants, so max 4 winners
@@ -170,7 +170,7 @@ describe('League Winner Calculator', () => {
       expect(winners).toContain(testUsers[3].id);
     });
 
-    it('should handle league with no members', async () => {
+    it('given a league with no members: it should return empty winners list', async () => {
       // Remove all memberships
       await prisma.fantasyLeagueMembership.deleteMany({
         where: { leagueId: testLeague.id }
@@ -181,7 +181,7 @@ describe('League Winner Calculator', () => {
       expect(winners).toHaveLength(0);
     });
 
-    it('should handle members without teams', async () => {
+    it('given members without teams: it should ignore them', async () => {
       // Create a user without a team
       const userWithoutTeam = await prisma.user.create({
         data: { email: 'noteam@example.com' }
@@ -210,7 +210,7 @@ describe('League Winner Calculator', () => {
       });
     });
 
-    it('should handle captain bonuses correctly', async () => {
+    it('given a captain is assigned: it should include captain bonus in calculation', async () => {
       // Create a league with only one user to test captain bonus calculation
       const singleUserLeague = await prisma.fantasyLeague.create({
         data: {
@@ -249,12 +249,12 @@ describe('League Winner Calculator', () => {
       });
     });
 
-    it('should handle invalid league ID', async () => {
+    it('given an invalid league ID: it should return empty array', async () => {
       const winners = await calculateLeagueWinners('invalid-league-id', testGameweek.id, 2);
       expect(winners).toEqual([]);
     });
 
-    it('should sort winners by points (highest first)', async () => {
+    it('given multiple winners: it should sort them by points descending', async () => {
       const winners = await calculateLeagueWinners(testLeague.id, testGameweek.id, 4);
 
       expect(winners).toHaveLength(4);

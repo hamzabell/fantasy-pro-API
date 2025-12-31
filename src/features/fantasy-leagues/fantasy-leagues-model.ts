@@ -88,6 +88,22 @@ export async function retrieveFantasyLeagueMembershipsByLeagueId(leagueId: strin
 }
 
 /**
+ * Retrieves a FantasyLeagueMembership record from the database based on leagueId and userId.
+ *
+ * @param leagueId - The id of the FantasyLeague.
+ * @param userId - The id of the User.
+ * @returns The FantasyLeagueMembership or null.
+ */
+export async function retrieveFantasyLeagueMembershipByLeagueAndUser(leagueId: string, userId: string) {
+    return await prisma.fantasyLeagueMembership.findFirst({
+        where: {
+            leagueId,
+            userId
+        }
+    });
+}
+
+/**
  * Counts the number of FantasyLeagueMembership records for a specific league.
  *
  * @param leagueId - The id of the FantasyLeague whose memberships to count.

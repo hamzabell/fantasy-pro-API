@@ -44,7 +44,8 @@ export const createEnvironment = (
 		process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
 		process.env.POLYGON_API_KEY || '',
 		process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
-        process.env.SERVER_PRIVATE_KEY || ''
+        process.env.SERVER_PRIVATE_KEY || '',
+        process.env.ALCHEMY_WEBSOCKET_URL // New optional arg
 	)
 
 	const walletService = createWalletService(walletRepo, blockchainService)

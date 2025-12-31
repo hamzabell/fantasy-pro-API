@@ -120,7 +120,7 @@ describe('Gameweek Webhook', () => {
   });
 
   describe('POST /gameweek-status', () => {
-    it('should return 401 for missing authorization header', async () => {
+    it('given a request without authorization header: it should return 401', async () => {
       const response = await (client as any)['gameweek-status'].$post({
         json: {
           gameweekId: testGameweek.id,
@@ -133,7 +133,7 @@ describe('Gameweek Webhook', () => {
       expect(data.message).toContain('Unauthorized');
     });
 
-    it('should return 401 for invalid authorization token', async () => {
+    it('given an invalid authorization token: it should return 401', async () => {
       const response = await (client as any)['gameweek-status'].$post({
         json: {
           gameweekId: testGameweek.id,
@@ -149,7 +149,7 @@ describe('Gameweek Webhook', () => {
       expect(data.message).toContain('Unauthorized');
     });
 
-    it('should handle gameweek started status', async () => {
+    it('given a gameweek started status: it should start the gameweek', async () => {
       const response = await (client as any)['gameweek-status'].$post({
         json: {
           gameweekId: testGameweek.id,
@@ -176,7 +176,7 @@ describe('Gameweek Webhook', () => {
       }
     });
 
-    it('should handle gameweek ended status and calculate winners', async () => {
+    it('given a gameweek ended status: it should calculate winners', async () => {
       // First set leagues to ongoing status
       await prisma.fantasyLeague.updateMany({
         where: { gameweekId: testGameweek.id },
@@ -223,7 +223,7 @@ describe('Gameweek Webhook', () => {
       );
     });
 
-    it('should handle winner calculation errors gracefully', async () => {
+    it('given winner calculation fails: it should handle errors gracefully', async () => {
       // Set leagues to ongoing
       await prisma.fantasyLeague.updateMany({
         where: { gameweekId: testGameweek.id },
@@ -256,7 +256,7 @@ describe('Gameweek Webhook', () => {
       expect(data.processed.failed).toBe(1); // One failed
     });
 
-    it('should return 400 for invalid gameweek ID', async () => {
+    it('given an invalid gameweek id: it should return 400', async () => {
       const response = await (client as any)['gameweek-status'].$post({
         json: {
           gameweekId: 0,
@@ -270,7 +270,7 @@ describe('Gameweek Webhook', () => {
       expect(response.status).toBe(400);
     });
 
-    it('should return 400 for invalid status', async () => {
+    it('given an invalid status: it should return 400', async () => {
       const response = await (client as any)['gameweek-status'].$post({
         json: {
           gameweekId: testGameweek.id,
@@ -284,7 +284,7 @@ describe('Gameweek Webhook', () => {
       expect(response.status).toBe(400);
     });
 
-    it('should handle empty gameweek (no leagues)', async () => {
+    it('given an empty gameweek: it should handle it gracefully', async () => {
       // Create a gameweek with no leagues
       const emptyGameweek = await prisma.gameweek.create({
         data: {
@@ -314,7 +314,7 @@ describe('Gameweek Webhook', () => {
       });
     });
 
-    it('should only update leagues in pending status when starting', async () => {
+    it('given mixed pending/ongoing leagues: it should only update pending leagues when starting', async () => {
       // Set one league to ongoing
       await prisma.fantasyLeague.update({
         where: { id: testLeague1.id },
@@ -345,7 +345,7 @@ describe('Gameweek Webhook', () => {
       expect(leagues[1].status).toBe('ongoing'); // Was updated from pending
     });
 
-    it('should only calculate winners for ongoing leagues when ending', async () => {
+    it('given mixed closed/ongoing leagues: it should only calculate winners for ongoing leagues', async () => {
       // Set one league to closed, one to ongoing
       await prisma.fantasyLeague.update({
         where: { id: testLeague1.id },

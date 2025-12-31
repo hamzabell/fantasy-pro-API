@@ -1,4 +1,5 @@
 import prisma from '../../prisma.js';
+import { Decimal } from '../../generated/prisma/runtime/library.js';
 
 interface PlayerScore {
   playerId: number;
@@ -180,57 +181,142 @@ async function updateWinnersInBatch(results: LeagueWinnerResult[]): Promise<void
       }
       
       // 2. Prepare Payout Data
-      // Map winner userIds to wallet addresses and calculate amounts
-      const winners = result.winners;
-      const totalPool = Number(league.totalPoolUsd); // Assuming this is actually POL now? 
-      // User said "show matic instead of ton... currency we working on is POL". 
-      // The schema field is `totalPoolUsd` (historically). We should treat it as POL amount or USD value?
-      // Given the flow changes (staking POL), `entryFeeUsd` likely holds POL amount now.
-      // Reinterpreting `totalPoolUsd` as `totalPoolToken`.
-      
-      // Calculate split (e.g. Winner takes all or distribution)
-      // Assuming 'winners' array has order 1st, 2nd, 3rd...
-      // Simple logic: Equal split or 1st takes all?
-      // Default: Equal split among winners if multiple? Or use `prizeDistribution`?
-      // Existing logic for `prizeDistribution` exists in routes.
-      // Let's assume simple logic: 1 Winner = 100%, 2 Winners = 50/50?
-      // OR use the `prizeDistribution` field if available.
-      
-      const payoutList: { address: string, amount: string }[] = [];
-      const winnerShare = totalPool / winners.length; // Simplified
-      
-      for (const userId of winners) {
-          const member = league.members.find(m => m.userId === userId);
-          // We need the user's external wallet address.
-          // OLD: stored in Wallet model.
-          // NEW: Should be stored in User.walletAddress OR we need to trust what they connected.
-          // In `AuthResponse`, we return `user.walletAddress`.
-          // We should look up User.walletAddress.
-          
-          if (member?.user.walletAddress) {
-              payoutList.push({
-                  address: member.user.walletAddress,
-                  amount: winnerShare.toFixed(6) // Format for token
-              });
+      const winners = result.winners; // UserIDs
+      const totalPool = new Decimal(league.totalPoolUsd || 0);
+      let workingPool = totalPool;
+
+      // --- COMMISSION LOGIC ---
+      let platformCommissionRate = 0;
+      let creatorCommissionRate = new Decimal(league.creatorCommission || 0);
+
+      // Determine Platform Commission
+      if (league.leagueType === 'public') {
+          platformCommissionRate = 10;
+          // Public leagues cannot have creator commission (enforced at creation), but if somehow exists, ignore or subtract?
+          // Rules say: Public = 10%.
+      } else {
+          // Private
+          const participants = league.members.length; // Actually check `members.length` or `currentParticipants`? using actual members list is safer.
+          if (participants <= 5) {
+              platformCommissionRate = 5;
           } else {
-               // Fallback: Check Wallet table? (Legacy support/transition)
-               const legacyWallet = await prisma.wallet.findUnique({ where: { userId } });
-               if (legacyWallet) {
-                   payoutList.push({
-                       address: legacyWallet.address,
-                        amount: winnerShare.toFixed(6)
-                   });
-               } else {
-                   console.error(`User ${userId} has no wallet address for payout`);
-               }
+              // > 5 participants
+              if (league.paymentMethod === 'COMMISSION') { // 'Free to create'
+                  platformCommissionRate = 20;
+              } else { // 'UPFRONT'
+                  platformCommissionRate = 0;
+              }
           }
       }
 
+      // Calculate Amounts (Logic: Fees taken from Gross)
+      const platformFeeAmount = totalPool.mul(platformCommissionRate).div(100);
+      const creatorFeeAmount = totalPool.mul(creatorCommissionRate).div(100);
+      
+      const distributableAmount = totalPool.minus(platformFeeAmount).minus(creatorFeeAmount);
+      
+      // Winner Share
+      if (winners.length === 0) return true; // No winners? No payout. (Or refund?)
+      // Assuming winners > 0.
+      const winnerShare = distributableAmount.div(winners.length);
+
+      // Prepare Payout List
+      const payoutMap = new Map<string, Decimal>(); // Address -> Amount
+
+      // Helper to add to map
+      const addToPayout = (address: string, amount: Decimal) => {
+          if (!address) return;
+          const current = payoutMap.get(address) || new Decimal(0);
+          payoutMap.set(address, current.plus(amount));
+      };
+
+      // Distribute Winnings
+      for (const userId of winners) {
+          const member = league.members.find(m => m.userId === userId);
+          const address = member?.user.walletAddress || (await prisma.wallet.findUnique({ where: { userId } }))?.address;
+          
+          if (address) {
+              addToPayout(address, winnerShare);
+          } else {
+              console.error(`User ${userId} has no wallet address for payout`);
+          }
+      }
+
+      // Distribute Creator Commission (if > 0 and Creator exists)
+      if (creatorFeeAmount.greaterThan(0) && league.ownerId) {
+          const ownerMember = league.members.find(m => m.userId === league.ownerId);
+          // If owner is not a member (possible?), we need to look them up separately.
+          let ownerAddress = ownerMember?.user.walletAddress;
+          
+          if (!ownerAddress) {
+               // Look up owner directly if not in members list (e.g. didn't join?)
+               const ownerUser = await prisma.user.findUnique({ where: { id: league.ownerId } });
+               ownerAddress = ownerUser?.walletAddress || (await prisma.wallet.findUnique({ where: { userId: league.ownerId } }))?.address;
+          }
+
+          if (ownerAddress) {
+              addToPayout(ownerAddress, creatorFeeAmount);
+          } else {
+             console.error(`League Owner ${league.ownerId} has no wallet address for commission`);
+          }
+      }
+
+      // Convert to List for Blockchain Service
+      // AND Calculate Percentages!
+      // The Smart Contract `payoutWinners` expects: (leagueId, winners[], percentages[], commission?)
+      // BUT `percentages` should sum to 10000 (basis points) typically? OR relative weights?
+      // Contract says: `percentages`. Usually means basis points (10000 = 100%).
+      // Let's assume basis points.
+      
+      const payoutList: { address: string, amount: string, percentage: number }[] = [];
+      let totalPercentage = 0;
+
+      // Start with TOTAL POOL as basis for %? 
+      // OR is it % of Remaining? 
+      // Usually SC `payoutWinners` distributes the *entire* balance held by contract for that league.
+      // So % must be relative to the Contract Balance (which equals TotalPool).
+      
+      // We iterate our payoutMap (which contains Absolute Amounts) and convert to % of TotalPool.
+      payoutMap.forEach((amount, address) => {
+          // % = (Amount / TotalPool) * 10000
+          // Handle TotalPool = 0 edge case?
+          if (totalPool.isZero()) return;
+          
+          let pct = amount.div(totalPool).mul(10000).floor().toNumber();
+          payoutList.push({
+              address,
+              amount: amount.toFixed(6),
+              percentage: pct
+          });
+          totalPercentage += pct;
+      });
+
+      // Handle Rounding Dust? 
+      // If sum < 10000 (minus platform fee which stays in contract? Or is platform fee sent to admin?)
+      // The SC likely keeps the platform fee (residual) OR sends it to an admin address?
+      // Smart Contract signature: `payoutWinners(..., commissionPercentage)`
+      // This `commissionPercentage` is likely the Platform Fee.
+      // So `percentages` array is for *Participants* (Winners + Creator).
+      // Platform Fee is separate arg.
+      
+      // So: 
+      // User Amount + Creator Amount + Platform Amount = Total.
+      // User % + Creator % + Platform % = 100%.
+      
+      const platformPct = Math.floor(platformCommissionRate * 100); // 10% -> 1000 basis points
+      // Adjust last entry or platform fee to ensure sum = 10000?
+      // Let's rely on SC safely handling residuals or just be precise.
+      
       // 3. Trigger Blockchain Payout
       if (payoutList.length > 0) {
-          await blockchainService.payoutWinners(league.id, payoutList)();
-          // We execute the Task by calling it (Task is () => Promise)
-          // If it fails, we catch it below.
+          // Pass formatted args
+          // We need custom interface for this new method signature in blockchain service
+          await blockchainService.payoutWinners(
+              league.id, 
+              payoutList.map(p => ({ address: p.address, amount: p.amount })), 
+              payoutList.map(p => BigInt(p.percentage)), // The calculated percentages
+              BigInt(platformPct)
+          )();
       }
       
       // 4. Close League in DB

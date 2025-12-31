@@ -43,7 +43,7 @@ describe('Authentication Routes', () => {
   });
 
   describe('GET /google/url', () => {
-    it('should return google auth url', async () => {
+    it('given a request for google auth url: it should return the url', async () => {
       const mockUrl = 'https://accounts.google.com/o/oauth2/v2/auth?...';
       mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
 
@@ -53,14 +53,14 @@ describe('Authentication Routes', () => {
       expect(await res.json()).toEqual({ url: mockUrl });
     });
 
-    it('should pass referralCode to generateGoogleAuthUrl', async () => {
+    it('given a referralCode: it should pass it to generateGoogleAuthUrl', async () => {
         const mockUrl = 'https://google.com/auth';
         mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
         
         await testApp.request('/google/url?referralCode=REF123');
         expect(mockAuthService.generateGoogleAuthUrl).toHaveBeenCalledWith('REF123', 'web');
     });
-    it('should pass platform to generateGoogleAuthUrl', async () => {
+    it('given a mobile platform param: it should pass platform to generateGoogleAuthUrl', async () => {
         const mockUrl = 'https://google.com/auth';
         mockAuthService.generateGoogleAuthUrl.mockReturnValue(mockUrl);
         
@@ -70,7 +70,7 @@ describe('Authentication Routes', () => {
   });
 
   describe('GET /google/callback', () => {
-    it('should redirect to frontend with token on success', async () => {
+    it('given a successful login: it should redirect to frontend with token', async () => {
       const mockCode = 'auth_code';
       const mockToken = 'jwt_token';
       const mockUser = { 
@@ -88,7 +88,7 @@ describe('Authentication Routes', () => {
       expect(res.headers.get('Location')).toBe(`http://localhost:8100/auth/callback?token=${mockToken}`);
     });
 
-    it('should redirect to app scheme if platform is mobile', async () => {
+    it('given a mobile platform: it should redirect to app scheme', async () => {
         const mockCode = 'auth_code';
         const mockToken = 'jwt_token';
         const mockUser = { id: '1', email: 'test@examples.com' };
@@ -101,7 +101,7 @@ describe('Authentication Routes', () => {
         expect(res.headers.get('Location')).toBe(`fantasypro://auth/callback?token=${mockToken}`);
     });
 
-    it('should return 400 on failure', async () => {
+    it('given a login failure: it should return 400', async () => {
         const mockCode = 'bad_code';
         mockAuthService.loginWithGoogleCode.mockReturnValue(TE.left({ _tag: 'AuthenticationError', message: 'Failed' }));
 
@@ -114,7 +114,7 @@ describe('Authentication Routes', () => {
   });
 
   describe('GET /user', () => {
-    it('should return user details with wallet address if authorized', async () => {
+    it('given an authorized user: it should return user details with wallet address', async () => {
        const authApp = new Hono();
        authApp.use('*', async (c: any, next: any) => {
            c.set('user', { 
@@ -150,7 +150,7 @@ describe('Authentication Routes', () => {
        });
     });
 
-    it('should return 401 if not authorized', async () => {
+    it('given an unauthorized request: it should return 401', async () => {
        const res = await testApp.request('/user', { method: 'GET' });
        expect(res.status).toBe(401); // Can be 401 or 500 depending on how passport fail is handled or mocked middleware. In plain request, no user is set, route checks user.
        // The route implementation: const user = c.get('user'); if (!user) return 401.

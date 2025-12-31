@@ -16,6 +16,7 @@ import leagueIntegrationApp from './features/league-integration/league-integrati
 import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
+import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
 
 import { cors } from 'hono/cors';
 
@@ -37,6 +38,10 @@ const env = createEnvironment(
 
 // Start Automated Services
 env.publicLeagueService.startScheduler();
+if (process.env.NODE_ENV !== 'test') {
+	env.blockchainService.listenForEvents();
+    payoutScheduler.initializeScheduler(); // Start Payout Scheduler
+}
 
 // Inject environment into all requests
 app.use('*', (c, next) => {

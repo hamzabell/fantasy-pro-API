@@ -58,7 +58,7 @@ describe('League Integration Routes', () => {
         'Authorization': 'Bearer valid-token'
     };
 
-    test('GET /api/league-data/players should return players', async () => {
+    test('given a request for players: it should return the players list', async () => {
         const mockPlayers = [{ id: 1, name: 'Player 1', teamId: 1, position: 'FWD', cost: 100 }];
         mockService.fetchPlayers.mockResolvedValue(mockPlayers);
 
@@ -73,7 +73,7 @@ describe('League Integration Routes', () => {
         expect(body.data[0].name).toBe('Player 1');
     });
 
-    test('GET /api/league-data/players/{id} should return player by id', async () => {
+    test('given a player id: it should return the player details', async () => {
         const mockPlayer = { id: 1, name: 'Player 1', teamId: 1, position: 'FWD', cost: 100 };
         mockService.fetchPlayerById.mockResolvedValue(mockPlayer);
 
@@ -88,7 +88,7 @@ describe('League Integration Routes', () => {
         expect(mockService.fetchPlayerById).toHaveBeenCalledWith(1);
     });
 
-    test('POST /api/league-data/players/ids should return players by ids', async () => {
+    test('given a list of player ids: it should return the players details', async () => {
         const mockPlayers = [{ id: 1, name: 'Player 1', teamId: 1, position: 'FWD', cost: 100 }];
         mockService.fetchPlayersByIds.mockResolvedValue(mockPlayers);
 
@@ -104,7 +104,7 @@ describe('League Integration Routes', () => {
         expect(mockService.fetchPlayersByIds).toHaveBeenCalledWith([1]);
     });
 
-    test('GET /api/league-data/teams/{id} should return team by id', async () => {
+    test('given a team id: it should return the team details', async () => {
         const mockTeam = { id: 1, name: 'Team 1', shortName: 'T1' };
         mockService.fetchTeamById.mockResolvedValue(mockTeam);
 
@@ -119,7 +119,7 @@ describe('League Integration Routes', () => {
         expect(mockService.fetchTeamById).toHaveBeenCalledWith(1);
     });
 
-    test('GET /api/league-data/positions should return positions', async () => {
+    test('given a request for positions: it should return all positions', async () => {
         mockService.fetchPositions.mockResolvedValue(['GKP', 'DEF', 'MID', 'FWD']);
 
         const res = await app.request('/api/league-data/positions', {
@@ -132,7 +132,7 @@ describe('League Integration Routes', () => {
         expect(body.data).toEqual(['GKP', 'DEF', 'MID', 'FWD']);
     });
 
-    test('GET /api/league-data/gameweeks/future should return future gameweeks', async () => {
+    test('given a request for future gameweeks: it should return future gameweeks', async () => {
         const mockGameweeks = [{ id: 2, name: 'Gameweek 2', deadlineTime: '2024-01-01', isActive: true, isFinished: false, isCurrent: false, isNext: true }];
         mockService.fetchFutureGameweeks.mockResolvedValue(mockGameweeks);
 
