@@ -1,8 +1,34 @@
-# Mobile Wallet Interaction Guide
+# Mobile Wallet Interaction Guide (Solana)
 
-This guide explains how the mobile app interacts with the Solana Smart Contract (`league_payout`).
+**Program ID (Devnet)**: `Gcmwe5hEZEqJk5JANLRUByw8rq9Nn1ti7ie6eicxPqtN`
 
-**Crucial Point**: To ensure the backend can link blockchain events to the database, you **MUST** pass the `leagueId` and `userId` (as strings) to the contract instructions.
+## Configuration Instructions for LLMs / Developers
+
+If you are an AI assistant or developer configuring the mobile wallet (React Native / Expo) to talk to this contract, follow these specific steps:
+
+1.  **Hardcode the Program ID**:
+    Ensure the constant `PROGRAM_ID` is set to `Gcmwe5hEZEqJk5JANLRUByw8rq9Nn1ti7ie6eicxPqtN`. Do not use a placeholder.
+
+2.  **Initialize the Provider**:
+    Use `@solana/web3.js` for the connection and `@coral-xyz/anchor` for the program interface.
+
+    ```typescript
+    import { Connection, PublicKey } from "@solana/web3.js";
+    import { Program, AnchorProvider } from "@coral-xyz/anchor";
+    import IDL from "./path/to/league_payout.json"; // You must load the IDL JSON
+
+    const programId = new PublicKey(
+      "Gcmwe5hEZEqJk5JANLRUByw8rq9Nn1ti7ie6eicxPqtN"
+    );
+    const connection = new Connection("https://api.devnet.solana.com");
+
+    // Note: On mobile, 'provider' setup depends on the specific wallet adapter (e.g. mobile-wallet-adapter-protocol)
+    ```
+
+3.  **Data Flow Rule**:
+    **ALWAYS** pass the `league_id` and `user_id` strings from your application's database to the contract instructions. This maps the on-chain event back to your off-chain database record.
+
+---
 
 ## 1. Create League Escrow (`create_league`)
 
@@ -12,7 +38,7 @@ Call this **after** the backend has created the league record and returned a `le
 
 1.  `league_id` (String): The UUID string from your backend (e.g., `"550e8400-e29b..."`).
 2.  `user_id` (String): The UUID string of the creating user.
-3.  `commission_percentage` (u64): Platform fee (e.g., `5` for 5%).
+3.  `commission_percentage` (u64): Platform fee (e.g., `500` for 5.00%).
 4.  `entry_fee` (u64): The entry fee in Lamports (1 SOL = 1,000,000,000 Lamports).
 
 **Javascript Example:**
@@ -25,8 +51,7 @@ await program.methods
   .createLeague(
     "league_123_id_from_backend", // league_id
     "user_456_id_from_backend", // user_id
-    new anchor.BN(500), // commission_percentage (e.g. 5.00% = 500 basis points or just 5? Check contract math)
-    // Contract divides by 10000, so 500 = 5%.
+    new anchor.BN(500), // commission_percentage (500 = 5.00%)
     new anchor.BN(1000000000) // fee_amount (1 SOL)
   )
   .accounts({
@@ -39,11 +64,10 @@ await program.methods
   .rpc();
 ```
 
-**What happens on Backend:**
+**Back-End Event Handling:**
 
-1.  Webhook receives `LeagueCreated` event containing `league_id` and `user_id`.
-2.  Backend finds the League by `league_id`.
-3.  Backend updates League status to `OPEN` and sets `blockchainTxHash`.
+- Webhook receives `LeagueCreated`.
+- Found via `league_id` -> Status updated to `OPEN`.
 
 ---
 
@@ -75,11 +99,10 @@ await program.methods
   .rpc();
 ```
 
-**What happens on Backend:**
+**Back-End Event Handling:**
 
-1.  Webhook receives `StakeEvent` event containing `league_id`, `user_id`, and `amount`.
-2.  Backend finds the user's membership using `league_id` and `user_id`.
-3.  Backend updates membership status to `ACTIVE`.
+- Webhook receives `StakeEvent`.
+- Found via `league_id` + `user_id` -> Membership Status updated to `ACTIVE`.
 
 ---
 
