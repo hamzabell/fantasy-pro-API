@@ -365,6 +365,7 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
           // Public: Valid. Private: Only if member or owner.
           filtered = filtered.filter(l => {
               if (l.leagueType === 'public') return true;
+              if (!user) return false; // Private leagues only for owners/members
               const isOwner = l.ownerId === user.id;
               const isMember = l.members.some(m => m.userId === user.id);
               return isOwner || isMember;
@@ -373,8 +374,8 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
           // Filter by isMember param
           if (isMember !== undefined) {
               filtered = filtered.filter(l => {
-                  const amMember = l.members.some(m => m.userId === user.id);
-                  const isOwner = l.ownerId === user.id;
+                  const amMember = user ? l.members.some(m => m.userId === user.id) : false;
+                  const isOwner = user ? l.ownerId === user.id : false;
                   // If seeking 'My Leagues' (isMember=true), return if member OR owner
                   // If seeking 'Other Leagues' (isMember=false), return if NOT member AND NOT owner
                   return isMember ? (amMember || isOwner) : (!amMember && !isOwner);
@@ -511,6 +512,7 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
           
           // Check Access
           if (league.leagueType === 'private') {
+              if (!user) return TE.left({ _tag: 'AuthorizationError', message: 'Access denied: Please log in' } as any);
               const isOwner = league.ownerId === user.id;
               const isMember = league.members.some(m => m.userId === user.id);
               if (!isOwner && !isMember) {
@@ -741,6 +743,7 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
           
           // Check Access
           if (league.leagueType === 'private') {
+              if (!user) return TE.left({ _tag: 'AuthorizationError', message: 'Access denied: Please log in' } as any);
               const isOwner = league.ownerId === user.id;
               const isMember = league.members.some(m => m.userId === user.id);
               if (!isOwner && !isMember) {

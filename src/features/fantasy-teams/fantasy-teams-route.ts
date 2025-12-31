@@ -3,6 +3,7 @@ import * as RTE from 'fp-ts/lib/ReaderTaskEither.js';
 import * as F from 'fp-ts/lib/function.js';
 const { pipe } = F;
 import { ErrorResponseSchema, TeamResponseSchema, TeamsListResponseSchema } from './fantasy-teams-schemas.js';
+import type { AppEnvironment } from '../../fp/infrastructure/Environment.js';
 import type { User } from '../../generated/prisma/index.js';
 import { RealLifeLeague } from '../../generated/prisma/index.js';
 import { runProgram } from '../../fp/middleware/ErrorHandler.js';
@@ -285,9 +286,11 @@ fantasyTeamsApp.openapi(createTeamRoute, (async (c: any) => {
 	return await runProgram(c,
 		pipe(
 			RTE.of(c.req.valid('json') as { players: number[], realLifeLeague: RealLifeLeague }),
-			RTE.chainW(({ players, realLifeLeague }) =>
-				createTeamService((c.get('user') as User).id, players, realLifeLeague)
-			)
+			RTE.chainW(({ players, realLifeLeague }) => {
+                const user = c.get('user');
+                if (!user) return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' } as any);
+				return createTeamService(user.id, players, realLifeLeague)
+            })
 		)
 	)(
 		(result) => c.json({
@@ -310,7 +313,14 @@ fantasyTeamsApp.openapi(createTeamRoute, (async (c: any) => {
 fantasyTeamsApp.openapi(getTeamRoute, (async (c: any) => {
     const { realLifeLeague } = c.req.valid('query');
 	return await runProgram(c,
-		getTeamService((c.get('user') as User).id, realLifeLeague)
+		pipe(
+            RTE.ask<AppEnvironment>(),
+            RTE.chainW(() => {
+                const user = c.get('user');
+                if (!user) return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' } as any);
+                return getTeamService(user.id, realLifeLeague);
+            })
+        )
 	)(
 		(result) => c.json({
 			message: 'Team retrieved successfully',
@@ -355,9 +365,11 @@ fantasyTeamsApp.openapi(updateTeamRoute, (async (c: any) => {
 	return await runProgram(c,
 		pipe(
 			RTE.of(c.req.valid('json') as { players: number[], realLifeLeague: RealLifeLeague }),
-			RTE.chainW(({ players, realLifeLeague }) =>
-				updateTeamService((c.get('user') as User).id, players, realLifeLeague)
-			)
+			RTE.chainW(({ players, realLifeLeague }) => {
+                const user = c.get('user');
+                if (!user) return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' } as any);
+				return updateTeamService(user.id, players, realLifeLeague);
+            })
 		)
 	)(
 		(result) => c.json({

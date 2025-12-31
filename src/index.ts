@@ -32,21 +32,29 @@ app.use('/api/*', cors({
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
-// Add authentication middleware
-app.use('/api/*', authMiddleware);
-
-	// Create the application environment for dependency injection
 const env = createEnvironment(
 	prisma,
 	createLogger(),
 	defaultConfig
 );
 
+// Inject Environment into Context (Early)
+app.use('*', async (c, next) => {
+  c.set('env', env);
+  await next();
+});
+
+// Add authentication middleware
+app.use('/api/*', authMiddleware);
+
 // Start Automated Services
 env.publicLeagueService.startScheduler();
 if (process.env.NODE_ENV !== 'test') {
 	// env.blockchainService.listenForEvents(); // Removed in favor of Webhooks
     payoutScheduler.initializeScheduler(); // Start Payout Scheduler
+    
+    // Trigger initial public league seeding if needed
+    env.publicLeagueService.run().catch(e => console.error('[Startup] Failed to run PublicLeagueService:', e));
 }
 //...
 app.route('/api/auth', authenticationApp);
