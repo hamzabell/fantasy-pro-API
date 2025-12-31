@@ -31,7 +31,6 @@ const ABI = [
 
 export const createBlockchainService = (
   rpcEndpoint: string,
-  apiKey: string, 
   contractAddress: string,
   privateKey: string,
   websocketEndpoint?: string // Optional WebSocket endpoint

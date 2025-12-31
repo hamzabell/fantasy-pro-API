@@ -39,13 +39,22 @@ export const createEnvironment = (
 ): AppEnvironment => {
 	const walletRepo = createWalletRepository(prisma)
 	
-	// TODO: Move these to config/env vars
+	// User provided Alchemy Key: 2KTOEy6Vli3xLEGPjC_Nb
+	const alchemyKey = process.env.ALCHEMY_API_KEY;
+	const networkName = process.env.NETWORK_NAME 
+	;
+	
+	const alchemyRpcUrl = `https://${networkName}.g.alchemy.com/v2/${alchemyKey}`;
+	const alchemyWsUrl = `wss://${networkName}.g.alchemy.com/v2/${alchemyKey}`;
+
+	const rpcEndpoint = process.env.POLYGON_RPC_ENDPOINT || alchemyRpcUrl;
+	const wsEndpoint = process.env.ALCHEMY_WEBSOCKET_URL || alchemyWsUrl;
+
 	const blockchainService = createBlockchainService(
-		process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
-		process.env.POLYGON_API_KEY || '',
+		rpcEndpoint,
 		process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
         process.env.SERVER_PRIVATE_KEY || '',
-        process.env.ALCHEMY_WEBSOCKET_URL // New optional arg
+        wsEndpoint
 	)
 
 	const walletService = createWalletService(walletRepo, blockchainService)
