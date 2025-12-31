@@ -18,6 +18,8 @@ const IDL: any = {
     "metadata": {
         "address": "GnJfcroEEbhkUcrCKoV7UB3iBJ97kyeefxHnLFqBqMMC"
     },
+    // Anchor requires 'types' even if empty to initialize BorshEventCoder
+    "types": [], 
     instructions: [],
     events: [
         {
@@ -114,7 +116,7 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
         } catch (e) {
             logger.error(`Failed to read/parse webhook body: ${e}`);
             rollbar.error('Failed to read/parse webhook body', e as Error);
-            // Return 200 to acknowledge receipt even if parsing fails, so we can see logs
+            // Return 200 to acknowledge receipt even if parsing fails
             return c.json({ success: false, error: "Parsing failed" }, 200);
         }
 
@@ -124,17 +126,43 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
              return c.json({ success: true, message: "Empty body received" }, 200); 
         }
 
-        // Handle array or single object
-        const activities = Array.isArray(rawBody) ? rawBody : [rawBody];
+        // --- ALCHEMY PARSING LOGIC ---
+        // Alchemy structure: { event: { transaction: [ ... ] } or { event: { transactions: [ ... ] } } } or array of transactions
+        let transactions: any[] = [];
         
+        if (rawBody.event && rawBody.event.transaction) {
+            // Nested structure case (single or array inside transaction)
+            if (Array.isArray(rawBody.event.transaction)) {
+                 transactions = rawBody.event.transaction;
+            } else {
+                 transactions = [rawBody.event.transaction];
+            }
+        } else if (rawBody.event && rawBody.event.transactions) {
+            // Nested structure case (array of transactions)
+            transactions = rawBody.event.transactions;
+        } else if (Array.isArray(rawBody)) {
+            // Address Activity array case
+            transactions = rawBody;
+        } else {
+            // Fallback: treat body as single activity if generic structure
+            transactions = [rawBody];
+        }
+
         const coder = new anchor.BorshCoder(IDL);
 
-        for (const activity of activities) {
-            const signature = activity.txHash || activity.signature || activity.hash;
-            // logger.info(`Received Alchemy Activity: ${signature}`);
+        for (const tx of transactions) {
+            // Extract Logs (Alchemy structure varies: meta.log_messages or logs)
+            let logs: string[] = [];
+            let signature = tx.signature || tx.txHash || tx.hash;
+            
+            if (tx.meta && tx.meta.log_messages) {
+                logs = tx.meta.log_messages;
+            } else if (tx.logs) {
+                logs = tx.logs;
+            }
 
-            if (activity.logs) {
-                for (const log of activity.logs) {
+            if (logs && logs.length > 0) {
+                for (const log of logs) {
                     // Anchor events start with "Program data: "
                     if (log.startsWith("Program data: ")) {
                         const eventData = log.substring("Program data: ".length);
