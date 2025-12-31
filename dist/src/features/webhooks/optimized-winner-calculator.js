@@ -114,7 +114,7 @@ import { createBlockchainService } from '../../infrastructure/blockchain/blockch
 import { createWalletRepository } from '../wallet/wallet.repository.js'; // To look up addresses
 import { createWalletService } from '../wallet/wallet.service.js';
 // Initialize services (ideally passed in)
-const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.POLYGON_API_KEY || '', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
+const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
 /**
  * Update database with calculated winners in batches AND trigger payouts
  */

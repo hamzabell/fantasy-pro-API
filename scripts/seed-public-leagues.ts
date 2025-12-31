@@ -20,7 +20,7 @@ async function main() {
   // We need to construct the service.
   const walletRepo = createWalletRepository(prisma);
   // Mock blockchain service to avoid errors during instantiation or unused calls
-  const blockchainService = createBlockchainService('','','',''); 
+  const blockchainService = createBlockchainService('','',''); 
   const walletService = createWalletService(walletRepo, blockchainService);
 
   const publicLeagueService = createPublicLeagueService(prisma, walletService);

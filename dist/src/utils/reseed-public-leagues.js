@@ -27,7 +27,7 @@ function main() {
         });
         console.log(`Deleted ${deletedLeagues.count} public leagues.`);
         // Initialize Services (Mocking Environment injection)
-        const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.POLYGON_API_KEY || '', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
+        const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
         const walletRepo = createWalletRepository(prisma);
         const walletService = createWalletService(walletRepo, blockchainService);
         const publicLeagueService = createPublicLeagueService(prisma, walletService);

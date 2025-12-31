@@ -224,3 +224,53 @@ export async function deleteFantasyLeagueMembershipFromDatabaseById(id: FantasyL
 export async function deleteAllFantasyLeagueMembershipsFromDatabase() {
 	return await prisma.fantasyLeagueMembership.deleteMany();
 }
+
+/**
+ * Retrieves a User record from the database based on their wallet address.
+ *
+ * @param walletAddress - The wallet address of the User.
+ * @returns The User or null.
+ */
+export async function retrieveUserByWalletAddress(walletAddress: string) {
+    // Check User table first, then Wallet table if needed? 
+    // Assuming User.walletAddress is the source of truth for the connected public key used in events.
+    return await prisma.user.findUnique({ where: { walletAddress } });
+}
+
+/**
+ * Marks all memberships in a league as 'lost' if they are not already 'won' or 'failed'.
+ *
+ * @param leagueId - The id of the FantasyLeague.
+ */
+export async function markLosersInLeague(leagueId: string) {
+    return await prisma.fantasyLeagueMembership.updateMany({
+        where: {
+            leagueId,
+            status: {
+                notIn: ['won', 'failed', 'active'] // 'active' means they played but didn't win? Or should 'active' be converted to 'lost'?
+                // If the league is completed, 'active' members who didn't get PayoutEvent are losers.
+                // PayoutEvent should have updated winners to 'won'.
+                // So we target 'active' and 'pending'?
+            }
+        },
+        data: {
+            status: 'lost'
+        }
+    });
+}
+
+/**
+ * Updates non-winning active memberships to lost.
+ */
+export async function finalizeLeagueMemberships(leagueId: string) {
+    // Update any membership that is still 'active' to 'lost'
+    return await prisma.fantasyLeagueMembership.updateMany({
+        where: {
+            leagueId,
+            status: 'active'
+        },
+        data: {
+            status: 'lost'
+        }
+    });
+}

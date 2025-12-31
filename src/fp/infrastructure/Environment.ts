@@ -48,13 +48,11 @@ export const createEnvironment = (
 	const alchemyWsUrl = `wss://${networkName}.g.alchemy.com/v2/${alchemyKey}`;
 
 	const rpcEndpoint = process.env.POLYGON_RPC_ENDPOINT || alchemyRpcUrl;
-	const wsEndpoint = process.env.ALCHEMY_WEBSOCKET_URL || alchemyWsUrl;
 
 	const blockchainService = createBlockchainService(
 		rpcEndpoint,
 		process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
-        process.env.SERVER_PRIVATE_KEY || '',
-        wsEndpoint
+        process.env.SERVER_PRIVATE_KEY || ''
 	)
 
 	const walletService = createWalletService(walletRepo, blockchainService)

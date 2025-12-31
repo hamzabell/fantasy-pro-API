@@ -72,7 +72,7 @@ vi.mock('ethers', () => __awaiter(void 0, void 0, void 0, function* () {
     };
 }));
 describe('BlockchainService', () => {
-    const service = createBlockchainService('https://rpc.com', 'key', '0xContract', '0xPrivKey');
+    const service = createBlockchainService('https://rpc.com', 'key', '0xContract');
     describe('payoutWinners', () => {
         it('given valid winners and amounts: it should return a transaction hash', () => __awaiter(void 0, void 0, void 0, function* () {
             const result = yield service.payoutWinners('league123', [{ address: '0xWinner', amount: '10' }], [BigInt(10000)], BigInt(0))();

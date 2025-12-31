@@ -1,6 +1,6 @@
 import { PrismaClient } from '../generated/prisma/index.js';
 import { createWalletRepository } from '../features/wallet/wallet.repository.js';
-import { createBlockchainService } from '../infrastructure/blockchain/blockchain.service.js';
+import { createSolanaBlockchainService } from '../infrastructure/blockchain/solana-blockchain.service.js';
 import { createWalletService } from '../features/wallet/wallet.service.js';
 import { createPublicLeagueService } from '../features/fantasy-leagues/public-league-service.js';
 import dotenv from 'dotenv';
@@ -21,10 +21,9 @@ async function main() {
   console.log(`Deleted ${deletedLeagues.count} public leagues.`);
 
   // Initialize Services (Mocking Environment injection)
-  const blockchainService = createBlockchainService(
-    process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
-    process.env.POLYGON_API_KEY || '',
-    process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
+  // Use Solana Blockchain Service
+  const blockchainService = createSolanaBlockchainService(
+    process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com',
     process.env.SERVER_PRIVATE_KEY || ''
   );
 

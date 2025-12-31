@@ -1,0 +1,17 @@
+# Rust/Cargo
+target/
+**/*.rs.bk
+
+# Anchor
+.anchor/
+test-ledger/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+
+# Keys
+**/*-keypair.json
+!test-wallet.json

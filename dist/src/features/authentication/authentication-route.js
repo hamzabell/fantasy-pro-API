@@ -171,7 +171,7 @@ app.openapi(getUserRoute, (c) => __awaiter(void 0, void 0, void 0, function* () 
     if (!user)
         return c.json({ error: 'Unauthorized' }, 401);
     // Initialize Wallet Service (TODO: Dependency Injection)
-    const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_API_KEY || '', process.env.LEAGUE_ESCROW_ADDRESS || '0x0', process.env.SERVER_MNEMONIC || '');
+    const blockchainService = createBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.LEAGUE_ESCROW_ADDRESS || '0x0', process.env.SERVER_MNEMONIC || '');
     const walletRepository = createWalletRepository(prisma);
     const walletService = createWalletService(walletRepository, blockchainService);
     const walletResult = yield walletService.getUserWallet(user.id)();

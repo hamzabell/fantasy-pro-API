@@ -145,15 +145,13 @@ async function processBatch(
   return Promise.all(batchPromises);
 }
 
-import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
+import { createSolanaBlockchainService } from '../../infrastructure/blockchain/solana-blockchain.service.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js'; // To look up addresses
 import { createWalletService } from '../wallet/wallet.service.js';
 
 // Initialize services (ideally passed in)
-const blockchainService = createBlockchainService(
-    process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
-    process.env.POLYGON_API_KEY || '',
-    process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
+const blockchainService = createSolanaBlockchainService(
+    process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com',
     process.env.SERVER_PRIVATE_KEY || ''
 );
 

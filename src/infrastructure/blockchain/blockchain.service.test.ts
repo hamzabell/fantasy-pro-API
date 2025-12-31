@@ -70,7 +70,7 @@ vi.mock('ethers', async () => {
 });
 
 describe('BlockchainService', () => {
-  const service = createBlockchainService('https://rpc.com', 'key', '0xContract', '0xPrivKey');
+  const service = createBlockchainService('https://rpc.com', 'key', '0xContract');
 
   describe('payoutWinners', () => {
     it('given valid winners and amounts: it should return a transaction hash', async () => {

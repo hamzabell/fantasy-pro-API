@@ -7,9 +7,8 @@ import { Decimal } from '../../generated/prisma/runtime/library.js';
 import { faker } from '@faker-js/faker';
 import cron from 'node-cron';
 
-const PUBLIC_LEAGUE_STAKES_TON = [10, 25, 50, 100];
+const PUBLIC_LEAGUE_STAKES_SOL = [0.1, 0.5, 1, 2]; 
 const PUBLIC_LEAGUE_LIMIT = 100;
-// Removed SYSTEM_USER_EMAIL constant as we now use app-owned leagues (ownerId = null)
 
 export class PublicLeagueService {
   constructor(
@@ -52,11 +51,8 @@ export class PublicLeagueService {
       console.warn('[PublicLeagueService] Could not fetch next gameweek. Trying current.', e);
       try {
         const current = await fetchGameweek('current');
-        // If current is active, we might want to create for it if not exists? 
-        // Or if it's strictly next week. Assuming "Next" is the target for new leagues.
-        // If "next" returns null (end of season), we stop.
         if (!current) return;
-        nextGameweek = current; // Fallback logic, mainly for dev/test
+        nextGameweek = current; 
       } catch (e2) {
         console.error('[PublicLeagueService] Failed to fetch gameweek info.', e2);
         return;
@@ -69,13 +65,12 @@ export class PublicLeagueService {
     }
 
     // 2. Ensure Gameweek exists in DB
-    // Use deadlineTime from API response
     await this.prisma.gameweek.upsert({
         where: { id: nextGameweek.id },
         update: {
             deadline: new Date(nextGameweek.deadlineTime),
             isActive: nextGameweek.isActive,
-            realLifeLeague: RealLifeLeague.PREMIER_LEAGUE // Defaulting to EPL as per current scope
+            realLifeLeague: RealLifeLeague.PREMIER_LEAGUE 
         },
         create: {
             id: nextGameweek.id,
@@ -85,28 +80,23 @@ export class PublicLeagueService {
         }
     });
 
-    // 3. (Removed System Owner Id Retrieval)
-
     // 4. Check and Create for each stake level
-    for (const stake of PUBLIC_LEAGUE_STAKES_TON) {
-      // Check if league exists for this GW and Stake
-      // We identify it by a naming convention or simply querying
-      // Better: Query by gameweekId, leagueType='public', entryFeeUsd=stake
+    for (const stake of PUBLIC_LEAGUE_STAKES_SOL) {
       const existing = await this.prisma.fantasyLeague.findFirst({
         where: {
           gameweekId: nextGameweek.id,
           leagueType: 'public',
           entryFeeUsd: stake,
-          ownerId: null, // Ensures we only check system leagues
+          ownerId: null, 
           limit: PUBLIC_LEAGUE_LIMIT
         }
       });
 
       if (!existing) {
-        console.log(`[PublicLeagueService] Creating Public League for GW ${nextGameweek.id} at $${stake}`);
+        console.log(`[PublicLeagueService] Creating Public League for GW ${nextGameweek.id} at ${stake} SOL`);
         await this.createPublicLeague(nextGameweek.id, stake);
       } else {
-        console.log(`[PublicLeagueService] League already exists for GW ${nextGameweek.id} at $${stake}`);
+        console.log(`[PublicLeagueService] League already exists for GW ${nextGameweek.id} at ${stake} SOL`);
       }
     }
   }
@@ -115,10 +105,6 @@ export class PublicLeagueService {
    * Processes payouts for finished weekly public leagues.
    */
   async checkAndProcessPayouts() {
-    // 1. Identify Leagues that need payout
-    // Criteria: Public, System Owned, Open/Active/Pending?, Gameweek Finished.
-    // We check leagues where status != 'completed' AND gameweek.isFinished = true
-    
     const leaguesToProcess = await this.prisma.fantasyLeague.findMany({
       where: {
         leagueType: 'public',
@@ -142,7 +128,7 @@ export class PublicLeagueService {
     }
   }
 
-  private async processLeaguePayout(league: any) { // Type 'any' to avoid strict relations typing issues for now, or use mapped type
+  private async processLeaguePayout(league: any) { 
     const totalPool = new Decimal(league.totalPoolUsd || 0);
     const members = league.members;
     
@@ -154,43 +140,24 @@ export class PublicLeagueService {
       return;
     }
 
-    // sort members by score (descending)
-    // Assuming 'score' field is populated. If null, treat as 0.
-    const sortedMembers = [...members].sort((a, b) => {
+    const sortedMembers = [...members].sort((a: any, b: any) => {
         const scoreA = new Decimal(a.score || 0).toNumber();
-        const scoreB = new Decimal(b.score || 0).toNumber(); // TODO: Add score logic if not present
+        const scoreB = new Decimal(b.score || 0).toNumber();
         return scoreB - scoreA;
     });
 
     const winnersCount = league.winners;
     
-    // Check if we need to fetch scores? 
-    // Assuming scores are updated by another service (GameweekWebhook).
-    // If scores are all 0, maybe we shouldn't pay out yet? 
-    // Trusting `gameweek.isFinished`.
-
     // Calculate Payouts with Commission Deductions
-    const poolNum = totalPool.toNumber();
-    
-    // Get commission rates
     const platformCommissionRate = new Decimal(league.commissionRate || 0);
     const creatorCommissionRate = new Decimal(league.creatorCommission || 0);
     
-    // Calculate commission amounts
     const platformCommissionAmount = totalPool.mul(platformCommissionRate).div(100);
     const creatorCommissionAmount = totalPool.mul(creatorCommissionRate).div(100);
     
-    // Calculate net pool after deducting both commissions
     const netPool = totalPool.minus(platformCommissionAmount).minus(creatorCommissionAmount).toNumber();
     
-    // Needed: Win percentages
-    const prizeDist = calculatePrizeDistribution(winnersCount); // [{position: 1, percentage: X}, ...]
-
-    // Distribute
-    // We iterate through winners
-    // Handle ties? Simple implementation: Sort by score. Ties break arbitrarily or share?
-    // User didn't specify. Standard is shared rank.
-    // I will implement simple rank for now.
+    const prizeDist = calculatePrizeDistribution(winnersCount); 
 
     const payoutUpdates = [];
 
@@ -198,18 +165,17 @@ export class PublicLeagueService {
         const member = sortedMembers[i];
         const rank = i + 1;
         
-        // Find if this rank gets a prize
         const prizeConfig = prizeDist.find(p => p.position === rank);
         
         if (prizeConfig) {
             const prizeAmount = new Decimal(netPool).mul(prizeConfig.percentage).div(100);
             
-            // Credit User
             try {
-                // We await inside loop or collect tasks. Await is safer for transactions.
-                await this.walletService.creditUser(member.userId, prizeAmount.toString())(); // TaskEither execution
+                // If walletService.creditUser is still using EVM, it might fail? 
+                // But walletService is usually DB update or off-chain balance.
+                // Assuming off-chain for public leagues (users withdraw later).
+                await this.walletService.creditUser(member.userId, prizeAmount.toString())(); 
                 
-                // Update Membership Payout Info
                 payoutUpdates.push(
                     this.prisma.fantasyLeagueMembership.update({
                         where: { id: member.id },
@@ -225,7 +191,6 @@ export class PublicLeagueService {
                 console.error(`[PublicLeagueService] Failed to pay user ${member.userId}`, e);
             }
         } else {
-            // Update rank only
             payoutUpdates.push(
                 this.prisma.fantasyLeagueMembership.update({
                     where: { id: member.id },
@@ -244,15 +209,13 @@ export class PublicLeagueService {
     });
   }
 
-  // Removed getSystemOwnerId method
-
   private async createPublicLeague(gameweekId: number, stake: number) {
     const code = faker.string.alphanumeric(6).toUpperCase();
     const winners = Math.ceil(PUBLIC_LEAGUE_LIMIT * 0.20); // Top 20% win
     
     const paddedGw = gameweekId.toString().padStart(2, '0');
-    // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in MATIC]
-    const leagueName = `GW${paddedGw} Premier League ${stake} POL`;
+    // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in SOL]
+    const leagueName = `GW${paddedGw} Premier League ${stake} SOL`;
 
     await this.prisma.fantasyLeague.create({
         data: {
