@@ -71,22 +71,12 @@ const AlchemyActivitySchema = z.object({
     logs: z.array(z.string()).optional(),
 });
 
-// Alchemy sends an array of activities
-// Debugging: Accept any payload to log it
-const AlchemyWebhookSchema = z.any();
+import rollbar from '../../fp/infrastructure/Rollbar.js';
 
+// Debugging: Validation removed from route definition to ensure we capture the payload in the handler
 const solanaWebhookRoute = createRoute({
     method: 'post',
     path: '/',
-    request: {
-        body: {
-            content: {
-                'application/json': {
-                    schema: AlchemyWebhookSchema
-                }
-            }
-        }
-    },
     responses: {
         200: {
             content: {
@@ -110,10 +100,19 @@ const solanaWebhookRoute = createRoute({
 
 solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
     try {
-        const rawBody = c.req.valid('json');
+        const rawBody = await c.req.json().catch(() => null);
+        
         console.log("ALCHEMY WEBHOOK RAW:", JSON.stringify(rawBody, null, 2));
         logger.info(`Received Raw Webhook Payload: ${JSON.stringify(rawBody)}`);
         
+        // Log to Rollbar
+        rollbar.info('Webhook Received', rawBody);
+
+        if (!rawBody) {
+             rollbar.error('Webhook empty or invalid JSON');
+             return c.json({ error: 'Invalid JSON' }, 400); 
+        }
+
         // Handle array or single object
         const activities = Array.isArray(rawBody) ? rawBody : [rawBody];
         
@@ -233,6 +232,7 @@ solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
         return c.json({ success: true }, 200);
     } catch (error) {
         logger.error(`Error processing Solana webhook: ${error}`);
+        rollbar.error('Error processing Solana webhook', error as Error);
         return c.json({ error: 'Internal Server Error' }, 500);
     }
 });
