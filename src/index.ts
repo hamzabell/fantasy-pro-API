@@ -21,15 +21,19 @@ import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
 // import paymentApp from './features/payments/payment.routes.js';
 
 import { cors } from 'hono/cors';
+import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = new OpenAPIHono();
 
 // Add cors middleware
 app.use('/api/*', cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:8100', 'https://www.fantasypro.app'],
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
+
+// Add authentication middleware
+app.use('/api/*', authMiddleware);
 
 	// Create the application environment for dependency injection
 const env = createEnvironment(

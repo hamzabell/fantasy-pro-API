@@ -179,17 +179,7 @@ app.openapi(getUserRoute, async (c) => {
   const user = c.get('user') as any; // Cast to any to access custom properties added by passport or schema
   if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
-  // Initialize Wallet Service (Solana)
-  // Note: We use the server mnemonic/key for admin actions, but for 'getUserWallet' we might just need read access
-  // For now, we instantiate the service to get the wallet info if needed, or just return DB info.
-  // The 'getUserWallet' on walletService was calculating balance. Solana service might not have that method yet?
-  // Let's check wallet.service.ts later. For now, we update the injection.
-  const blockchainService = createSolanaBlockchainService(
-      process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com',
-      process.env.SOLANA_PRIVATE_KEY || ''
-  );
-  // const walletRepository = createWalletRepository(prisma);
-  // const walletService = createWalletService(walletRepository, blockchainService as any); 
+  // Return user info from DB
   // TODO: WalletService needs refactor to accept SolanaService or we just use simple balance check here?
   // For 'getUserWallet' in legacy, it returned address and balance.
   // We can just return what's in DB for address. Balance might need a quick RPC call if we want it live.

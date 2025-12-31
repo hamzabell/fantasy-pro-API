@@ -18,10 +18,6 @@ import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
 
 
-// Initialize Wallet Service
-import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
-import { createWalletService } from '../wallet/wallet.service.js';
-
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = '1d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'your-google-client-id';
@@ -31,13 +27,8 @@ const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/a
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, REDIRECT_URI);
 
-const blockchainService = createBlockchainService(
-    process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com',
-    process.env.LEAGUE_CONTRACT_ADDRESS || '0x0',
-    process.env.SERVER_PRIVATE_KEY || ''
-);
+// Initialize Repository
 const walletRepository = createWalletRepository(prisma);
-const walletService = createWalletService(walletRepository, blockchainService);
 
 
 export interface AuthResponse {
