@@ -100,17 +100,28 @@ const solanaWebhookRoute = createRoute({
 
 solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
     try {
-        const rawBody = await c.req.json().catch(() => null);
+        let rawBody: any = null;
+        let bodyText = "";
         
-        console.log("ALCHEMY WEBHOOK RAW:", JSON.stringify(rawBody, null, 2));
-        logger.info(`Received Raw Webhook Payload: ${JSON.stringify(rawBody)}`);
-        
-        // Log to Rollbar
-        rollbar.info('Webhook Received', rawBody);
+        try {
+             bodyText = await c.req.text();
+             console.log("ALCHEMY RAW TEXT:", bodyText);
+             rollbar.info("Webhook Raw Text", { body: bodyText, headers: c.req.header() });
+             
+             if (bodyText) {
+                rawBody = JSON.parse(bodyText);
+             }
+        } catch (e) {
+            logger.error(`Failed to read/parse webhook body: ${e}`);
+            rollbar.error('Failed to read/parse webhook body', e as Error);
+            // Return 200 to acknowledge receipt even if parsing fails, so we can see logs
+            return c.json({ success: false, error: "Parsing failed" }, 200);
+        }
 
         if (!rawBody) {
-             rollbar.error('Webhook empty or invalid JSON');
-             return c.json({ error: 'Invalid JSON' }, 400); 
+             logger.warn('Webhook empty');
+             rollbar.warning('Webhook empty body');
+             return c.json({ success: true, message: "Empty body received" }, 200); 
         }
 
         // Handle array or single object
