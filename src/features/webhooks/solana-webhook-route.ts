@@ -111,6 +111,7 @@ const solanaWebhookRoute = createRoute({
 solanaWebhookApp.openapi(solanaWebhookRoute, async (c) => {
     try {
         const rawBody = c.req.valid('json');
+        console.log("ALCHEMY WEBHOOK RAW:", JSON.stringify(rawBody, null, 2));
         logger.info(`Received Raw Webhook Payload: ${JSON.stringify(rawBody)}`);
         
         // Handle array or single object
