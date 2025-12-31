@@ -8,14 +8,14 @@ import { swaggerUI } from '@hono/swagger-ui';
 import fantasyTeamsApp from './features/fantasy-teams/fantasy-teams-route.js';
 import authenticationApp from './features/authentication/authentication-route.js';
 import fantasyLeaguesApp from './features/fantasy-leagues/fantasy-leagues-route.js';
-import alchemyWebhookApp from './features/webhooks/alchemy-webhook-route.js';
+import solanaWebhookApp from './features/webhooks/solana-webhook-route.js';
 import gameweekWebhookApp from './features/webhooks/gameweek-webhook-route.js';
 import leagueIntegrationApp from './features/league-integration/league-integration-route.js';
 import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
 import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
-import paymentApp from './features/payments/payment.routes.js';
+// import paymentApp from './features/payments/payment.routes.js';
 import { cors } from 'hono/cors';
 const app = new OpenAPIHono();
 // Add cors middleware
@@ -33,13 +33,14 @@ if (process.env.NODE_ENV !== 'test') {
     payoutScheduler.initializeScheduler(); // Start Payout Scheduler
 }
 //...
-app.route('/api/payment', paymentApp); // Mount payment webhook section
+app.route('/api/auth', authenticationApp);
+// app.route('/api/payment', paymentApp); // Mount payment webhook section
 app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
-app.route('/api/webhooks/alchemy', alchemyWebhookApp); // Mount Alchemy webhook
+app.route('/api/webhooks/solana', solanaWebhookApp); // Mount Solana webhook
 app.route('/api/fantasy-leagues', fantasyLeaguesApp);
+app.route('/api/fantasy-teams', fantasyTeamsApp); // Restore Fantasy Teams
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint
-// Wallet routes removed (custodial only)
-// Add OpenAPI documentation
+// app.route('/api/fpl', fantasyPremierLeagueApp); // Restore FPL specific routes if needed
 app.doc('/doc', {
     openapi: '3.0.0',
     info: {

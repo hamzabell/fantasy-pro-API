@@ -220,3 +220,56 @@ export function deleteAllFantasyLeagueMembershipsFromDatabase() {
         return yield prisma.fantasyLeagueMembership.deleteMany();
     });
 }
+/**
+ * Retrieves a User record from the database based on their wallet address.
+ *
+ * @param walletAddress - The wallet address of the User.
+ * @returns The User or null.
+ */
+export function retrieveUserByWalletAddress(walletAddress) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Check User table first, then Wallet table if needed? 
+        // Assuming User.walletAddress is the source of truth for the connected public key used in events.
+        return yield prisma.user.findUnique({ where: { walletAddress } });
+    });
+}
+/**
+ * Marks all memberships in a league as 'lost' if they are not already 'won' or 'failed'.
+ *
+ * @param leagueId - The id of the FantasyLeague.
+ */
+export function markLosersInLeague(leagueId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield prisma.fantasyLeagueMembership.updateMany({
+            where: {
+                leagueId,
+                status: {
+                    notIn: ['won', 'failed', 'active'] // 'active' means they played but didn't win? Or should 'active' be converted to 'lost'?
+                    // If the league is completed, 'active' members who didn't get PayoutEvent are losers.
+                    // PayoutEvent should have updated winners to 'won'.
+                    // So we target 'active' and 'pending'?
+                }
+            },
+            data: {
+                status: 'lost'
+            }
+        });
+    });
+}
+/**
+ * Updates non-winning active memberships to lost.
+ */
+export function finalizeLeagueMemberships(leagueId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Update any membership that is still 'active' to 'lost'
+        return yield prisma.fantasyLeagueMembership.updateMany({
+            where: {
+                leagueId,
+                status: 'active'
+            },
+            data: {
+                status: 'lost'
+            }
+        });
+    });
+}

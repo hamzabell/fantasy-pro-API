@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { PrismaClient } from '../generated/prisma/index.js';
 import { createWalletRepository } from '../features/wallet/wallet.repository.js';
-import { createBlockchainService } from '../infrastructure/blockchain/blockchain.service.js';
+import { createSolanaBlockchainService } from '../infrastructure/blockchain/solana-blockchain.service.js';
 import { createWalletService } from '../features/wallet/wallet.service.js';
 import { createPublicLeagueService } from '../features/fantasy-leagues/public-league-service.js';
 import dotenv from 'dotenv';
@@ -27,7 +27,8 @@ function main() {
         });
         console.log(`Deleted ${deletedLeagues.count} public leagues.`);
         // Initialize Services (Mocking Environment injection)
-        const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
+        // Use Solana Blockchain Service
+        const blockchainService = createSolanaBlockchainService(process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com', process.env.SERVER_PRIVATE_KEY || '');
         const walletRepo = createWalletRepository(prisma);
         const walletService = createWalletService(walletRepo, blockchainService);
         const publicLeagueService = createPublicLeagueService(prisma, walletService);
