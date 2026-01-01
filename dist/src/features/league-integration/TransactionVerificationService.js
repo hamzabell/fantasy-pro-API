@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { TonClient } from '@ton/ton';
 import { createLogger } from '../../fp/infrastructure/Logger.js';
-import { Address } from '@ton/core';
+import { Address, Cell } from '@ton/core';
 import { Decimal } from '../../generated/prisma/runtime/library.js';
 const logger = createLogger('TransactionVerificationService');
 export class TransactionVerificationService {
@@ -106,48 +106,64 @@ export class TransactionVerificationService {
                 include: { user: { select: { walletAddress: true } }, league: true }
             });
             for (const membership of pendingMemberships) {
-                if (!membership.blockchainTxHash || !membership.user.walletAddress)
+                if (!membership.blockchainTxHash)
                     continue;
+                let targetHash = membership.blockchainTxHash;
+                let targetAddress = membership.user.walletAddress;
+                // Handle BOC vs Hash
+                // If length is large (e.g. > 64 chars hex + some), treat as BOC
+                if (membership.blockchainTxHash.length > 100) {
+                    try {
+                        const cell = Cell.fromBase64(membership.blockchainTxHash);
+                        targetHash = cell.hash().toString('hex');
+                        // We can also potentially extract sender from the message, but it's complex for generic messages.
+                        // For now, valid BOC means we have a valid hash.
+                    }
+                    catch (e) {
+                        logger.warn(`Failed to parse BOC for membership ${membership.id}`);
+                        continue;
+                    }
+                }
+                if (!targetAddress) {
+                    logger.warn(`User wallet address missing for membership ${membership.id}. Skipping verification.`);
+                    // Improvement: If we had the BOC, we could use the sender from it?
+                    // But typically we need to know where to look.
+                    // If we don't know the address, we can't query getTransactions(address).
+                    continue;
+                }
                 try {
-                    const txs = yield this.tonClient.getTransactions(Address.parse(membership.user.walletAddress), {
+                    const txs = yield this.tonClient.getTransactions(Address.parse(targetAddress), {
                         limit: 20
                     });
-                    // Robust comparison needed.
-                    const match = txs.find(tx => tx.hash().toString('hex') === membership.blockchainTxHash); // simplified
+                    const match = txs.find(tx => tx.hash().toString('hex') === targetHash);
                     if (match) {
                         const success = match.description.type === 'generic'
                             && ((_a = match.description.computePhase) === null || _a === void 0 ? void 0 : _a.type) === 'vm'
                             && match.description.computePhase.success;
                         if (success) {
-                            logger.info(`Transaction ${membership.blockchainTxHash} confirmed for Membership ${membership.id}`);
+                            logger.info(`Transaction ${targetHash} confirmed for Membership ${membership.id}`);
                             yield this.prisma.fantasyLeagueMembership.update({
                                 where: { id: membership.id },
                                 data: {
-                                    status: 'active',
-                                    // Update stake amount if confirmed?
-                                    // For now, assume pending stake amount is correct or parse from tx
+                                    status: 'JOINED', // Corrected from 'active' to 'JOINED'
                                 }
                             });
-                            // Also update League currentParticipants if not already tracked?
-                            // The createLeague logic initialized it. Joining logic usually increments it.
-                            // But we didn't increment it in the ROUTE because we waited for confirmation.
-                            // So we must increment it here.
                             yield this.prisma.fantasyLeague.update({
                                 where: { id: membership.leagueId },
                                 data: { currentParticipants: { increment: 1 } }
                             });
                         }
                         else {
-                            logger.warn(`Transaction ${membership.blockchainTxHash} FAILED for Membership ${membership.id}`);
+                            logger.warn(`Transaction ${targetHash} FAILED for Membership ${membership.id}`);
                             yield this.prisma.fantasyLeagueMembership.update({
                                 where: { id: membership.id },
-                                data: { status: 'failed' }
+                                data: { status: 'failed' } // FAILED is valid enum? Check schema. Schema says String.
                             });
                         }
                     }
                 }
                 catch (error) {
-                    logger.error(`Error checking membership transaction ${membership.blockchainTxHash}: ${error}`);
+                    logger.error(`Error checking membership transaction ${membership.id}: ${error}`);
                 }
             }
         });

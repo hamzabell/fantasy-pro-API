@@ -638,6 +638,110 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByCodeRoute, async (c) => {
   }, 200);
 });
 
+// Validate Team Name route
+const validateTeamNameRoute = createRoute({
+  method: 'post',
+  path: '/validate-team-name',
+  security: [{ BearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            teamName: z.string().min(1),
+            leagueId: z.string().optional(),
+            code: z.string().optional()
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            available: z.boolean(),
+            error: z.string().optional()
+          }),
+        },
+      },
+      description: 'Validation result',
+    },
+    400: { description: 'Validation error' },
+    500: { description: 'Internal Server Error' },
+  },
+  tags: ['Fantasy Leagues'],
+});
+
+fantasyLeaguesApp.openapi(validateTeamNameRoute, async (c) => {
+  const env = c.get('env');
+  const { teamName, leagueId, code } = c.req.valid('json');
+
+  // If creating a new league (no leagueId or code), name is always unique
+  if (!leagueId && !code) {
+      return c.json({
+          message: 'Team name available',
+          available: true
+      }, 200);
+  }
+
+  const result = await pipe(
+      TE.tryCatch(
+          async () => {
+              // Determine League ID
+              let targetLeagueId = leagueId;
+              if (!targetLeagueId && code) {
+                  const league = await env.prisma.fantasyLeague.findUnique({
+                      where: { code },
+                      select: { id: true }
+                  });
+                  if (league) targetLeagueId = league.id;
+              }
+
+              if (!targetLeagueId) {
+                  // League not found or invalid code - treat as 'valid' for name? 
+                  // or error? If joining, code should be valid. 
+                  // But we are validating NAME here. If league missing, we can't check duplicates.
+                  // Let's return available=true assuming previous steps check league existence
+                  // OR return false to be safe?
+                  // If code is invalid, JoinLeague step 1 would have failed. 
+                  return true; 
+              }
+
+              // Check for duplicate name (Case insensitive?)
+              // Prisma doesn't support generic ILIKE easily across DBs without raw, 
+              // but we can check exact match or do insensitive find if collation set.
+              // For now, let's do exact match or basic check. user audio implies basic check.
+              // Better: findFirst with mode: 'insensitive' if postgres.
+              const existing = await env.prisma.fantasyLeagueMembership.findFirst({
+                  where: {
+                      leagueId: targetLeagueId,
+                      teamName: {
+                          equals: teamName,
+                          mode: 'insensitive'
+                      }
+                  }
+              });
+
+              return !existing;
+          },
+          (e) => businessRuleError('ValidationFailed', String(e))
+      )
+  )();
+
+  if (result._tag === 'Left') {
+      return c.json({ message: 'Validation failed', available: false }, 500);
+  }
+
+  return c.json({
+      message: result.right ? 'Team name available' : 'Team name already taken in this league',
+      available: result.right,
+      error: result.right ? undefined : 'Team name already taken'
+  }, 200);
+});
+
 // Join Fantasy League route
 const joinFantasyLeagueRoute = createRoute({
   method: 'post',
