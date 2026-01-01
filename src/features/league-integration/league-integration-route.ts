@@ -45,6 +45,19 @@ app.openapi(getPlayersRoute, async (c) => {
         if (teamId) filtered = filtered.filter(p => p.teamId === teamId);
         if (position) filtered = filtered.filter(p => p.position === position);
 
+        // Helper status mapper
+        const mapStatus = (s?: string) => {
+            switch (s) {
+                case 'a': return 'available';
+                case 'i': return 'injured';
+                case 's': return 'suspended';
+                case 'd': return 'doubtful';
+                case 'u': return 'unavailable';
+                case 'n': return 'unavailable';
+                default: return 'available'; 
+            }
+        };
+
         // Map to generic schema
         const mapped = filtered.map(p => ({
             id: p.id.toString(),
@@ -52,7 +65,10 @@ app.openapi(getPlayersRoute, async (c) => {
             teamId: p.teamId,
             position: p.position,
             image: p.image,
-            cost: p.cost
+            cost: p.cost,
+            status: mapStatus(p.status),
+            chance_of_playing_next_round: p.chance_of_playing_next_round,
+            news: p.news
         }));
 
         return c.json({ data: mapped }, 200);
@@ -194,13 +210,28 @@ app.openapi(getPlayerByIdRoute, async (c) => {
         
         if (!player) return c.json({ error: 'Player not found' }, 404);
 
+        const mapStatus = (s?: string) => {
+             switch (s) {
+                 case 'a': return 'available';
+                 case 'i': return 'injured';
+                 case 's': return 'suspended';
+                 case 'd': return 'doubtful';
+                 case 'u': return 'unavailable';
+                 case 'n': return 'unavailable';
+                 default: return 'available'; 
+             }
+         };
+
         const mapped = {
             id: player.id.toString(),
             name: player.name,
             teamId: player.teamId,
             position: player.position,
             image: player.image,
-            cost: player.cost
+            cost: player.cost,
+            status: mapStatus(player.status),
+            chance_of_playing_next_round: player.chance_of_playing_next_round,
+            news: player.news
         };
 
         return c.json({ data: mapped }, 200);
@@ -257,13 +288,28 @@ app.openapi(getPlayersByIdsRoute, async (c) => {
         const service = LeagueFactory.getService(league);
         const players = await service.fetchPlayersByIds(playerIds);
 
+        const mapStatus = (s?: string) => {
+            switch (s) {
+                case 'a': return 'available';
+                case 'i': return 'injured';
+                case 's': return 'suspended';
+                case 'd': return 'doubtful';
+                case 'u': return 'unavailable';
+                case 'n': return 'unavailable';
+                default: return 'available'; 
+            }
+        };
+
         const mapped = players.map(p => ({
             id: p.id.toString(),
             name: p.name,
             teamId: p.teamId,
             position: p.position,
             image: p.image,
-            cost: p.cost
+            cost: p.cost,
+            status: mapStatus(p.status),
+            chance_of_playing_next_round: p.chance_of_playing_next_round,
+            news: p.news
         }));
 
         return c.json({ data: mapped }, 200);

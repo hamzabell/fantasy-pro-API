@@ -5,6 +5,9 @@ export interface Player {
 	cost: number;
 	position: string;
 	teamId: number;
+	status?: string; // 'a', 'd', 'i', 's', 'u'
+	chance_of_playing_next_round?: number | null;
+	news?: string;
 }
 
 export interface PlayerDetails {
@@ -52,6 +55,7 @@ export interface BootstrapData {
 		chance_of_playing_this_round: number | null;
 		chance_of_playing_next_round: number | null;
 		news: string;
+		status: string;
 	}>;
 	teams: Array<{
 		id: number;

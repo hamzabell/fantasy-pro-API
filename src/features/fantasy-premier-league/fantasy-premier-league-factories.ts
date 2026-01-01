@@ -16,6 +16,9 @@ export const createPlayerMapper =
 			cost: element.now_cost / 10,
 			position: elementTypes.find((type: any) => type.id === element.element_type)?.singular_name_short || 'Unknown',
 			teamId: element.team,
+			status: element.status,
+			chance_of_playing_next_round: element.chance_of_playing_next_round,
+			news: element.news
 		});
 
 export const createTeamMapper =
