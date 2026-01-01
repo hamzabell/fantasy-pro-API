@@ -28,7 +28,7 @@ const app = new OpenAPIHono();
 
 // Add cors middleware
 app.use('/api/*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:8100', 'https://www.fantasypro.app'],
+  origin: ['http://localhost:5173', 'http://localhost:8100', 'https://www.fantasypro.app', 'https://play.fantasypro.app', 'https://fantasypro.app'],
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
