@@ -121,7 +121,7 @@ describe('Optimized Winner Calculator', () => {
             leagueType: 'public',
             leagueMode: 'classic',
             winners: 1,
-            code: `PERF${i.toString().padStart(3, '0')}`,
+            code: `PERF${i}-${faker.string.alphanumeric(5).toUpperCase()}`,
             ownerId: ownerId,
             gameweekId: testGameweek.id,
             status: 'ongoing'

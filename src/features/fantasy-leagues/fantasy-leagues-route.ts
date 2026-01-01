@@ -505,6 +505,92 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
   }, 200);
 });
 
+// Get League History route
+const getLeagueHistoryRoute = createRoute({
+  method: 'get',
+  path: '/history',
+  security: [{ BearerAuth: [] }],
+  request: {
+    query: z.object({
+      leagueId: z.string().optional(),
+      status: z.enum(['ongoing', 'closed', 'upcoming']).optional(),
+      sortBy: z.enum(['createdAt']).optional(),
+      sortOrder: z.enum(['asc', 'desc']).optional(),
+      search: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            history: z.array(z.object({
+              leagueId: z.string(),
+              leagueName: z.string(),
+              teamName: z.string(),
+              position: z.number().nullable(),
+              points: z.number(),
+              goals: z.number(),
+              status: z.string(), // simplified enum
+              createdAt: z.string(),
+            })),
+          }),
+        },
+      },
+      description: 'League history retrieved',
+    },
+    500: { description: 'Internal Error' }
+  },
+  tags: ['Fantasy Leagues'],
+});
+
+fantasyLeaguesApp.openapi(getLeagueHistoryRoute, async (c) => {
+    // Simplified history: Just return leagues user has participated in
+    const env = c.get('env');
+    const user = c.get('user') as any;
+    if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
+    const { leagueId, status, search } = c.req.valid('query');
+
+    const result = await pipe(
+        safePrisma(
+            () => env.prisma.fantasyLeagueMembership.findMany({
+                where: { userId: user.id },
+                include: { league: true }
+            }),
+            'getUserHistory'
+        ),
+        TE.map((memberships) => {
+            let filtered = memberships;
+            if (leagueId) filtered = filtered.filter(m => m.leagueId === leagueId);
+            if (search) filtered = filtered.filter(m => m.league.name.toLowerCase().includes(search.toLowerCase()));
+            
+            // Map to history format
+            // Status logic would need current gameweek check. 
+            // For now, mapping simple fields.
+            return filtered.map(m => ({
+                leagueId: m.leagueId,
+                leagueName: m.league.name,
+                teamName: m.teamName || '',
+                position: m.position,
+                points: Number(m.score) || 0, // Assuming score is decimal
+                goals: 0, // Placeholder
+                status: m.league.status, 
+                createdAt: m.joinedAt.toISOString()
+            }));
+        })
+    )();
+
+    if (result._tag === 'Left') {
+        return c.json(toErrorResponse(result.left), 500) as any;
+    }
+
+    return c.json({
+        message: 'League history retrieved',
+        history: result.right
+    }, 200);
+});
+
 // Get Fantasy League by ID route
 const getFantasyLeagueByIdRoute = createRoute({
   method: 'get',
@@ -907,6 +993,8 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
   const user = c.get('user') as any;
   const { id } = c.req.valid('param');
 
+  if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
+
   const result = await pipe(
       safePrisma(
           () => env.prisma.fantasyLeague.findUnique({
@@ -961,91 +1049,7 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
   }, 200);
 });
 
-// Get League History route
-const getLeagueHistoryRoute = createRoute({
-  method: 'get',
-  path: '/history',
-  security: [{ BearerAuth: [] }],
-  request: {
-    query: z.object({
-      leagueId: z.string().optional(),
-      status: z.enum(['ongoing', 'closed', 'upcoming']).optional(),
-      sortBy: z.enum(['createdAt']).optional(),
-      sortOrder: z.enum(['asc', 'desc']).optional(),
-      search: z.string().optional(),
-    }),
-  },
-  responses: {
-    200: {
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            history: z.array(z.object({
-              leagueId: z.string(),
-              leagueName: z.string(),
-              teamName: z.string(),
-              position: z.number().nullable(),
-              points: z.number(),
-              goals: z.number(),
-              status: z.string(), // simplified enum
-              createdAt: z.string(),
-            })),
-          }),
-        },
-      },
-      description: 'League history retrieved',
-    },
-    500: { description: 'Internal Error' }
-  },
-  tags: ['Fantasy Leagues'],
-});
 
-fantasyLeaguesApp.openapi(getLeagueHistoryRoute, async (c) => {
-    // Simplified history: Just return leagues user has participated in
-    const env = c.get('env');
-    const user = c.get('user') as any;
-    if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
-    const { leagueId, status, search } = c.req.valid('query');
-
-    const result = await pipe(
-        safePrisma(
-            () => env.prisma.fantasyLeagueMembership.findMany({
-                where: { userId: user.id },
-                include: { league: true }
-            }),
-            'getUserHistory'
-        ),
-        TE.map((memberships) => {
-            let filtered = memberships;
-            if (leagueId) filtered = filtered.filter(m => m.leagueId === leagueId);
-            if (search) filtered = filtered.filter(m => m.league.name.toLowerCase().includes(search.toLowerCase()));
-            
-            // Map to history format
-            // Status logic would need current gameweek check. 
-            // For now, mapping simple fields.
-            return filtered.map(m => ({
-                leagueId: m.leagueId,
-                leagueName: m.league.name,
-                teamName: m.teamName || '',
-                position: m.position,
-                points: Number(m.score) || 0, // Assuming score is decimal
-                goals: 0, // Placeholder
-                status: m.league.status, 
-                createdAt: m.joinedAt.toISOString()
-            }));
-        })
-    )();
-
-    if (result._tag === 'Left') {
-        return c.json(toErrorResponse(result.left), 500) as any;
-    }
-
-    return c.json({
-        message: 'League history retrieved',
-        history: result.right
-    }, 200);
-});
 
 // Get League Position route
 const getLeaguePositionRoute = createRoute({
@@ -1102,7 +1106,9 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
   const user = c.get('user') as any;
   const { id } = c.req.valid('param');
 
-   const result = await pipe(
+  if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
+
+  const result = await pipe(
     safePrisma(
         () => env.prisma.fantasyLeague.findUnique({
             where: { id },
@@ -1112,7 +1118,7 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
     ),
     TE.chainW((league) => {
         if (!league) return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found') as AppError);
-        if (!user) return TE.left({ _tag: 'AuthorizationError', message: 'Unauthorized: Please log in' } as any);
+        
         // Check membership
         const isMember = league.members.some(m => m.userId === user.id);
         if (!isMember) return TE.left(businessRuleError('NotMember', 'User is not a member of this league') as AppError);
