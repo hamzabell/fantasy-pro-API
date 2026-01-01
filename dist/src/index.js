@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import 'dotenv/config';
 import './types/hono.js'; // Import Hono type extensions
 import { serve } from '@hono/node-server';
@@ -8,35 +17,46 @@ import { swaggerUI } from '@hono/swagger-ui';
 import fantasyTeamsApp from './features/fantasy-teams/fantasy-teams-route.js';
 import authenticationApp from './features/authentication/authentication-route.js';
 import fantasyLeaguesApp from './features/fantasy-leagues/fantasy-leagues-route.js';
-import solanaWebhookApp from './features/webhooks/solana-webhook-route.js';
+// import tonWebhookApp from './features/webhooks/ton-webhook-route.js'; // Deprecated
 import gameweekWebhookApp from './features/webhooks/gameweek-webhook-route.js';
 import leagueIntegrationApp from './features/league-integration/league-integration-route.js';
 import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
 import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
+import { startTransactionScheduler } from './features/league-integration/TransactionScheduler.js';
 // import paymentApp from './features/payments/payment.routes.js';
 import { cors } from 'hono/cors';
+import { authMiddleware } from './middlewares/authMiddleware.js';
 const app = new OpenAPIHono();
 // Add cors middleware
 app.use('/api/*', cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:8100', 'https://www.fantasypro.app'],
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
-// Create the application environment for dependency injection
 const env = createEnvironment(prisma, createLogger(), defaultConfig);
+// Inject Environment into Context (Early)
+app.use('*', (c, next) => __awaiter(void 0, void 0, void 0, function* () {
+    c.set('env', env);
+    yield next();
+}));
+// Add authentication middleware
+app.use('/api/*', authMiddleware);
 // Start Automated Services
 env.publicLeagueService.startScheduler();
 if (process.env.NODE_ENV !== 'test') {
     // env.blockchainService.listenForEvents(); // Removed in favor of Webhooks
     payoutScheduler.initializeScheduler(); // Start Payout Scheduler
+    startTransactionScheduler(env); // Start Transaction Verification Scheduler
+    // Trigger initial public league seeding if needed
+    env.publicLeagueService.run().catch(e => console.error('[Startup] Failed to run PublicLeagueService:', e));
 }
 //...
 app.route('/api/auth', authenticationApp);
 // app.route('/api/payment', paymentApp); // Mount payment webhook section
 app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
-app.route('/api/webhooks/solana', solanaWebhookApp); // Mount Solana webhook
+// app.route('/api/webhooks/ton', tonWebhookApp); // Deprecated
 app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.route('/api/fantasy-teams', fantasyTeamsApp); // Restore Fantasy Teams
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint

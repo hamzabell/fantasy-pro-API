@@ -13,7 +13,7 @@ import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-
 import { Decimal } from '../../generated/prisma/runtime/library.js';
 import { faker } from '@faker-js/faker';
 import cron from 'node-cron';
-const PUBLIC_LEAGUE_STAKES_SOL = [0.1, 0.5, 1, 2];
+const PUBLIC_LEAGUE_STAKES_TON = [0.1, 0.2, 0.5, 1];
 const PUBLIC_LEAGUE_LIMIT = 100;
 export class PublicLeagueService {
     constructor(prisma, walletService) {
@@ -87,7 +87,7 @@ export class PublicLeagueService {
                 }
             });
             // 4. Check and Create for each stake level
-            for (const stake of PUBLIC_LEAGUE_STAKES_SOL) {
+            for (const stake of PUBLIC_LEAGUE_STAKES_TON) {
                 const existing = yield this.prisma.fantasyLeague.findFirst({
                     where: {
                         gameweekId: nextGameweek.id,
@@ -98,11 +98,11 @@ export class PublicLeagueService {
                     }
                 });
                 if (!existing) {
-                    console.log(`[PublicLeagueService] Creating Public League for GW ${nextGameweek.id} at ${stake} SOL`);
+                    console.log(`[PublicLeagueService] Creating Public League for GW ${nextGameweek.id} at ${stake} TON`);
                     yield this.createPublicLeague(nextGameweek.id, stake);
                 }
                 else {
-                    console.log(`[PublicLeagueService] League already exists for GW ${nextGameweek.id} at ${stake} SOL`);
+                    console.log(`[PublicLeagueService] League already exists for GW ${nextGameweek.id} at ${stake} TON`);
                 }
             }
         });
@@ -204,8 +204,8 @@ export class PublicLeagueService {
             const code = faker.string.alphanumeric(6).toUpperCase();
             const winners = Math.ceil(PUBLIC_LEAGUE_LIMIT * 0.20); // Top 20% win
             const paddedGw = gameweekId.toString().padStart(2, '0');
-            // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in SOL]
-            const leagueName = `GW${paddedGw} Premier League ${stake} SOL`;
+            // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in TON]
+            const leagueName = `GW${paddedGw} Premier League ${stake} TON`;
             yield this.prisma.fantasyLeague.create({
                 data: {
                     name: leagueName,

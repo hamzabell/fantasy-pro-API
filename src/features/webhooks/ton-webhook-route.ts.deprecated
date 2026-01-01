@@ -1,0 +1,192 @@
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { createLogger } from '../../fp/infrastructure/Logger.js';
+import { Decimal } from '../../generated/prisma/runtime/library.js';
+import { 
+    updateFantasyLeagueInDatabaseById, 
+    updateFantasyLeagueMembershipInDatabaseById,
+    retrieveFantasyLeagueMembershipByLeagueAndUser,
+    retrieveUserByWalletAddress,
+    finalizeLeagueMemberships
+} from '../fantasy-leagues/fantasy-leagues-model.js';
+import rollbar from '../../fp/infrastructure/Rollbar.js';
+
+const logger = createLogger('TonWebhook');
+const tonWebhookApp = new OpenAPIHono();
+
+// Generic TON Event Schema (simplified for now)
+// We assume we receive decoded events or a raw transaction that we can parse.
+// If using a service like TonAPI, we might get an event stream.
+const TonEventSchema = z.object({
+    event_name: z.string(),
+    data: z.record(z.any()),
+    tx_hash: z.string(),
+    block_lt: z.string().optional(),
+    timestamp: z.number().optional()
+});
+
+const tonWebhookRoute = createRoute({
+    method: 'post',
+    path: '/',
+    responses: {
+        200: {
+            content: { 'application/json': { schema: z.object({ success: z.boolean() }) } },
+            description: 'Webhook processed successfully'
+        },
+        500: {
+            content: { 'application/json': { schema: z.object({ error: z.string() }) } },
+            description: 'Internal Server Error'
+        }
+    },
+    tags: ['Webhooks']
+});
+
+tonWebhookApp.openapi(tonWebhookRoute, async (c) => {
+    try {
+        let rawBody: any = null;
+        try {
+             rawBody = await c.req.json();
+             logger.info(`[TON Webhook] Received: ${JSON.stringify(rawBody)}`);
+        } catch (e) {
+            logger.error(`Failed to parse webhook body: ${e}`);
+            return c.json({ success: false, error: "Parsing failed" }, 200);
+        }
+
+        // TonConsole Webhook Structure: { events: [{ actions: [...] }] }
+        // We also support flattened events for testing/legacy
+        const events = rawBody.events || (Array.isArray(rawBody) ? rawBody : [rawBody]);
+
+        for (const event of events) {
+            // Handle TonConsole 'actions' array
+            if (event.actions && Array.isArray(event.actions)) {
+                for (const action of event.actions) {
+                     // Check common action types
+                     const type = action.type;
+                     const txHash = event.event_id || action.simple_preview?.tx_hash || "unknown_tx";
+                     
+                     // If SmartContractExec, look for operation matches
+                     if (type === 'SmartContractExec' && action.SmartContractExec) {
+                         const op = action.SmartContractExec.operation;
+                         const data = action.SmartContractExec.payload || action.SmartContractExec; // specific fields might be here if decoded
+                         
+                         // Map Operation Name to Handler
+                         // Note: TonConsole might return 'LeagueCreated' if ABI is known, or a hash.
+                         // We assume specific operation names match our Tact Event names.
+                         await dispatchEvent(op, data, txHash);
+                     }
+                     // Keep support for direct events just in case
+                     else if (type) {
+                        await dispatchEvent(type, action, txHash);
+                     }
+                }
+            } else {
+                 // Fallback for flat events
+                 const eventName = event.event_name || event.type;
+                 const data = event.data || {};
+                 const txHash = event.tx_hash || event.hash;
+                 await dispatchEvent(eventName, data, txHash);
+            }
+        }
+
+        return c.json({ success: true }, 200);
+    } catch (error) {
+        logger.error(`Error processing TON webhook: ${error}`);
+        rollbar.error('Error processing TON webhook', error as Error);
+        return c.json({ error: 'Internal Server Error' }, 500);
+    }
+});
+
+async function dispatchEvent(eventName: string, data: any, txHash: string) {
+    if (!eventName) return;
+    
+    switch (eventName) {
+        case 'LeagueCreated':
+        case '0x...': // Add hash if needed
+            await handleLeagueCreated(data, txHash);
+            break;
+        case 'StakeEvent':
+            await handleStakeEvent(data, txHash);
+            break;
+        case 'PayoutEvent':
+            await handlePayoutEvent(data, txHash);
+            break;
+        case 'PayoutCompletedEvent':
+            await handlePayoutCompletedEvent(data, txHash);
+            break;
+        default:
+             // logger.debug(`Unhandled event type: ${eventName}`);
+             // Silent ignore to avoid log spam
+    }
+}
+
+async function handleLeagueCreated(data: any, txHash: string) {
+    const { leagueId } = data;
+    if (leagueId) {
+        await updateFantasyLeagueInDatabaseById({
+            id: leagueId,
+            league: {
+                status: 'open',
+                blockchainTxHash: txHash
+            }
+        });
+        logger.info(`Updated League ${leagueId} status to OPEN (TON)`);
+    }
+}
+
+async function handleStakeEvent(data: any, txHash: string) {
+    const { leagueId, userId, amount } = data;
+    if (leagueId && userId) {
+        const membership = await retrieveFantasyLeagueMembershipByLeagueAndUser(leagueId, userId);
+        if (membership) {
+            await updateFantasyLeagueMembershipInDatabaseById({
+                id: membership.id,
+                membership: {
+                    status: 'active',
+                    blockchainTxHash: txHash,
+                    stakeAmount: new Decimal(amount.toString()) // Ensure amount is parsed correctly (nanoTON?)
+                }
+            });
+            logger.info(`Updated Membership for user ${userId} in league ${leagueId} to ACTIVE (TON)`);
+        }
+    }
+}
+
+async function handlePayoutEvent(data: any, txHash: string) {
+    const { leagueId, winner, amount } = data; 
+    // winner might be address, need to map to user? 
+    // Ideally we pass userId in event if possible, OR we lookup user by wallet address.
+    // If 'winner' is address:
+    const user = await retrieveUserByWalletAddress(winner);
+    
+    if (user && leagueId) {
+        const membership = await retrieveFantasyLeagueMembershipByLeagueAndUser(leagueId, user.id);
+        if (membership) {
+            await updateFantasyLeagueMembershipInDatabaseById({
+                id: membership.id,
+                membership: {
+                    status: 'won',
+                    payoutAmount: new Decimal(amount.toString()),
+                    blockchainTxHash: txHash,
+                    payoutStatus: 'completed'
+                }
+            });
+            logger.info(`Recorded payout for user ${user.id} in league ${leagueId} (TON)`);
+        }
+    }
+}
+
+async function handlePayoutCompletedEvent(data: any, txHash: string) {
+    const { leagueId } = data;
+    if (leagueId) {
+        await updateFantasyLeagueInDatabaseById({
+            id: leagueId,
+            league: {
+                status: 'completed',
+                blockchainTxHash: txHash
+            }
+        });
+        await finalizeLeagueMemberships(leagueId);
+        logger.info(`Updated League ${leagueId} status to COMPLETED (TON)`);
+    }
+}
+
+export default tonWebhookApp;

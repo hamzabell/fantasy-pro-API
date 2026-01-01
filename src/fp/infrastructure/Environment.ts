@@ -11,6 +11,8 @@ import { createPaymentService } from '../../infrastructure/payment/payment.servi
 import type { PublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 
+import { TonClient } from '@ton/ton'
+
 // The environment that all ReaderTaskEither functions depend on
 export interface AppEnvironment {
 	prisma: PrismaClient
@@ -21,6 +23,7 @@ export interface AppEnvironment {
 	blockchainService: BlockchainService
 	paymentService: PaymentService
 	publicLeagueService: PublicLeagueService
+	tonClient: TonClient
 }
 
 // Application configuration
@@ -59,6 +62,14 @@ export const createEnvironment = (
 	const paymentService = createPaymentService()
 	const publicLeagueService = createPublicLeagueService(prisma, walletService)
 
+	const tonEndpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+	const tonApiKey = process.env.TON_API_KEY;
+
+	const tonClient = new TonClient({
+		endpoint: tonEndpoint,
+		apiKey: tonApiKey
+	});
+
 	return {
 		prisma,
 		logger,
@@ -67,7 +78,8 @@ export const createEnvironment = (
 		walletService,
 		blockchainService,
 		paymentService,
-		publicLeagueService
+		publicLeagueService,
+		tonClient
 	}
 }
 

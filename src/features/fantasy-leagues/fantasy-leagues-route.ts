@@ -81,6 +81,7 @@ const createFantasyLeagueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
+            id: z.string().optional(),
             name: z.string().min(1, "Name cannot be empty"),
             description: z.string().optional(),
             entryFeeUsd: z.coerce.number().min(0).default(0),
@@ -93,7 +94,8 @@ const createFantasyLeagueRoute = createRoute({
             teamName: z.string().min(1, "Team name cannot be empty"),
             realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE'),
             paymentMethod: z.enum(['UPFRONT', 'COMMISSION']).optional().default('UPFRONT'),
-            creatorCommission: z.coerce.number().min(0).max(50).default(0)
+            creatorCommission: z.coerce.number().min(0).max(50).default(0),
+            transactionHash: z.string().optional()
           }),
         },
       },
@@ -153,6 +155,52 @@ fantasyLeaguesApp.openapi(getLeagueCreationCostRoute, (c) => {
     message: 'League creation cost calculated',
     cost,
   }, 200);
+});
+
+// Generate Unique League ID Route
+const generateLeagueIdRoute = createRoute({
+  method: 'get',
+  path: '/generate-id',
+  security: [{ BearerAuth: [] }],
+  responses: {
+      200: {
+          content: {
+              'application/json': {
+                  schema: z.object({
+                      message: z.string(),
+                      id: z.string()
+                  })
+              }
+          },
+          description: 'Unique ID generated'
+      },
+      500: { description: 'Internal Error' }
+  },
+  tags: ['Fantasy Leagues']
+});
+
+fantasyLeaguesApp.openapi(generateLeagueIdRoute, async (c) => {
+    const env = c.get('env');
+    let id = '';
+    let exists = true;
+    let attempts = 0;
+    
+    while (exists && attempts < 5) {
+        const timestamp = Date.now().toString(36);
+        const random = Math.random().toString(36).substring(2, 10);
+        id = `lid_${timestamp}${random}`;
+        
+        const found = await env.prisma.fantasyLeague.findUnique({ where: { id } });
+        if (!found) exists = false;
+        attempts++;
+    }
+
+    if (exists) return c.json({ message: 'Failed to generate unique ID', id: '' }, 500);
+
+    return c.json({
+        message: 'Unique ID generated',
+        id
+    }, 200);
 });
 
 fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
@@ -223,6 +271,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
        return safePrisma(
           () => env.prisma.fantasyLeague.create({
               data: {
+                  id: body.id, // Optional manual ID
                   name: body.name,
                   description: body.description,
                   entryFeeUsd: body.entryFeeUsd,
@@ -237,14 +286,14 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
                   realLifeLeague: body.realLifeLeague,
                   prizeDistribution: calculatePrizeDistribution(body.winners),
                   totalPoolUsd: 0, // Initial pool is 0
-                  blockchainTxHash: null,
+                  blockchainTxHash: body.transactionHash || null,
                   members: {
                       create: {
                           userId: user.id,
                           teamName: body.teamName,
                           position: 0,
                           score: 0,
-                          blockchainTxHash: null,
+                          blockchainTxHash: body.transactionHash || null,
                           status: 'pending'
                       }
                   },
@@ -582,7 +631,8 @@ const joinFantasyLeagueRoute = createRoute({
         'application/json': {
           schema: z.object({
             code: z.string().min(1, "Code cannot be empty"),
-            teamName: z.string().min(1, "Team name cannot be empty")
+            teamName: z.string().min(1, "Team name cannot be empty"),
+            transactionHash: z.string().optional()
           }),
         },
       },
@@ -616,7 +666,7 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
   const env = c.get('env');
   const user = c.get('user') as any;
   if (!user) return c.json({ error: 'Unauthorized: Please log in' }, 401);
-  const { code, teamName } = c.req.valid('json');
+  const { code, teamName, transactionHash } = c.req.valid('json');
 
   const result = await pipe(
     // 1. Get League by Code
@@ -644,7 +694,10 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
         )
     ),
     TE.chainW(({ league, membership }) => {
-        // 3. (Skipped) Validate User MATIC Balance (handled by frontend)
+        // 3. Check for existing membership
+        if (membership) {
+            return TE.left(businessRuleError('AlreadyMember', 'You are already a member of this league') as AppError);
+        }
         
         return TE.right({ league });
     }),
@@ -657,7 +710,7 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
                     leagueId: league.id,
                     teamName: teamName,
                     stakeAmount: league.entryFeeUsd,
-                    blockchainTxHash: null,
+                    blockchainTxHash: transactionHash || null,
                     status: 'pending',
                     position: 0,
                     score: 0

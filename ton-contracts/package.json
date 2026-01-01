@@ -1,0 +1,30 @@
+{
+  "name": "fantasy-pro-ton-contracts",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tact --config tact.config.json",
+    "test": "jest",
+    "deploy": "ts-node ./scripts/deploy.ts"
+  },
+  "devDependencies": {
+    "@tact-lang/compiler": "^1.5.0",
+    "@ton/core": "^0.62.0",
+    "@ton/sandbox": "^0.41.0",
+    "@ton/test-utils": "^0.12.0",
+    "@ton/ton": "^16.1.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.4.5"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
+  }
+}

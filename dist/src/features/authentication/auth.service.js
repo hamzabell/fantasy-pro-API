@@ -18,18 +18,14 @@ import { saveUserToDatabase, retrieveUserFromDatabaseByEmail, updateUserInDataba
 import { createPopulatedUser } from '../users/users-factories.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
-// Initialize Wallet Service
-import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
-import { createWalletService } from '../wallet/wallet.service.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = '1d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'your-google-client-id';
 const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
 const client = new OAuth2Client(GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, REDIRECT_URI);
-const blockchainService = createBlockchainService(process.env.POLYGON_RPC_ENDPOINT || 'https://polygon-rpc.com', process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
+// Initialize Repository
 const walletRepository = createWalletRepository(prisma);
-const walletService = createWalletService(walletRepository, blockchainService);
-export const generateGoogleAuthUrl = (referralCode, platform = 'web') => {
+export const generateGoogleAuthUrl = (referralCode, platform = 'web', redirectUrl) => {
     const options = {
         access_type: 'offline',
         scope: [
@@ -37,17 +33,29 @@ export const generateGoogleAuthUrl = (referralCode, platform = 'web') => {
             'https://www.googleapis.com/auth/userinfo.email',
         ],
     };
+    if (redirectUrl) {
+        options.redirect_uri = redirectUrl;
+    }
     const state = { platform };
     if (referralCode) {
         state.referralCode = referralCode;
     }
+    if (redirectUrl) {
+        state.redirectUrl = redirectUrl;
+    }
     options.state = JSON.stringify(state);
     return client.generateAuthUrl(options);
 };
-export const loginWithGoogleCode = (code, referralCode) => pipe(
+export const loginWithGoogleCode = (code, referralCode, redirectUrl) => pipe(
 // 1. Exchange Code for Tokens
 TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
-    const { tokens } = yield client.getToken(code);
+    const verifyOptions = {
+        code,
+    };
+    if (redirectUrl) {
+        verifyOptions.redirect_uri = redirectUrl;
+    }
+    const { tokens } = yield client.getToken(verifyOptions);
     console.log('[Auth] Google Tokens received. ID Token present:', !!tokens.id_token);
     client.setCredentials(tokens);
     // Verify ID Token

@@ -70,6 +70,7 @@ const createFantasyLeagueRoute = createRoute({
             content: {
                 'application/json': {
                     schema: z.object({
+                        id: z.string().optional(),
                         name: z.string().min(1, "Name cannot be empty"),
                         description: z.string().optional(),
                         entryFeeUsd: z.coerce.number().min(0).default(0),
@@ -82,7 +83,8 @@ const createFantasyLeagueRoute = createRoute({
                         teamName: z.string().min(1, "Team name cannot be empty"),
                         realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE'),
                         paymentMethod: z.enum(['UPFRONT', 'COMMISSION']).optional().default('UPFRONT'),
-                        creatorCommission: z.coerce.number().min(0).max(50).default(0)
+                        creatorCommission: z.coerce.number().min(0).max(50).default(0),
+                        transactionHash: z.string().optional()
                     }),
                 },
             },
@@ -141,9 +143,53 @@ fantasyLeaguesApp.openapi(getLeagueCreationCostRoute, (c) => {
         cost,
     }, 200);
 });
+// Generate Unique League ID Route
+const generateLeagueIdRoute = createRoute({
+    method: 'get',
+    path: '/generate-id',
+    security: [{ BearerAuth: [] }],
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        message: z.string(),
+                        id: z.string()
+                    })
+                }
+            },
+            description: 'Unique ID generated'
+        },
+        500: { description: 'Internal Error' }
+    },
+    tags: ['Fantasy Leagues']
+});
+fantasyLeaguesApp.openapi(generateLeagueIdRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const env = c.get('env');
+    let id = '';
+    let exists = true;
+    let attempts = 0;
+    while (exists && attempts < 5) {
+        const timestamp = Date.now().toString(36);
+        const random = Math.random().toString(36).substring(2, 10);
+        id = `lid_${timestamp}${random}`;
+        const found = yield env.prisma.fantasyLeague.findUnique({ where: { id } });
+        if (!found)
+            exists = false;
+        attempts++;
+    }
+    if (exists)
+        return c.json({ message: 'Failed to generate unique ID', id: '' }, 500);
+    return c.json({
+        message: 'Unique ID generated',
+        id
+    }, 200);
+}));
 fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const env = c.get('env');
     const user = c.get('user');
+    if (!user)
+        return c.json({ error: 'Unauthorized: Please log in' }, 401);
     const body = c.req.valid('json');
     const result = yield pipe(
     // 1. Validate Business Rules
@@ -195,6 +241,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, voi
         const code = body.code || Math.random().toString(36).substring(2, 8).toUpperCase();
         return safePrisma(() => env.prisma.fantasyLeague.create({
             data: {
+                id: body.id, // Optional manual ID
                 name: body.name,
                 description: body.description,
                 entryFeeUsd: body.entryFeeUsd,
@@ -209,14 +256,14 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, voi
                 realLifeLeague: body.realLifeLeague,
                 prizeDistribution: calculatePrizeDistribution(body.winners),
                 totalPoolUsd: 0, // Initial pool is 0
-                blockchainTxHash: null,
+                blockchainTxHash: body.transactionHash || null,
                 members: {
                     create: {
                         userId: user.id,
                         teamName: body.teamName,
                         position: 0,
                         score: 0,
-                        blockchainTxHash: null,
+                        blockchainTxHash: body.transactionHash || null,
                         status: 'pending'
                     }
                 },
@@ -321,6 +368,8 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
         filtered = filtered.filter(l => {
             if (l.leagueType === 'public')
                 return true;
+            if (!user)
+                return false; // Private leagues only for owners/members
             const isOwner = l.ownerId === user.id;
             const isMember = l.members.some(m => m.userId === user.id);
             return isOwner || isMember;
@@ -328,8 +377,8 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
         // Filter by isMember param
         if (isMember !== undefined) {
             filtered = filtered.filter(l => {
-                const amMember = l.members.some(m => m.userId === user.id);
-                const isOwner = l.ownerId === user.id;
+                const amMember = user ? l.members.some(m => m.userId === user.id) : false;
+                const isOwner = user ? l.ownerId === user.id : false;
                 // If seeking 'My Leagues' (isMember=true), return if member OR owner
                 // If seeking 'Other Leagues' (isMember=false), return if NOT member AND NOT owner
                 return isMember ? (amMember || isOwner) : (!amMember && !isOwner);
@@ -444,6 +493,8 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, (c) => __awaiter(void 0, vo
             return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
         // Check Access
         if (league.leagueType === 'private') {
+            if (!user)
+                return TE.left({ _tag: 'AuthorizationError', message: 'Access denied: Please log in' });
             const isOwner = league.ownerId === user.id;
             const isMember = league.members.some(m => m.userId === user.id);
             if (!isOwner && !isMember) {
@@ -499,7 +550,8 @@ const joinFantasyLeagueRoute = createRoute({
                 'application/json': {
                     schema: z.object({
                         code: z.string().min(1, "Code cannot be empty"),
-                        teamName: z.string().min(1, "Team name cannot be empty")
+                        teamName: z.string().min(1, "Team name cannot be empty"),
+                        transactionHash: z.string().optional()
                     }),
                 },
             },
@@ -531,7 +583,9 @@ const joinFantasyLeagueRoute = createRoute({
 fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const env = c.get('env');
     const user = c.get('user');
-    const { code, teamName } = c.req.valid('json');
+    if (!user)
+        return c.json({ error: 'Unauthorized: Please log in' }, 401);
+    const { code, teamName, transactionHash } = c.req.valid('json');
     const result = yield pipe(
     // 1. Get League by Code
     safePrisma(() => env.prisma.fantasyLeague.findUnique({
@@ -550,7 +604,10 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 
     TE.bindTo('league'), TE.bind('membership', ({ league }) => safePrisma(() => env.prisma.fantasyLeagueMembership.findUnique({
         where: { userId_leagueId: { userId: user.id, leagueId: league.id } }
     }), 'checkMembership')), TE.chainW(({ league, membership }) => {
-        // 3. (Skipped) Validate User MATIC Balance (handled by frontend)
+        // 3. Check for existing membership
+        if (membership) {
+            return TE.left(businessRuleError('AlreadyMember', 'You are already a member of this league'));
+        }
         return TE.right({ league });
     }), 
     // 5. Create Membership (do NOT increment participants - webhook will do that)
@@ -560,7 +617,7 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 
             leagueId: league.id,
             teamName: teamName,
             stakeAmount: league.entryFeeUsd,
-            blockchainTxHash: null,
+            blockchainTxHash: transactionHash || null,
             status: 'pending',
             position: 0,
             score: 0
@@ -634,6 +691,8 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, (c) => __awaiter(void 0, void 0, 
             return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
         // Check Access
         if (league.leagueType === 'private') {
+            if (!user)
+                return TE.left({ _tag: 'AuthorizationError', message: 'Access denied: Please log in' });
             const isOwner = league.ownerId === user.id;
             const isMember = league.members.some(m => m.userId === user.id);
             if (!isOwner && !isMember) {
@@ -708,6 +767,8 @@ fantasyLeaguesApp.openapi(getLeagueHistoryRoute, (c) => __awaiter(void 0, void 0
     // Simplified history: Just return leagues user has participated in
     const env = c.get('env');
     const user = c.get('user');
+    if (!user)
+        return c.json({ error: 'Unauthorized: Please log in' }, 401);
     const { leagueId, status, search } = c.req.valid('query');
     const result = yield pipe(safePrisma(() => env.prisma.fantasyLeagueMembership.findMany({
         where: { userId: user.id },
@@ -799,6 +860,8 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, (c) => __awaiter(void 0, void 
     }), 'getLeaguePosition'), TE.chainW((league) => {
         if (!league)
             return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
+        if (!user)
+            return TE.left({ _tag: 'AuthorizationError', message: 'Unauthorized: Please log in' });
         // Check membership
         const isMember = league.members.some(m => m.userId === user.id);
         if (!isMember)

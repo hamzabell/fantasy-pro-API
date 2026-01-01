@@ -110,11 +110,11 @@ function processBatch(leagues, playerScores, batchNumber) {
         return Promise.all(batchPromises);
     });
 }
-import { createSolanaBlockchainService } from '../../infrastructure/blockchain/solana-blockchain.service.js';
+import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js'; // To look up addresses
 import { createWalletService } from '../wallet/wallet.service.js';
 // Initialize services (ideally passed in)
-const blockchainService = createSolanaBlockchainService(process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com', process.env.SERVER_PRIVATE_KEY || '');
+const blockchainService = createTonBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_MNEMONIC || '');
 /**
  * Update database with calculated winners in batches AND trigger payouts
  */

@@ -14,7 +14,7 @@ import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
 import { createWalletService } from '../wallet/wallet.service.js';
-import { createSolanaBlockchainService } from '../../infrastructure/blockchain/solana-blockchain.service.js';
+import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 const app = new OpenAPIHono();
 // Schemas
 const GoogleLoginRequestSchema = z.object({
@@ -82,7 +82,8 @@ const getGoogleAuthUrlRoute = createRoute({
     request: {
         query: z.object({
             referralCode: z.string().optional(),
-            platform: z.enum(['web', 'mobile']).optional().default('web')
+            platform: z.enum(['web', 'mobile']).optional().default('web'),
+            redirectUrl: z.string().optional()
         })
     },
     responses: {
@@ -93,8 +94,8 @@ const getGoogleAuthUrlRoute = createRoute({
     }
 });
 app.openapi(getGoogleAuthUrlRoute, (c) => {
-    const { referralCode, platform } = c.req.valid('query');
-    const url = generateGoogleAuthUrl(referralCode, platform);
+    const { referralCode, platform, redirectUrl } = c.req.valid('query');
+    const url = generateGoogleAuthUrl(referralCode, platform, redirectUrl);
     return c.json({ url });
 });
 // 2. GET /auth/google/callback - Handle Redirect Code
@@ -123,18 +124,21 @@ app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, functi
     console.log('[Auth] Google Callback received. Code:', code ? 'present' : 'missing', 'State:', state);
     let referralCode;
     let platform = 'web';
+    let redirectUrl;
     if (state) {
         try {
             const parsedState = JSON.parse(state);
             referralCode = parsedState.referralCode;
             if (parsedState.platform)
                 platform = parsedState.platform;
+            if (parsedState.redirectUrl)
+                redirectUrl = parsedState.redirectUrl;
         }
         catch (e) {
             // Ignore state parsing error
         }
     }
-    const result = yield loginWithGoogleCode(code, referralCode)();
+    const result = yield loginWithGoogleCode(code, referralCode, redirectUrl)();
     if (E.isRight(result)) {
         const { token } = result.right;
         if (platform === 'mobile') {
@@ -170,14 +174,7 @@ app.openapi(getUserRoute, (c) => __awaiter(void 0, void 0, void 0, function* () 
     const user = c.get('user'); // Cast to any to access custom properties added by passport or schema
     if (!user)
         return c.json({ error: 'Unauthorized' }, 401);
-    // Initialize Wallet Service (Solana)
-    // Note: We use the server mnemonic/key for admin actions, but for 'getUserWallet' we might just need read access
-    // For now, we instantiate the service to get the wallet info if needed, or just return DB info.
-    // The 'getUserWallet' on walletService was calculating balance. Solana service might not have that method yet?
-    // Let's check wallet.service.ts later. For now, we update the injection.
-    const blockchainService = createSolanaBlockchainService(process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com', process.env.SOLANA_PRIVATE_KEY || '');
-    // const walletRepository = createWalletRepository(prisma);
-    // const walletService = createWalletService(walletRepository, blockchainService as any); 
+    // Return user info from DB
     // TODO: WalletService needs refactor to accept SolanaService or we just use simple balance check here?
     // For 'getUserWallet' in legacy, it returned address and balance.
     // We can just return what's in DB for address. Balance might need a quick RPC call if we want it live.

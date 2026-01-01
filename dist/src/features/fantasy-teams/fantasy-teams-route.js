@@ -278,7 +278,12 @@ const updateTeamRoute = createRoute({
     },
 });
 fantasyTeamsApp.openapi(createTeamRoute, ((c) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield runProgram(c, pipe(RTE.of(c.req.valid('json')), RTE.chainW(({ players, realLifeLeague }) => createTeamService(c.get('user').id, players, realLifeLeague))))((result) => c.json({
+    return yield runProgram(c, pipe(RTE.of(c.req.valid('json')), RTE.chainW(({ players, realLifeLeague }) => {
+        const user = c.get('user');
+        if (!user)
+            return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' });
+        return createTeamService(user.id, players, realLifeLeague);
+    })))((result) => c.json({
         message: 'Team created successfully',
         team: {
             balance: result.balance,
@@ -295,7 +300,12 @@ fantasyTeamsApp.openapi(createTeamRoute, ((c) => __awaiter(void 0, void 0, void 
 })));
 fantasyTeamsApp.openapi(getTeamRoute, ((c) => __awaiter(void 0, void 0, void 0, function* () {
     const { realLifeLeague } = c.req.valid('query');
-    return yield runProgram(c, getTeamService(c.get('user').id, realLifeLeague))((result) => c.json({
+    return yield runProgram(c, pipe(RTE.ask(), RTE.chainW(() => {
+        const user = c.get('user');
+        if (!user)
+            return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' });
+        return getTeamService(user.id, realLifeLeague);
+    })))((result) => c.json({
         message: 'Team retrieved successfully',
         team: {
             balance: result.balance,
@@ -328,7 +338,12 @@ fantasyTeamsApp.openapi(getTeamByUserIdRoute, ((c) => __awaiter(void 0, void 0, 
     }, 200));
 })));
 fantasyTeamsApp.openapi(updateTeamRoute, ((c) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield runProgram(c, pipe(RTE.of(c.req.valid('json')), RTE.chainW(({ players, realLifeLeague }) => updateTeamService(c.get('user').id, players, realLifeLeague))))((result) => c.json({
+    return yield runProgram(c, pipe(RTE.of(c.req.valid('json')), RTE.chainW(({ players, realLifeLeague }) => {
+        const user = c.get('user');
+        if (!user)
+            return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' });
+        return updateTeamService(user.id, players, realLifeLeague);
+    })))((result) => c.json({
         message: 'Team updated successfully',
         team: {
             balance: result.balance,

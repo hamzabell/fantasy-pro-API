@@ -1,0 +1,832 @@
+
+> fantasy-pro-ton-contracts@0.1.0 test
+> jest
+
+FAIL tests/league_payout.spec.ts
+  LeaguePayout
+    League Creation
+      ✓ given a league is created without a fee: it should initialize with feePaid=false and 0 staked (376 ms)
+      ✕ given a league is created with a fee: it should transfer fee to owner and set feePaid to true (127 ms)
+    Staking
+      ✕ given a user stakes: it should update balance and emit Stake event (93 ms)
+      ✕ given stakes are made in different leagues: it should track balances separately (130 ms)
+    Payouts
+      ✕ given a payout includes a winner who did not stake: it should revert (155 ms)
+      ✕ given a payout is attempted twice: it should revert due to empty balance (164 ms)
+      ✕ given a league fee was NOT paid: it should allow platform commission (133 ms)
+      ✕ given a league fee WAS paid and commission is requested: it should revert (385 ms)
+      ✓ given a league fee WAS paid and 0 commission is requested: it should succeed (290 ms)
+    Withdrawal
+      ✕ given funds are sent directly: it should allow owner to withdraw (104 ms)
+      ✕ given a non-owner tries to withdraw: it should revert (228 ms)
+
+  ● LeaguePayout › League Creation › given a league is created with a fee: it should transfer fee to owner and set feePaid to true
+
+    Expected [
+      {
+        lt: 5000000n,
+        now: 1767232218,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1792930n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: undefined,
+        ec: undefined,
+        body: x{392EB5CB4FB9D5E366AEE910D958E616BCB343EDC93FF0E0645D841BE76AFBCCC_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A3B9ACA000000000000000000000000000000D850C3D00000000000001F443B9ACA00}
+           x{6C65616775655F70616964}
+           x{757365725F31},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '959362507',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 6000000n,
+        now: 1767232218,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 3227197n,
+        mode: 1,
+        from: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 2000000000n,
+        ec: [],
+        body: x{0D850C3D00000000000001F443B9ACA00}
+         x{6C65616775655F70616964}
+         x{757365725F31},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '226823229 (CreateLeague)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 7000000n,
+        now: 1767232218,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: 2,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: 999486400n,
+        ec: [],
+        body: x{000000004C6561677565204372656174696F6E20466565},
+        inMessageBounced: false,
+        inMessageBounceable: false,
+        op: '0',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern {
+      from: EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF,
+      to: EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G,
+      value: 1000000000n,
+      body: x{000000004C6561677565204372656174696F6E20466565}
+    }
+
+      56 |             );
+      57 |
+    > 58 |             expect(result.transactions).toHaveTransaction({
+         |                                         ^
+      59 |                 from: leaguePayout.address,
+      60 |                 to: deployer.address,
+      61 |                 value: fee,
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:58:41)
+
+  ● LeaguePayout › Staking › given a user stakes: it should update balance and emit Stake event
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1000000000n
+    Received: 0n
+
+      87 |
+      88 |             const league = await leaguePayout.getLeague('league_123');
+    > 89 |             expect(league!.totalStaked).toBe(stakeAmount);
+         |                                         ^
+      90 |             // "Updated balance" -> totalStaked in our single-contract model
+      91 |             // "Emit Stake Event" -> (implicitly checked via log or debug)
+      92 |         });
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:89:41)
+
+  ● LeaguePayout › Staking › given stakes are made in different leagues: it should track balances separately
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1000000000n
+    Received: 0n
+
+      104 |             const l1 = await leaguePayout.getLeague('L1');
+      105 |             const l2 = await leaguePayout.getLeague('L2');
+    > 106 |             expect(l1!.totalStaked).toBe(toNano('1.0'));
+          |                                     ^
+      107 |             expect(l2!.totalStaked).toBe(toNano('2.0'));
+      108 |         });
+      109 |     });
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:106:37)
+
+  ● LeaguePayout › Payouts › given a payout includes a winner who did not stake: it should revert
+
+    Expected [
+      {
+        lt: 12000000n,
+        now: 1767232218,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 2098262n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: undefined,
+        ec: undefined,
+        body: x{392EB5CB4FB9D5E366AEE910D958E616BCB343EDC93FF0E0645D841BE76AFBCCC_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A0EE6B280000000000000000000000000000A12DD911C040000000000000002_}
+           x{6C65616775655F313233}
+           x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+           x{D0180081CA420990283E050BDB3656380D88932C9CDDD6FB37483787E1614241E87D19_},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '959362507',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 13000000n,
+        now: 1767232218,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1453331n,
+        mode: 1,
+        from: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 500000000n,
+        ec: [],
+        body: x{A12DD911C040000000000000002_}
+         x{6C65616775655F313233}
+         x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+         x{D0180081CA420990283E050BDB3656380D88932C9CDDD6FB37483787E1614241E87D19_},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '2704136465 (PayoutWinners)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: true,
+        destroyed: false,
+        exitCode: 62070,
+        actionResultCode: undefined,
+        success: false,
+        failReason: { message: 'No funds in league' }
+      },
+      {
+        lt: 14000000n,
+        now: 1767232218,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: undefined,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: 498280000n,
+        ec: [],
+        body: x{FFFFFFFFA12DD911C040000000000000002_},
+        inMessageBounced: true,
+        inMessageBounceable: false,
+        op: '4294967295',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern {
+      from: EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G,
+      to: EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF,
+      success: false,
+      exitCode: 38865
+    }
+
+      143 |             );
+      144 |
+    > 145 |             expect(result.transactions).toHaveTransaction({
+          |                                         ^
+      146 |                 from: deployer.address,
+      147 |                 to: leaguePayout.address,
+      148 |                 success: false,
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:145:41)
+
+  ● LeaguePayout › Payouts › given a payout is attempted twice: it should revert due to empty balance
+
+    Expected [
+      {
+        lt: 19000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 2089729n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: undefined,
+        ec: undefined,
+        body: x{392EB5CB4FB9D5E366AEE910D958E616BCB343EDC93FF0E0645D841BE76AFBCCC_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A1DCD6500000000000000000000000000000A12DD911C040000000000000002_}
+           x{4C5F444F55424C45}
+           x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+           x{D018000C771CE0FE406AA7B2F7479BED616C97D08A28D094E3E95751B4993D07F17549_},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '959362507',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 20000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1493331n,
+        mode: 1,
+        from: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 1000000000n,
+        ec: [],
+        body: x{A12DD911C040000000000000002_}
+         x{4C5F444F55424C45}
+         x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+         x{D018000C771CE0FE406AA7B2F7479BED616C97D08A28D094E3E95751B4993D07F17549_},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '2704136465 (PayoutWinners)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: true,
+        destroyed: false,
+        exitCode: 62070,
+        actionResultCode: undefined,
+        success: false,
+        failReason: { message: 'No funds in league' }
+      },
+      {
+        lt: 21000000n,
+        now: 1767232219,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: undefined,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: 998240000n,
+        ec: [],
+        body: x{FFFFFFFFA12DD911C040000000000000002_},
+        inMessageBounced: true,
+        inMessageBounceable: false,
+        op: '4294967295',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern {
+      from: EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G,
+      to: EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF,
+      success: false,
+      exitCode: 42142
+    }
+
+      173 |                  { $$type: 'PayoutWinners', leagueId: 'L_DOUBLE', winners, winningPercentages: percentages, count: 1n, commissionPercentage: 0n });
+      174 |
+    > 175 |              expect(result.transactions).toHaveTransaction({
+          |                                          ^
+      176 |                 from: deployer.address,
+      177 |                 to: leaguePayout.address,
+      178 |                 success: false,
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:175:42)
+
+  ● LeaguePayout › Payouts › given a league fee was NOT paid: it should allow platform commission
+
+    Expected [
+      {
+        lt: 16000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 2081196n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: undefined,
+        ec: undefined,
+        body: x{392EB5CB4FB9D5E366AEE910D958E616BCB343EDC93FF0E0645D841BE76AFBCCC_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A1DCD6500000000000000000000000000000A12DD911C040000000000000FA2_}
+           x{4C5F434F4D4D}
+           x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+           x{D018010C91B2A5F187A907144CCE02AA729A743C311CF57AFD80C8CDF443FBE93C1749_},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '959362507',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 17000000n,
+        now: 1767232219,
+        outMessagesCount: 2,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 5833327n,
+        mode: 1,
+        from: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 1000000000n,
+        ec: [],
+        body: x{A12DD911C040000000000000FA2_}
+         x{4C5F434F4D4D}
+         x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+         x{D018010C91B2A5F187A907144CCE02AA729A743C311CF57AFD80C8CDF443FBE93C1749_},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '2704136465 (PayoutWinners)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 18000000n,
+        now: 1767232219,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: 2,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: 999515200n,
+        ec: [],
+        body: x{00000000436F6D6D697373696F6E},
+        inMessageBounced: false,
+        inMessageBounceable: false,
+        op: '0',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 19000000n,
+        now: 1767232219,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: 2,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQCGSNlS-MPUg4omZwFVOU06HhiOer1-wGRm-iH99J4LpNvU (TreasuryContract-staker_comm)',
+        on: 'EQCGSNlS-MPUg4omZwFVOU06HhiOer1-wGRm-iH99J4LpNvU (TreasuryContract-staker_comm)',
+        value: 8999528000n,
+        ec: [],
+        body: x{000000005061796F7574},
+        inMessageBounced: false,
+        inMessageBounceable: false,
+        op: '0',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern {
+      from: EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF,
+      to: EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G,
+      value: 1000000000n,
+      success: true
+    }
+
+      203 |
+      204 |             // Check Commission (10% of 10 = 1 TON) to Owner
+    > 205 |             expect(result.transactions).toHaveTransaction({
+          |                                         ^
+      206 |                 from: leaguePayout.address,
+      207 |                 to: deployer.address,
+      208 |                 value: toNano('1.0'),
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:205:41)
+
+  ● LeaguePayout › Payouts › given a league fee WAS paid and commission is requested: it should revert
+
+    Expected [
+      {
+        lt: 18000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 2076929n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: undefined,
+        ec: undefined,
+        body: x{392EB5CB4FB9D5E366AEE910D958E616BCB343EDC93FF0E0645D841BE76AFBCCC_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A1DCD6500000000000000000000000000000A12DD911C040000000000000FA2_}
+           x{4C5F464545}
+           x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+           x{D01800A53D0423B730E00FB3B8A52DA41D1F6FC8696C85CFB6BB14E35B71D0AC4BFBA5_},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '959362507',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 19000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1493331n,
+        mode: 1,
+        from: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 1000000000n,
+        ec: [],
+        body: x{A12DD911C040000000000000FA2_}
+         x{4C5F464545}
+         x{D0100000000000000000000000000000000000000000000000000000000000013884_}
+         x{D01800A53D0423B730E00FB3B8A52DA41D1F6FC8696C85CFB6BB14E35B71D0AC4BFBA5_},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '2704136465 (PayoutWinners)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: true,
+        destroyed: false,
+        exitCode: 62070,
+        actionResultCode: undefined,
+        success: false,
+        failReason: { message: 'No funds in league' }
+      },
+      {
+        lt: 20000000n,
+        now: 1767232219,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: undefined,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: 998240000n,
+        ec: [],
+        body: x{FFFFFFFFA12DD911C040000000000000FA2_},
+        inMessageBounced: true,
+        inMessageBounceable: false,
+        op: '4294967295',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern { success: false, exitCode: 42360 }
+
+      238 |             );
+      239 |
+    > 240 |             expect(result.transactions).toHaveTransaction({
+          |                                         ^
+      241 |                 success: false,
+      242 |                 exitCode: 42360 // "Fee paid, no commission allowed" (hash based or explicit?)
+      243 |                 // Tact strict errors.
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:240:41)
+
+  ● LeaguePayout › Withdrawal › given funds are sent directly: it should allow owner to withdraw
+
+    Expected [
+      {
+        lt: 8000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1588131n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: undefined,
+        ec: undefined,
+        body: x{392EB5CB4FB9D5E366AEE910D958E616BCB343EDC93FF0E0645D841BE76AFBCCC_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A02FAF0800000000000000000000000000000BA69751402FAF080},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '959362507',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 9000000n,
+        now: 1767232219,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1936797n,
+        mode: 1,
+        from: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 100000000n,
+        ec: [],
+        body: x{0BA69751402FAF080},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '195467089 (Withdraw)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 10000000n,
+        now: 1767232219,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: 2,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        on: 'EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G (TreasuryContract-deployer)',
+        value: 49515200n,
+        ec: [],
+        body: x{000000005769746864726177616C},
+        inMessageBounced: false,
+        inMessageBounceable: false,
+        op: '0',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern {
+      from: EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF,
+      to: EQBGhqLAZseEqRXz4ByFPTGV7SVMlI4hrbs-Sps_Xzx01x8G,
+      value: 50000000n,
+      success: true
+    }
+
+      296 |              );
+      297 |              
+    > 298 |              expect(result.transactions).toHaveTransaction({
+          |                                          ^
+      299 |                  from: leaguePayout.address,
+      300 |                  to: deployer.address,
+      301 |                  value: toNano('0.05'),
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:298:42)
+
+  ● LeaguePayout › Withdrawal › given a non-owner tries to withdraw: it should revert
+
+    Expected [
+      {
+        lt: 6000000n,
+        now: 1767232220,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 1584931n,
+        mode: undefined,
+        from: undefined,
+        to: 'EQCpao5yWcYJ5_LmBA573Sjo6f3cBluREi1j3QOLOmsD4ihm (TreasuryContract-rando)',
+        on: 'EQCpao5yWcYJ5_LmBA573Sjo6f3cBluREi1j3QOLOmsD4ihm (TreasuryContract-rando)',
+        value: undefined,
+        ec: undefined,
+        body: x{CBD4A657EBA5A6FAFDAE90AA802F1B0950D6852028EE017971AC7C8D995AD154C_}
+         x{D001}
+          x{62001A3C52E75AD438DF204285936961599A975A2EFB0F960E220969DBA52DF029B6A02FAF0800000000000000000000000000000BA697513989680},
+        inMessageBounced: undefined,
+        inMessageBounceable: undefined,
+        op: '3419711063',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      },
+      {
+        lt: 7000000n,
+        now: 1767232220,
+        outMessagesCount: 1,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 938131n,
+        mode: 1,
+        from: 'EQCpao5yWcYJ5_LmBA573Sjo6f3cBluREi1j3QOLOmsD4ihm (TreasuryContract-rando)',
+        to: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        on: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        value: 100000000n,
+        ec: [],
+        body: x{0BA697513989680},
+        inMessageBounced: false,
+        inMessageBounceable: true,
+        op: '195467089 (Withdraw)',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: true,
+        destroyed: false,
+        exitCode: 26825,
+        actionResultCode: undefined,
+        success: false,
+        failReason: { message: 'Only owner can withdraw' }
+      },
+      {
+        lt: 8000000n,
+        now: 1767232220,
+        outMessagesCount: 0,
+        oldStatus: 'active',
+        endStatus: 'active',
+        totalFees: 123600n,
+        mode: undefined,
+        from: 'EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF (LeaguePayout)',
+        to: 'EQCpao5yWcYJ5_LmBA573Sjo6f3cBluREi1j3QOLOmsD4ihm (TreasuryContract-rando)',
+        on: 'EQCpao5yWcYJ5_LmBA573Sjo6f3cBluREi1j3QOLOmsD4ihm (TreasuryContract-rando)',
+        value: 98795200n,
+        ec: [],
+        body: x{FFFFFFFF0BA697513989680},
+        inMessageBounced: true,
+        inMessageBounceable: false,
+        op: '4294967295',
+        initData: undefined,
+        initCode: undefined,
+        deploy: false,
+        aborted: false,
+        destroyed: false,
+        exitCode: 0,
+        actionResultCode: 0,
+        success: true,
+        failReason: undefined
+      }
+    ] to contain a transaction that matches pattern {
+      from: EQCpao5yWcYJ5_LmBA573Sjo6f3cBluREi1j3QOLOmsD4ihm,
+      to: EQA0eKXOtahxvkCFCybSwrM1LrRd9h8sHEQS07dKW-BTbSwF,
+      success: false,
+      exitCode: 4429
+    }
+
+      312 |              );
+      313 |              
+    > 314 |              expect(result.transactions).toHaveTransaction({
+          |                                          ^
+      315 |                  from: rando.address,
+      316 |                  to: leaguePayout.address,
+      317 |                  success: false,
+
+      at Object.<anonymous> (tests/league_payout.spec.ts:314:42)
+
+Test Suites: 1 failed, 1 total
+Tests:       9 failed, 2 passed, 11 total
+Snapshots:   0 total
+Time:        4.99 s, estimated 6 s
+Ran all test suites.

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { testClient } from 'hono/testing';
-import solanaWebhookApp from './solana-webhook-route.js';
+import tonWebhookApp from './ton-webhook-route.js';
 import * as fantasyLeaguesModel from '../fantasy-leagues/fantasy-leagues-model.js';
 import { Decimal } from '../../generated/prisma/runtime/library.js';
 
@@ -13,44 +13,16 @@ vi.mock('../fantasy-leagues/fantasy-leagues-model.js', () => ({
   finalizeLeagueMemberships: vi.fn()
 }));
 
-// Mock Anchor to control decoding
-vi.mock('@coral-xyz/anchor', () => {
-    return {
-        BorshCoder: vi.fn().mockImplementation(() => ({
-            events: {
-                decode: vi.fn((data) => {
-                    if (data === 'LEAGUE_CREATED_DATA') {
-                        return { 
-                            name: 'LeagueCreated', 
-                            data: { leagueId: 'league_123', userId: 'user_1', feePaid: true } 
-                        };
-                    }
-                    if (data === 'STAKE_EVENT_DATA') {
-                        return { 
-                            name: 'StakeEvent', 
-                            data: { leagueId: 'league_123', userId: 'user_2', amount: '1000' } // BN is mocked as string/number usually, assuming toString() works
-                        };
-                    }
-                    if (data === 'PAYOUT_EVENT_DATA') {
-                         return {
-                             name: 'PayoutEvent',
-                             data: { leagueId: 'league_123', winner: 'WALLET_ADDR', amount: '5000' }
-                         };
-                    }
-                    if (data === 'PAYOUT_COMPLETED_DATA') {
-                        return {
-                            name: 'PayoutCompletedEvent',
-                            data: { leagueId: 'league_123' }
-                        };
-                    }
-                    return null;
-                })
-            }
-        }))
-    };
-});
+// Mock rollbar
+vi.mock('../../fp/infrastructure/Rollbar.js', () => ({
+    default: {
+        error: vi.fn(),
+        info: vi.fn(),
+        warning: vi.fn()
+    }
+}));
 
-// Mock logger to avoid clutter
+// Mock logger
 vi.mock('../../fp/infrastructure/Logger.js', () => ({
     createLogger: () => ({
         info: vi.fn(),
@@ -60,22 +32,23 @@ vi.mock('../../fp/infrastructure/Logger.js', () => ({
     })
 }));
 
-describe('Solana Webhook', () => {
-    const client = testClient(solanaWebhookApp) as any;
+describe('TON Webhook', () => {
+    const client = testClient(tonWebhookApp) as any;
 
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-
     it('should handle LeagueCreated event', async () => {
-        const payload = [{
-            txHash: 'sig_league_created',
-            blockTime: 123456789,
-            logs: [
-                'Program data: LEAGUE_CREATED_DATA'
-            ]
-        }];
+        const payload = {
+            event_name: 'LeagueCreated',
+            data: {
+                leagueId: 'league_123',
+                userId: 'user_1',
+                feePaid: true
+            },
+            tx_hash: 'tx_league_created'
+        };
 
         const response = await client.index.$post({
             json: payload
@@ -86,7 +59,7 @@ describe('Solana Webhook', () => {
             id: 'league_123',
             league: {
                 status: 'open',
-                blockchainTxHash: 'sig_league_created'
+                blockchainTxHash: 'tx_league_created'
             }
         });
     });
@@ -97,12 +70,15 @@ describe('Solana Webhook', () => {
             id: 'membership_123'
         } as any);
 
-        const payload = [{
-            txHash: 'sig_stake',
-            logs: [
-                'Program data: STAKE_EVENT_DATA'
-            ]
-        }];
+        const payload = {
+            event_name: 'StakeEvent',
+            data: {
+                leagueId: 'league_123',
+                userId: 'user_2',
+                amount: '1000'
+            },
+            tx_hash: 'tx_stake'
+        };
 
         const response = await client.index.$post({
             json: payload
@@ -114,7 +90,7 @@ describe('Solana Webhook', () => {
             id: 'membership_123',
             membership: {
                 status: 'active',
-                blockchainTxHash: 'sig_stake',
+                blockchainTxHash: 'tx_stake',
                 stakeAmount: expect.any(Decimal)
             }
         });
@@ -129,26 +105,29 @@ describe('Solana Webhook', () => {
              id: 'winner_membership_id'
          } as any);
 
-         const payload = [{
-            txHash: 'sig_payout',
-            logs: [
-                'Program data: PAYOUT_EVENT_DATA'
-            ]
-        }];
+         const payload = {
+            event_name: 'PayoutEvent',
+            data: {
+                leagueId: 'league_123',
+                winner: 'EQ_WINNER_ADDR',
+                amount: '5000'
+            },
+            tx_hash: 'tx_payout'
+        };
 
         const response = await client.index.$post({
             json: payload
         });
 
         expect(response.status).toBe(200);
-        expect(fantasyLeaguesModel.retrieveUserByWalletAddress).toHaveBeenCalledWith('WALLET_ADDR');
+        expect(fantasyLeaguesModel.retrieveUserByWalletAddress).toHaveBeenCalledWith('EQ_WINNER_ADDR');
         expect(fantasyLeaguesModel.retrieveFantasyLeagueMembershipByLeagueAndUser).toHaveBeenCalledWith('league_123', 'winner_user_id');
         expect(fantasyLeaguesModel.updateFantasyLeagueMembershipInDatabaseById).toHaveBeenCalledWith({
             id: 'winner_membership_id',
             membership: {
                 status: 'won',
                 payoutAmount: expect.any(Decimal),
-                blockchainTxHash: 'sig_payout',
+                blockchainTxHash: 'tx_payout',
                 payoutStatus: 'completed'
             }
         });
@@ -157,12 +136,13 @@ describe('Solana Webhook', () => {
     it('should handle PayoutCompletedEvent', async () => {
         vi.mocked(fantasyLeaguesModel.finalizeLeagueMemberships).mockResolvedValue({ count: 5 });
 
-        const payload = [{
-            txHash: 'sig_completed',
-            logs: [
-                'Program data: PAYOUT_COMPLETED_DATA'
-            ]
-        }];
+        const payload = {
+            event_name: 'PayoutCompletedEvent',
+            data: {
+                leagueId: 'league_123'
+            },
+            tx_hash: 'tx_completed'
+        };
 
         const response = await client.index.$post({
             json: payload
@@ -173,7 +153,7 @@ describe('Solana Webhook', () => {
             id: 'league_123',
             league: {
                 status: 'completed',
-                blockchainTxHash: 'sig_completed'
+                blockchainTxHash: 'tx_completed'
             }
         });
         expect(fantasyLeaguesModel.finalizeLeagueMemberships).toHaveBeenCalledWith('league_123');

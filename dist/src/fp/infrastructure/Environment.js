@@ -4,6 +4,7 @@ import { createWalletService } from '../../features/wallet/wallet.service.js';
 import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
 import { createPaymentService } from '../../infrastructure/payment/payment.service.js';
 import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js';
+import { TonClient } from '@ton/ton';
 // Constructor for creating the environment (called at app startup)
 export const createEnvironment = (prisma, logger, config) => {
     const walletRepo = createWalletRepository(prisma);
@@ -17,6 +18,12 @@ export const createEnvironment = (prisma, logger, config) => {
     const walletService = createWalletService(walletRepo, blockchainService);
     const paymentService = createPaymentService();
     const publicLeagueService = createPublicLeagueService(prisma, walletService);
+    const tonEndpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+    const tonApiKey = process.env.TON_API_KEY;
+    const tonClient = new TonClient({
+        endpoint: tonEndpoint,
+        apiKey: tonApiKey
+    });
     return {
         prisma,
         logger,
@@ -25,7 +32,8 @@ export const createEnvironment = (prisma, logger, config) => {
         walletService,
         blockchainService,
         paymentService,
-        publicLeagueService
+        publicLeagueService,
+        tonClient
     };
 };
 // Default configuration from environment variables

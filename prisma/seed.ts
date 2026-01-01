@@ -35,7 +35,7 @@ async function main() {
           email: 'test@fantasypro.app',
           name: 'Test User',
           coins: 1000,
-          walletAddress: '0x1234567890abcdef1234567890abcdef12345678' // Mock POL address
+          walletAddress: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N' // Mock TON address
       }
   });
 

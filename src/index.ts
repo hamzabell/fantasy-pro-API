@@ -11,13 +11,14 @@ import { swaggerUI } from '@hono/swagger-ui'
 import fantasyTeamsApp from './features/fantasy-teams/fantasy-teams-route.js';
 import authenticationApp from './features/authentication/authentication-route.js';
 import fantasyLeaguesApp from './features/fantasy-leagues/fantasy-leagues-route.js';
-import solanaWebhookApp from './features/webhooks/solana-webhook-route.js';
+// import tonWebhookApp from './features/webhooks/ton-webhook-route.js'; // Deprecated
 import gameweekWebhookApp from './features/webhooks/gameweek-webhook-route.js';
 import leagueIntegrationApp from './features/league-integration/league-integration-route.js';
 import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
 import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
+import { startTransactionScheduler } from './features/league-integration/TransactionScheduler.js';
 // import paymentApp from './features/payments/payment.routes.js';
 
 import { cors } from 'hono/cors';
@@ -52,6 +53,7 @@ env.publicLeagueService.startScheduler();
 if (process.env.NODE_ENV !== 'test') {
 	// env.blockchainService.listenForEvents(); // Removed in favor of Webhooks
     payoutScheduler.initializeScheduler(); // Start Payout Scheduler
+    startTransactionScheduler(env); // Start Transaction Verification Scheduler
     
     // Trigger initial public league seeding if needed
     env.publicLeagueService.run().catch(e => console.error('[Startup] Failed to run PublicLeagueService:', e));
@@ -60,7 +62,7 @@ if (process.env.NODE_ENV !== 'test') {
 app.route('/api/auth', authenticationApp);
 // app.route('/api/payment', paymentApp); // Mount payment webhook section
 app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
-app.route('/api/webhooks/solana', solanaWebhookApp); // Mount Solana webhook
+// app.route('/api/webhooks/ton', tonWebhookApp); // Deprecated
 app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.route('/api/fantasy-teams', fantasyTeamsApp); // Restore Fantasy Teams
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint

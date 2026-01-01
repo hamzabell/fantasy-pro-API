@@ -6,7 +6,7 @@ import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
 import { createWalletService } from '../wallet/wallet.service.js';
-import { createSolanaBlockchainService } from '../../infrastructure/blockchain/solana-blockchain.service.js';
+import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import type { User } from '../../generated/prisma/index.js';
 

@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+            "name": "league_payout",
+            "path": "./contracts/league_payout.tact",
+            "output": "./build/league_payout"
+        }
+    ]
+}
