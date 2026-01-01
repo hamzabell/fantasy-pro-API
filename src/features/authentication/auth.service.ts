@@ -42,7 +42,7 @@ export interface AuthResponse {
   };
 }
 
-export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | 'mobile' = 'web'): string => {
+export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | 'mobile' = 'web', redirectUrl?: string): string => {
   const options: any = {
     access_type: 'offline',
     scope: [
@@ -51,21 +51,34 @@ export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | '
     ],
   };
   
+  if (redirectUrl) {
+    options.redirect_uri = redirectUrl;
+  }
+
   const state: any = { platform };
   if (referralCode) {
     state.referralCode = referralCode;
+  }
+  if (redirectUrl) {
+    state.redirectUrl = redirectUrl;
   }
   options.state = JSON.stringify(state);
 
   return client.generateAuthUrl(options);
 };
 
-export const loginWithGoogleCode = (code: string, referralCode?: string): TaskEither<AppError, AuthResponse> =>
+export const loginWithGoogleCode = (code: string, referralCode?: string, redirectUrl?: string): TaskEither<AppError, AuthResponse> =>
   pipe(
     // 1. Exchange Code for Tokens
     TE.tryCatch(
       async () => {
-        const { tokens } = await client.getToken(code);
+        const verifyOptions: any = {
+           code,
+        };
+        if (redirectUrl) {
+            verifyOptions.redirect_uri = redirectUrl;
+        }
+        const { tokens } = await client.getToken(verifyOptions);
         console.log('[Auth] Google Tokens received. ID Token present:', !!tokens.id_token);
         client.setCredentials(tokens);
         

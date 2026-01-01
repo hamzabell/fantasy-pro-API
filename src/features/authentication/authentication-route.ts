@@ -83,7 +83,8 @@ const getGoogleAuthUrlRoute = createRoute({
   request: {
     query: z.object({
       referralCode: z.string().optional(),
-      platform: z.enum(['web', 'mobile']).optional().default('web')
+      platform: z.enum(['web', 'mobile']).optional().default('web'),
+      redirectUrl: z.string().optional()
     })
   },
   responses: {
@@ -95,8 +96,8 @@ const getGoogleAuthUrlRoute = createRoute({
 });
 
 app.openapi(getGoogleAuthUrlRoute, (c) => {
-  const { referralCode, platform } = c.req.valid('query');
-  const url = generateGoogleAuthUrl(referralCode, platform);
+  const { referralCode, platform, redirectUrl } = c.req.valid('query');
+  const url = generateGoogleAuthUrl(referralCode, platform, redirectUrl);
   return c.json({ url });
 });
 
@@ -127,18 +128,20 @@ app.openapi(googleCallbackRoute, async (c) => {
     console.log('[Auth] Google Callback received. Code:', code ? 'present' : 'missing', 'State:', state);
     let referralCode: string | undefined;
     let platform: 'web' | 'mobile' = 'web';
+    let redirectUrl: string | undefined;
 
     if (state) {
         try {
             const parsedState = JSON.parse(state);
             referralCode = parsedState.referralCode;
             if (parsedState.platform) platform = parsedState.platform;
+            if (parsedState.redirectUrl) redirectUrl = parsedState.redirectUrl;
         } catch (e) {
             // Ignore state parsing error
         }
     }
 
-    const result = await loginWithGoogleCode(code, referralCode)();
+    const result = await loginWithGoogleCode(code, referralCode, redirectUrl)();
 
     if (E.isRight(result)) {
         const { token } = result.right;
