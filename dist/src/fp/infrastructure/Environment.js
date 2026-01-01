@@ -38,7 +38,7 @@ export const createEnvironment = (prisma, logger, config) => {
 };
 // Default configuration from environment variables
 export const defaultConfig = {
-    budgetLimit: 40,
+    budgetLimit: 35,
     minPlayers: 5,
     maxPlayers: 5,
     webhookApiToken: (_a = process.env.WEBHOOK_API_TOKEN) !== null && _a !== void 0 ? _a : '',

@@ -44,6 +44,7 @@ const FantasyLeagueSchema = z.object({
   commissionRate: z.number().optional(),
   creatorCommission: z.number().optional(),
   potentialWinnings: z.number().optional(),
+  membershipStatus: z.string().optional(),
 });
 
 /**
@@ -389,7 +390,7 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
           () => env.prisma.fantasyLeague.findMany({
               include: {
                   owner: { select: { id: true, email: true } },
-                  members: { select: { userId: true } },
+                  members: { select: { userId: true, status: true } },
                   _count: { select: { members: true } }
               }
           }),
@@ -430,6 +431,13 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
                   // If seeking 'Other Leagues' (isMember=false), return if NOT member AND NOT owner
                   return isMember ? (amMember || isOwner) : (!amMember && !isOwner);
               });
+          } else if (leagueType === 'public' && user) {
+               // DEFAULT BEHAVIOR for Public List: Exclude leagues I'm already in
+               filtered = filtered.filter(l => {
+                   const amMember = l.members.some(m => m.userId === user.id);
+                   const isOwner = l.ownerId === user.id;
+                   return !amMember && !isOwner;
+               });
           }
 
           // Filter by Stake (approximate float match)
@@ -452,11 +460,21 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
                 ? l.prizeDistribution as any[] 
                 : calculatePrizeDistribution(l.winners);
 
+              // Find membership status for current user if they are a member
+              let membershipStatus = undefined;
+              if (user) {
+                  const memberRecord = l.members.find(m => m.userId === user.id);
+                  if (memberRecord) {
+                      membershipStatus = memberRecord.status;
+                  }
+              }
+
               return {
                   ...mapToLeagueResponse(l),
                   owner: l.owner ? { id: l.owner.id, email: l.owner.email } : { id: 'SYSTEM', email: 'FantasyPro App' },
                   teamsCount: l._count.members,
-                  prizeDistribution: prizeDist
+                  prizeDistribution: prizeDist,
+                  membershipStatus
               };
           });
 

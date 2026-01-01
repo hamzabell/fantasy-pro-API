@@ -46,6 +46,7 @@ const FantasyLeagueSchema = z.object({
     commissionRate: z.number().optional(),
     creatorCommission: z.number().optional(),
     potentialWinnings: z.number().optional(),
+    membershipStatus: z.string().optional(),
 });
 /**
  * Maps a Prisma FantasyLeague object to the API response format,
@@ -348,7 +349,7 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
     const result = yield pipe(safePrisma(() => env.prisma.fantasyLeague.findMany({
         include: {
             owner: { select: { id: true, email: true } },
-            members: { select: { userId: true } },
+            members: { select: { userId: true, status: true } },
             _count: { select: { members: true } }
         }
     }), 'getAllLeagues'), TE.map((leagues) => {
@@ -384,6 +385,14 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
                 return isMember ? (amMember || isOwner) : (!amMember && !isOwner);
             });
         }
+        else if (leagueType === 'public' && user) {
+            // DEFAULT BEHAVIOR for Public List: Exclude leagues I'm already in
+            filtered = filtered.filter(l => {
+                const amMember = l.members.some(m => m.userId === user.id);
+                const isOwner = l.ownerId === user.id;
+                return !amMember && !isOwner;
+            });
+        }
         // Filter by Stake (approximate float match)
         if (stake) {
             const val = parseFloat(stake);
@@ -401,7 +410,15 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
             const prizeDist = Array.isArray(l.prizeDistribution)
                 ? l.prizeDistribution
                 : calculatePrizeDistribution(l.winners);
-            return Object.assign(Object.assign({}, mapToLeagueResponse(l)), { owner: l.owner ? { id: l.owner.id, email: l.owner.email } : { id: 'SYSTEM', email: 'FantasyPro App' }, teamsCount: l._count.members, prizeDistribution: prizeDist });
+            // Find membership status for current user if they are a member
+            let membershipStatus = undefined;
+            if (user) {
+                const memberRecord = l.members.find(m => m.userId === user.id);
+                if (memberRecord) {
+                    membershipStatus = memberRecord.status;
+                }
+            }
+            return Object.assign(Object.assign({}, mapToLeagueResponse(l)), { owner: l.owner ? { id: l.owner.id, email: l.owner.email } : { id: 'SYSTEM', email: 'FantasyPro App' }, teamsCount: l._count.members, prizeDistribution: prizeDist, membershipStatus });
         });
         // Sort
         if (sortBy) {

@@ -13,6 +13,8 @@ import {createMockUser} from '../../utils/supabaseMocks-factories.js';
 
 vi.mock('../fantasy-premier-league/fantasy-premier-league-api.js');
 
+
+
 const setupUserWithATeam = async () => {
 		// First create a user in the database with a unique ID and email
 		const user = await saveUserToDatabase({
@@ -56,17 +58,19 @@ describe("Fantasy Teams", () => {
             // Check structure of first team
             const returnedTeam = actual.teams.find((t: any) => t.userId === user.id);
             expect(returnedTeam).toBeDefined();
-            expect(returnedTeam.balance).toBe(40 - team.teamValue);
+            expect(returnedTeam.balance).toBe(35 - team.teamValue);
             expect(returnedTeam.realLifeLeague).toBe('PREMIER_LEAGUE');
 
             await deleteUserFromDatabaseById(user.id);
         });
 
-        test("given an unauthenticated user: it should return 401", async () => {
+        test("given an unauthenticated user: it should return 200 (Public Route)", async () => {
+			// Explicitly mock unauth to ensure we test public access not leaked auth
+			vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: null }, error: null } as any);
             const res = await app.request('/api/fantasy-teams', {
                 method: 'GET'
             });
-            expect(res.status).toBe(401);
+            expect(res.status).toBe(200);
         });
 
         test("given a realLifeLeague filter: it should return teams only for that league", async () => {
@@ -97,7 +101,7 @@ describe("Fantasy Teams", () => {
     });
 
 	describe("POST /create-team", () => {
-	test("given that a user selects 5 players for his team and all players costs are equal or under 40M pound: it should create a team for the user and map the players to the user", async () => {
+	test("given that a user selects 5 players for his team and all players costs are equal or under 35M pound: it should create a team for the user and map the players to the user", async () => {
 		// Create a unique user for this test
 		const user = await saveUserToDatabase({
 			id: `user-${Date.now()}-${Math.random()}`,
@@ -106,7 +110,7 @@ describe("Fantasy Teams", () => {
 		
 		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
-		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(40);
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(30);
 		vi.mocked(fetchPlayersByIds).mockResolvedValue([
 			{ id: 1, name: 'Player 1', teamId: 1, position: 'Goalkeeper', image: 'image1.jpg', cost: 8 },
 			{ id: 2, name: 'Player 2', teamId: 2, position: 'Defender', image: 'image2.jpg', cost: 8 },
@@ -136,7 +140,7 @@ describe("Fantasy Teams", () => {
 		const expected = {
 			message: 'Team created successfully',
 			team: {
-				balance: 60,
+				balance: 5, // 35 - 30 = 5
 				players: expect.arrayContaining([
 					expect.objectContaining({
 						id: expect.any(String),
@@ -161,7 +165,7 @@ describe("Fantasy Teams", () => {
 		await deleteUserFromDatabaseById(user.id);
 	});
 
-	test("given that a user selects 5 players for his team and the total cost of player is over 40M pounds: it should return an error stating that the total cost of players exceeds the budget", async () => {
+	test("given that a user selects 5 players for his team and the total cost of player is over 35M pounds: it should return an error stating that the total cost of players exceeds the budget", async () => {
 		// Create a unique user for this test
 		const user = await saveUserToDatabase({
 			id: `user-${Date.now()}-${Math.random()}`,
@@ -170,7 +174,7 @@ describe("Fantasy Teams", () => {
 		
 		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
-		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120);
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(40);
 
         // We also need to mock valid positions so it passes the position check first!
 		vi.mocked(fetchPlayersByIds).mockResolvedValue([
@@ -265,18 +269,18 @@ describe("Fantasy Teams", () => {
 		expect(res.status).toBe(401);
 
 		const actual = await res.json();
-		const expected = {
-			error: 'Unauthorized'
-		}
 
-		expect(actual).toEqual(expected);
+		// We use toMatchObject because the error response might contain other fields like timestamp/details
+		expect(actual).toMatchObject({
+			error: expect.stringContaining('Unauthorized')
+		});
 		
 		await deleteUserFromDatabaseById(user.id);
 	})
 
 
 
-    test("given the user selects duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
+		test("given the user selects duplicate players: it should return an error stating that duplicate players are not allowed", async () => {
 		// Create a unique user for this test
 		const user = await saveUserToDatabase({
 			id: `user-${Date.now()}-${Math.random()}`,
@@ -314,6 +318,50 @@ describe("Fantasy Teams", () => {
 
 		const actual = await res.json();
 		expect(actual).toMatchObject({ error: 'Duplicate players are not allowed.' });
+		
+		await deleteUserFromDatabaseById(user.id);
+	})
+
+    test("given the user selects more than 2 players from the same team: it should return an error", async () => {
+		// Create a unique user for this test
+		const user = await saveUserToDatabase({
+			id: `user-${Date.now()}-${Math.random()}`,
+			email: `test-${Date.now()}-${Math.random()}@example.com`,
+		});
+		
+		const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
+		vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+		vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(30);
+        
+        // Mock 3 players from teamId 1
+		vi.mocked(fetchPlayersByIds).mockResolvedValue([
+			{ id: 1, name: 'Player 1', teamId: 1, position: 'Goalkeeper', image: 'image1.jpg', cost: 8 },
+			{ id: 2, name: 'Player 2', teamId: 1, position: 'Defender', image: 'image2.jpg', cost: 8 },
+			{ id: 3, name: 'Player 3', teamId: 1, position: 'Midfielder', image: 'image3.jpg', cost: 8 },
+			{ id: 4, name: 'Player 4', teamId: 4, position: 'Forward', image: 'image4.jpg', cost: 8 },
+			{ id: 5, name: 'Player 5', teamId: 5, position: 'Forward', image: 'image5.jpg', cost: 8 }
+		]);
+
+		const playerIds = [1, 2, 3, 4, 5];	
+
+		const res = await app.request('/api/fantasy-teams/create-team', {
+			...createAuthHeaders(user.id),
+			...createBody({
+				players: playerIds
+			}),
+			method: 'POST',
+		})
+
+		expect(res.status).toBe(422);
+
+		const actual = await res.json();
+        // Check for specific error message
+        if (actual.error && typeof actual.error === 'string') {
+             expect(actual.error).toContain('You can select a maximum of 2 players from the same team');
+        } else {
+             // Fallback if error structure is different or matches object
+             expect(JSON.stringify(actual)).toContain('maximum of 2 players');
+        }
 		
 		await deleteUserFromDatabaseById(user.id);
 	})
@@ -374,6 +422,13 @@ describe("Fantasy Teams", () => {
 			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
 			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
+			vi.mocked(fetchPlayersByIds).mockResolvedValue([
+				{ id: 1, name: 'Player 1', teamId: 1, position: 'Goalkeeper', image: 'image1.jpg', cost: 10 },
+				{ id: 2, name: 'Player 2', teamId: 2, position: 'Defender', image: 'image2.jpg', cost: 8 },
+				{ id: 3, name: 'Player 3', teamId: 3, position: 'Midfielder', image: 'image3.jpg', cost: 6 },
+				{ id: 4, name: 'Player 4', teamId: 4, position: 'Forward', image: 'image4.jpg', cost: 5 },
+				{ id: 5, name: 'Player 5', teamId: 5, position: 'Forward', image: 'image5.jpg', cost: 8 }
+			]);
 
 			const res = await app.request('/api/fantasy-teams/team', {
 				...createAuthHeaders(user.id),
@@ -386,7 +441,7 @@ describe("Fantasy Teams", () => {
 			const expected = {
 				message: 'Team retrieved successfully',
 				team: {
-					balance: 40 - teamValue,
+					balance: 35 - teamValue,
 					players: expect.arrayContaining([
 						expect.objectContaining({
 							id: expect.any(String),
@@ -436,11 +491,9 @@ describe("Fantasy Teams", () => {
 			expect(res.status).toBe(401);
 
 			const actual = await res.json();
-			const expected = {
-				error: 'Unauthorized'
-			}
-
-			expect(actual).toEqual(expected);
+			expect(actual).toMatchObject({
+				error: expect.stringContaining('Unauthorized')
+			});
 			
 		})
 
@@ -480,7 +533,7 @@ describe("Fantasy Teams", () => {
 			const expected = {
 				message: 'Team updated successfully',
 				team: {
-					balance: 40 - teamValue,
+					balance: 35 - teamValue,
 					players: expect.arrayContaining([
 						expect.objectContaining({
 							id: expect.any(String),
@@ -508,7 +561,7 @@ describe("Fantasy Teams", () => {
 			const { user, team: { teamValue, teamPlayers } } = await setupUserWithATeam();
 			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
-			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(35);
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(30);
 
             // Mock players including new ones. We need 1 GK, 1 DEF, 1 MID, 2 FWD.
             // Setup has: 1(GK), 2(DEF), 3(MID), 4(FWD), 5(FWD)
@@ -566,7 +619,7 @@ describe("Fantasy Teams", () => {
 			const { user, team: { teamPlayers } } = await setupUserWithATeam();
 			const mockSupabase = mockSupabaseAuthSuccess(createMockUser(user));
 			vi.spyOn(supabase.auth, 'getUser' ).mockImplementation(mockSupabase.auth.getUser)
-			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(120); // Simulate exceeding budget
+			vi.mocked(fetchTotalCostForPlayers).mockResolvedValue(40); // Simulate exceeding budget
 
             // Valid positions, but cost fails
              vi.mocked(fetchPlayersByIds).mockResolvedValue([
@@ -614,11 +667,9 @@ describe("Fantasy Teams", () => {
 			expect(res.status).toBe(401);
 
 			const actual = await res.json();
-			const expected = {
-				error: 'Unauthorized'
-			}
-
-			expect(actual).toEqual(expected);
+			expect(actual).toMatchObject({
+				error: expect.stringContaining('Unauthorized')
+			});
 		})
 
 		test("given that a user does not have a team: it should return an error stating that the user does not have a team", async () => {

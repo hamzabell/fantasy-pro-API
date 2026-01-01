@@ -37,16 +37,26 @@ RTE.chainW((players) => {
         positions['Defender'] === 1 &&
         positions['Midfielder'] === 1 &&
         positions['Forward'] === 2;
+    // Validate Max players per team (2)
+    const teamCounts = players.reduce((acc, player) => {
+        acc[player.teamId] = (acc[player.teamId] || 0) + 1;
+        return acc;
+    }, {});
+    const MAX_PLAYERS_PER_TEAM = 2;
+    const teamsExceedingLimit = Object.keys(teamCounts).filter(teamId => teamCounts[Number(teamId)] > MAX_PLAYERS_PER_TEAM);
+    if (teamsExceedingLimit.length > 0) {
+        return RTE.left(businessRuleError('TeamLimitExceeded', `You can select a maximum of ${MAX_PLAYERS_PER_TEAM} players from the same team.`));
+    }
     return RTE.of(players);
 }), 
-// 5. Calculate total cost
+// 6. Calculate total cost
 RTE.chainW((players) => pipe(RTE.fromTaskEither(fetchTotalCostTE(playerIds)), RTE.map((totalCost) => ({ players, totalCost })))), 
-// 6. Validate budget
+// 7. Validate budget
 RTE.chainW(({ players, totalCost }) => pipe(RTE.ask(), RTE.chainW(({ config }) => totalCost <= config.budgetLimit
     ? RTE.of({ players, totalCost })
     : RTE.left(businessRuleError('BudgetExceeded', `Total cost ${totalCost}M exceeds budget. Budget: ${config.budgetLimit}M`))))), 
-// 7. Create team in database
-RTE.chainW(({ players, totalCost }) => pipe(createTeamRepo({
+// 8. Create team in database
+RTE.chainW(({ players, totalCost }) => pipe(RTE.ask(), RTE.chainW(({ config }) => pipe(createTeamRepo({
     userId,
     teamValue: totalCost,
     teamPlayers: playerIds,
@@ -55,8 +65,8 @@ RTE.chainW(({ players, totalCost }) => pipe(createTeamRepo({
 }), RTE.map((team) => ({
     team,
     players,
-    balance: 100 - totalCost
-})))));
+    balance: config.budgetLimit - totalCost
+})))))));
 // Get team with enriched player data
 export const getTeamService = (userId, realLifeLeague = 'PREMIER_LEAGUE') => pipe(
 // 1. Find team
@@ -91,15 +101,25 @@ RTE.chainW((players) => {
         positions['Defender'] === 1 &&
         positions['Midfielder'] === 1 &&
         positions['Forward'] === 2;
+    // Validate Max players per team (2)
+    const teamCounts = players.reduce((acc, player) => {
+        acc[player.teamId] = (acc[player.teamId] || 0) + 1;
+        return acc;
+    }, {});
+    const MAX_PLAYERS_PER_TEAM = 2;
+    const teamsExceedingLimit = Object.keys(teamCounts).filter(teamId => teamCounts[Number(teamId)] > MAX_PLAYERS_PER_TEAM);
+    if (teamsExceedingLimit.length > 0) {
+        return RTE.left(businessRuleError('TeamLimitExceeded', `You can select a maximum of ${MAX_PLAYERS_PER_TEAM} players from the same team.`));
+    }
     return RTE.of(players);
 }), 
-// 5. Calculate total cost
+// 6. Calculate total cost
 RTE.chainW((players) => pipe(RTE.fromTaskEither(fetchTotalCostTE(playerIds)), RTE.map((totalCost) => ({ players, totalCost })))), 
-// 6. Validate budget
+// 7. Validate budget
 RTE.chainW(({ players, totalCost }) => pipe(RTE.ask(), RTE.chainW(({ config }) => totalCost <= config.budgetLimit
     ? RTE.of({ players, totalCost })
     : RTE.left(businessRuleError('BudgetExceeded', `Total cost ${totalCost}M exceeds budget. Budget: ${config.budgetLimit}M`))))), 
-// 7. Update team in database
+// 8. Update team in database
 RTE.chainW(({ players, totalCost }) => pipe(RTE.ask(), RTE.chainW(({ config }) => pipe(findTeamByUserAndLeague(userId, realLifeLeague), RTE.chainW((team) => updateTeamRepo(team.id, {
     teamValue: totalCost,
     teamPlayers: playerIds

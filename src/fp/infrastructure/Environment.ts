@@ -85,7 +85,7 @@ export const createEnvironment = (
 
 // Default configuration from environment variables
 export const defaultConfig: AppConfig = {
-	budgetLimit: 40,
+	budgetLimit: 35,
 	minPlayers: 5,
 	maxPlayers: 5,
 	webhookApiToken: process.env.WEBHOOK_API_TOKEN ?? '',
