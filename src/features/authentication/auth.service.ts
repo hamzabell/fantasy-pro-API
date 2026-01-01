@@ -51,9 +51,9 @@ export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | '
     ],
   };
   
-  if (redirectUrl) {
-    options.redirect_uri = redirectUrl;
-  }
+  // if (redirectUrl) {
+  //   options.redirect_uri = redirectUrl;
+  // }
 
   const state: any = { platform };
   if (referralCode) {
@@ -75,9 +75,9 @@ export const loginWithGoogleCode = (code: string, referralCode?: string, redirec
         const verifyOptions: any = {
            code,
         };
-        if (redirectUrl) {
-            verifyOptions.redirect_uri = redirectUrl;
-        }
+        // if (redirectUrl) {
+        //     verifyOptions.redirect_uri = redirectUrl;
+        // }
         const { tokens } = await client.getToken(verifyOptions);
         console.log('[Auth] Google Tokens received. ID Token present:', !!tokens.id_token);
         client.setCredentials(tokens);

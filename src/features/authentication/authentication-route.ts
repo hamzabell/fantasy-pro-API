@@ -150,7 +150,7 @@ app.openapi(googleCallbackRoute, async (c) => {
             return c.redirect(`fantasypro://auth/callback?token=${token}`);
         }
         
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';
+        const frontendUrl = redirectUrl || process.env.FRONTEND_URL || 'http://localhost:8100';
         return c.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } else {
         const error = result.left;
