@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 
 // Create a mock user with default or custom properties
 export const createMockUser = ({
-  id = faker.string.alphanumeric(21), // Generate a random ID similar to CUID format
+  id = faker.string.alphanumeric(21),
   aud = 'authenticated',
   role = 'authenticated',
   email = faker.internet.email(),
@@ -16,11 +16,26 @@ export const createMockUser = ({
   created_at = new Date().toISOString(),
   updated_at = new Date().toISOString(),
   is_anonymous = false,
+}: {
+  id?: string;
+  aud?: string;
+  role?: string;
+  email?: string | null;
+  email_confirmed_at?: string;
+  phone?: string;
+  confirmed_at?: string;
+  last_sign_in_at?: string;
+  app_metadata?: object;
+  user_metadata?: object;
+  identities?: any[];
+  created_at?: string;
+  updated_at?: string;
+  is_anonymous?: boolean;
 } = {}) => ({
   id,
   aud,
   role,
-  email,
+  email: email ?? undefined,
   email_confirmed_at,
   phone,
   confirmed_at,
