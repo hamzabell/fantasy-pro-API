@@ -198,3 +198,10 @@ model Transaction {
   @@index([type])
 }
 
+model AuthCode {
+  code      String   @id
+  token     String   @db.Text
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+

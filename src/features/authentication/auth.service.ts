@@ -181,3 +181,54 @@ export const loginWithGoogleCode = (code: string, referralCode?: string, redirec
       }
     }))
   );
+
+export const createAuthCode = (token: string): TaskEither<AppError, string> => 
+    TE.tryCatch(
+        async () => {
+             const code = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+             // Expires in 5 minutes
+             const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+             
+             await prisma.authCode.create({
+                 data: {
+                     code,
+                     token,
+                     expiresAt
+                 }
+             });
+             return code;
+        },
+        (e) => internalError('Failed to create auth code', e)
+    );
+
+export const exchangeAuthCode = (code: string): TaskEither<AppError, string> =>
+    pipe(
+        TE.tryCatch(
+            async () => {
+                const authCode = await prisma.authCode.findUnique({
+                    where: { code }
+                });
+                return authCode;
+            },
+            (e) => internalError('Database error finding auth code', e)
+        ),
+        TE.chain((authCode) => {
+            if (!authCode) {
+                return TE.left(authenticationError('Invalid auth code', 'InvalidCode'));
+            }
+            if (new Date() > authCode.expiresAt) {
+                 // Clean up expired code?
+                 return TE.left(authenticationError('Auth code expired', 'ExpiredCode'));
+            }
+            
+            return pipe(
+                TE.tryCatch(
+                    async () => {
+                        await prisma.authCode.delete({ where: { code } });
+                        return authCode.token;
+                    },
+                    (e) => internalError('Failed to delete auth code', e)
+                )
+            );
+        })
+    );

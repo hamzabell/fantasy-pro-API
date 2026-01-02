@@ -1,7 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import * as E from 'fp-ts/lib/Either.js';
 type Either<E, A> = E.Either<E, A>;
-import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
@@ -16,6 +15,10 @@ const app = new OpenAPIHono<{ Variables: { user: User | null } }>();
 const GoogleLoginRequestSchema = z.object({
   token: z.string().describe('Google ID Token')
 }).openapi('GoogleLoginRequest');
+
+const ExchangeAuthCodeSchema = z.object({
+    code: z.string()
+}).openapi('ExchangeAuthCodeSchema');
 
 const AuthResponseSchema = z.object({
   token: z.string(),
@@ -73,33 +76,11 @@ const getErrorMessage = (error: AppError): string => {
   return 'Unknown error';
 };
 
-// Routes
+import { generateGoogleAuthUrl, loginWithGoogleCode, createAuthCode, exchangeAuthCode } from './auth.service.js';
+import jwt from 'jsonwebtoken';
+import { retrieveUserFromDatabaseByEmail } from '../users/users-model.js';
 
-// 1. GET /auth/google/url - Get Auth URL
-const getGoogleAuthUrlRoute = createRoute({
-  method: 'get',
-  path: '/google/url',
-  summary: 'Get Google Auth URL for redirect',
-  request: {
-    query: z.object({
-      referralCode: z.string().optional(),
-      platform: z.enum(['web', 'mobile']).optional().default('web'),
-      redirectUrl: z.string().optional()
-    })
-  },
-  responses: {
-    200: {
-      content: { 'application/json': { schema: GoogleAuthUrlResponseSchema } },
-      description: 'Google Auth URL'
-    }
-  }
-});
-
-app.openapi(getGoogleAuthUrlRoute, (c) => {
-  const { referralCode, platform, redirectUrl } = c.req.valid('query');
-  const url = generateGoogleAuthUrl(referralCode, platform, redirectUrl);
-  return c.json({ url });
-});
+// ... existing code ...
 
 // 2. GET /auth/google/callback - Handle Redirect Code
 const googleCallbackRoute = createRoute({
@@ -127,7 +108,7 @@ app.openapi(googleCallbackRoute, async (c) => {
     const { code, state } = c.req.valid('query');
     console.log('[Auth] Google Callback received. Code:', code ? 'present' : 'missing', 'State:', state);
     let referralCode: string | undefined;
-    let platform: 'web' | 'mobile' = 'web';
+    let platform: 'web' | 'mobile' | 'telegram' = 'web';
     let redirectUrl: string | undefined;
 
     if (state) {
@@ -150,12 +131,80 @@ app.openapi(googleCallbackRoute, async (c) => {
             return c.redirect(`fantasypro://auth/callback?token=${token}`);
         }
         
+        if (platform === 'telegram') {
+            // Create Short Code
+            const codeResult = await createAuthCode(token)();
+            if (E.isRight(codeResult)) {
+                const authCode = codeResult.right;
+                const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'FantasyProBot'; 
+                // Redirect to Telegram Mini App with startapp param
+                return c.redirect(`https://t.me/${botUsername}/app?startapp=${authCode}`);
+            } else {
+                 return c.json({ error: 'Failed to generate auth code' }, 500);
+            }
+        }
+        
         const frontendUrl = redirectUrl || process.env.FRONTEND_URL || 'http://localhost:8100';
         return c.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } else {
         const error = result.left;
         const msg = getErrorMessage(error);
         return c.json({ error: msg }, 400); // Or redirect to frontend error page
+    }
+});
+
+// 2.5 POST /auth/exchange - Exchange Auth Code for Token
+const exchangeAuthCodeRoute = createRoute({
+    method: 'post',
+    path: '/exchange',
+    summary: 'Exchange Auth Code for Token',
+    request: {
+        body: {
+            content: {
+                'application/json': { schema: ExchangeAuthCodeSchema }
+            }
+        }
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: AuthResponseSchema } },
+            description: 'Auth Success'
+        },
+        400: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'Invalid Code'
+        }
+    }
+});
+
+app.openapi(exchangeAuthCodeRoute, async (c) => {
+    const { code } = c.req.valid('json');
+    const result = await exchangeAuthCode(code)();
+    
+    if (E.isRight(result)) {
+        const token = result.right; 
+        const decoded = jwt.decode(token) as any;
+        const email = decoded.email;
+        const userResult = await retrieveUserFromDatabaseByEmail(email)();
+        
+        if (E.isRight(userResult) && userResult.right) {
+             const user = userResult.right;
+             return c.json({
+                 token,
+                 user: {
+                     id: user.id,
+                     email: user.email,
+                     name: user.name,
+                     image: user.image,
+                     walletAddress: user.walletAddress
+                 }
+             }, 200);
+        }
+        
+        return c.json({ error: 'User not found' }, 400);
+
+    } else {
+         return c.json({ error: getErrorMessage(result.left) }, 400);
     }
 });
 
