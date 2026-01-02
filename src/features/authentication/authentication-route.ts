@@ -102,6 +102,7 @@ const getGoogleAuthUrlRoute = createRoute({
 
 app.openapi(getGoogleAuthUrlRoute, async (c) => {
     const { referralCode, platform, redirectUrl } = c.req.valid('query');
+    console.log('[Auth] Generating Google URL. Platform:', platform, 'Referral:', referralCode, 'Redirect:', redirectUrl);
     const url = generateGoogleAuthUrl(referralCode, platform as any, redirectUrl);
     return c.json({ url });
 });
@@ -142,18 +143,22 @@ app.openapi(googleCallbackRoute, async (c) => {
     if (state) {
         try {
             const parsedState = JSON.parse(state);
+            console.log('[Auth] Parsed State:', parsedState);
             referralCode = parsedState.referralCode;
             if (parsedState.platform) platform = parsedState.platform;
             if (parsedState.redirectUrl) redirectUrl = parsedState.redirectUrl;
         } catch (e) {
+            console.error('[Auth] Failed to parse state:', e);
             // Ignore state parsing error
         }
     }
+    console.log('[Auth] Processing callback for platform:', platform);
 
     const result = await loginWithGoogleCode(code, referralCode, redirectUrl)();
 
     if (E.isRight(result)) {
         const { token } = result.right;
+        console.log('[Auth] Login successful. Token generated.');
         
         if (platform === 'mobile') {
             return c.redirect(`fantasypro://auth/callback?token=${token}`);
@@ -161,13 +166,16 @@ app.openapi(googleCallbackRoute, async (c) => {
         
         if (platform === 'telegram') {
             // Create Short Code
+            console.log('[Auth] Telegram platform detected. Creating auth code...');
             const codeResult = await createAuthCode(token)();
             if (E.isRight(codeResult)) {
                 const authCode = codeResult.right;
                 const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'FantasyProBot'; 
+                console.log('[Auth] Auth Code created:', authCode, 'Redirecting to bot:', botUsername);
                 // Redirect to Telegram Mini App with startapp param
                 return c.redirect(`https://t.me/${botUsername}/app?startapp=${authCode}`);
             } else {
+                 console.error('[Auth] Failed to generate auth code:', codeResult.left);
                  return c.json({ error: 'Failed to generate auth code' }, 500);
             }
         }
@@ -176,6 +184,7 @@ app.openapi(googleCallbackRoute, async (c) => {
         return c.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } else {
         const error = result.left;
+        console.error('[Auth] Login failed:', error);
         const msg = getErrorMessage(error);
         return c.json({ error: msg }, 400); // Or redirect to frontend error page
     }
