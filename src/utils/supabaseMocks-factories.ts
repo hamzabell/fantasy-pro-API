@@ -16,6 +16,7 @@ export const createMockUser = ({
   created_at = new Date().toISOString(),
   updated_at = new Date().toISOString(),
   is_anonymous = false,
+  walletAddress = null,
 }: {
   id?: string;
   aud?: string;
@@ -31,6 +32,7 @@ export const createMockUser = ({
   created_at?: string;
   updated_at?: string;
   is_anonymous?: boolean;
+  walletAddress?: string | null;
 } = {}) => ({
   id,
   aud,
@@ -46,4 +48,5 @@ export const createMockUser = ({
   created_at,
   updated_at,
   is_anonymous,
+  walletAddress: walletAddress ?? null,
 });

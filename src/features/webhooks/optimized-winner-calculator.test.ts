@@ -72,7 +72,6 @@ describe('Optimized Winner Calculator', () => {
     for (let i = 0; i < numUsers; i++) {
       const user = await prisma.user.create({
         data: { 
-          id: faker.string.uuid(),
           email: `perftest${i}-${timestamp}@example.com` 
         }
       });
@@ -80,7 +79,6 @@ describe('Optimized Winner Calculator', () => {
       // Create team for user
       await prisma.team.create({
         data: {
-          id: faker.string.uuid(),
           userId: user.id,
           teamValue: 1000,
           teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
