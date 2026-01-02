@@ -210,7 +210,7 @@ export const exchangeAuthCode = (code: string): TaskEither<AppError, string> =>
                 });
                 return authCode;
             },
-            (e) => internalError('Database error finding auth code', e)
+            (e): AppError => internalError('Database error finding auth code', e)
         ),
         TE.chainW((authCode) => {
             if (!authCode) {
@@ -227,7 +227,7 @@ export const exchangeAuthCode = (code: string): TaskEither<AppError, string> =>
                         await prisma.authCode.delete({ where: { code } });
                         return authCode.token;
                     },
-                    (e) => internalError('Failed to delete auth code', e)
+                    (e): AppError => internalError('Failed to delete auth code', e)
                 )
             );
         })
