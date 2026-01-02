@@ -186,7 +186,20 @@ app.openapi(googleCallbackRoute, async (c) => {
         const error = result.left;
         console.error('[Auth] Login failed:', error);
         const msg = getErrorMessage(error);
-        return c.json({ error: msg }, 400); // Or redirect to frontend error page
+        // Return HTML with error for visibility
+        return c.html(`
+            <html>
+                <body style="font-family: sans-serif; padding: 20px; text-align: center;">
+                    <h1>Authentication Failed</h1>
+                    <p style="color: red; font-size: 18px;">${msg}</p>
+                    <p>Referral: ${referralCode || 'None'}</p>
+                    <p>Platform: ${platform}</p>
+                    <p>Redirect: ${redirectUrl || 'None'}</p>
+                    <p>Full Error: ${JSON.stringify(error)}</p>
+                    <a href="https://t.me/${process.env.TELEGRAM_BOT_USERNAME || 'FantasyProBot'}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #3390ec; color: white; text-decoration: none; border-radius: 5px;">Return to Telegram</a>
+                </body>
+            </html>
+        `, 400); 
     }
 });
 
