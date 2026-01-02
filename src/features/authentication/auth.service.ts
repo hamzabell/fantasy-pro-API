@@ -42,7 +42,7 @@ export interface AuthResponse {
   };
 }
 
-export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | 'mobile' = 'web', redirectUrl?: string): string => {
+export const generateGoogleAuthUrl = (referralCode?: string, platform: 'web' | 'mobile' | 'telegram' = 'web', redirectUrl?: string): string => {
   const options: any = {
     access_type: 'offline',
     scope: [

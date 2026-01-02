@@ -80,6 +80,34 @@ import { generateGoogleAuthUrl, loginWithGoogleCode, createAuthCode, exchangeAut
 import jwt from 'jsonwebtoken';
 import { retrieveUserFromDatabaseByEmail } from '../users/users-model.js';
 
+// 1. GET /auth/google/url - Generate Auth URL
+const getGoogleAuthUrlRoute = createRoute({
+  method: 'get',
+  path: '/google/url',
+  summary: 'Get Google Auth URL for redirect',
+  request: {
+    query: z.object({
+      referralCode: z.string().optional(),
+      platform: z.enum(['web', 'mobile', 'telegram']).optional().default('web'),
+      redirectUrl: z.string().optional()
+    })
+  },
+  responses: {
+     200: {
+       content: { 'application/json': { schema: GoogleAuthUrlResponseSchema } },
+       description: 'Google Auth URL'
+     }
+  }
+});
+
+app.openapi(getGoogleAuthUrlRoute, async (c) => {
+    const { referralCode, platform, redirectUrl } = c.req.valid('query');
+    const url = generateGoogleAuthUrl(referralCode, platform as any, redirectUrl);
+    return c.json({ url });
+});
+
+// Duplicate removed
+
 // ... existing code ...
 
 // 2. GET /auth/google/callback - Handle Redirect Code
