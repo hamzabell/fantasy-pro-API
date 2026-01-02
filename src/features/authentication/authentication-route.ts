@@ -20,11 +20,23 @@ const ExchangeAuthCodeSchema = z.object({
     code: z.string()
 }).openapi('ExchangeAuthCodeSchema');
 
+const WalletLoginRequestSchema = z.object({
+  address: z.string(),
+  proof: z.any() 
+}).openapi('WalletLoginRequest');
+
+const WalletSignupRequestSchema = z.object({
+  address: z.string(),
+  proof: z.any(),
+  name: z.string(),
+  username: z.string()
+}).openapi('WalletSignupRequest');
+
 const AuthResponseSchema = z.object({
   token: z.string(),
   user: z.object({
     id: z.string(),
-    email: z.string(),
+    email: z.string().nullable().optional(),
     name: z.string().optional().nullable(),
     image: z.string().optional().nullable(),
     walletAddress: z.string().optional().nullable()
@@ -76,7 +88,7 @@ const getErrorMessage = (error: AppError): string => {
   return 'Unknown error';
 };
 
-import { generateGoogleAuthUrl, loginWithGoogleCode, createAuthCode, exchangeAuthCode } from './auth.service.js';
+import { generateGoogleAuthUrl, loginWithGoogleCode, createAuthCode, exchangeAuthCode, loginWithWallet, signupWithWallet } from './auth.service.js';
 import jwt from 'jsonwebtoken';
 import { retrieveUserFromDatabaseByEmail } from '../users/users-model.js';
 
@@ -255,6 +267,79 @@ app.openapi(exchangeAuthCodeRoute, async (c) => {
 
     } else {
          return c.json({ error: getErrorMessage(result.left) }, 400);
+    }
+});
+
+// 2.6 POST /auth/login-wallet
+const loginWalletRoute = createRoute({
+    method: 'post',
+    path: '/login-wallet',
+    summary: 'Login with TON Wallet',
+    request: {
+        body: {
+            content: { 'application/json': { schema: WalletLoginRequestSchema } }
+        }
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: AuthResponseSchema } },
+            description: 'Login Success'
+        },
+        404: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'User Not Found (Redirect to Signup)' 
+        },
+        400: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Bad Request' },
+        500: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Internal Error' }
+    }
+});
+
+app.openapi(loginWalletRoute, async (c) => {
+    const { address, proof } = c.req.valid('json');
+    const result = await loginWithWallet(address, proof)();
+    
+    if (E.isRight(result)) {
+        return c.json(result.right, 200);
+    } else {
+        const error = result.left;
+        const status = toHttpStatus(error);
+        return c.json({ error: getErrorMessage(error) }, status as any); 
+    }
+});
+
+// 2.7 POST /auth/signup-wallet
+const signupWalletRoute = createRoute({
+    method: 'post',
+    path: '/signup-wallet',
+    summary: 'Signup with TON Wallet',
+    request: {
+        body: {
+            content: { 'application/json': { schema: WalletSignupRequestSchema } }
+        }
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: AuthResponseSchema } },
+            description: 'Signup Success'
+        },
+        409: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Conflict (User/Wallet exists)' },
+        400: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Bad Request' }
+    }
+});
+
+app.openapi(signupWalletRoute, async (c) => {
+    const { address, proof, name, username } = c.req.valid('json');
+    const result = await signupWithWallet(address, proof, { name, username })();
+    
+    if (E.isRight(result)) {
+        return c.json(result.right, 200);
+    } else {
+        const error = result.left;
+        let status = toHttpStatus(error);
+        if (getErrorMessage(error).includes('taken') || getErrorMessage(error).includes('registered')) {
+            status = 409;
+        }
+        return c.json({ error: getErrorMessage(error) }, status as any);
     }
 });
 

@@ -18,8 +18,9 @@ enum RealLifeLeague {
 
 model User {
   id                String    @id @default(cuid())
-  email             String    @unique
-  name              String?   // Full Name from Social Provider
+  email             String?   @unique
+  username          String?   @unique
+  name              String?   // Full Name
   image             String?   // Profile Image URL
   password          String?   // Hashed password (New for Passport.js)
   country           String?   // NG, GH, US (New)

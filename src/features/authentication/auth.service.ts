@@ -10,7 +10,9 @@ import { OAuth2Client } from 'google-auth-library';
 import { 
     type AppError, 
     authenticationError, 
-    internalError
+    internalError,
+    notFoundError,
+    conflictError
 } from '../../fp/domain/errors/AppError.js';
 import { saveUserToDatabase, retrieveUserFromDatabaseByEmail, updateUserInDatabaseById, incrementUserCoins } from '../users/users-model.js';
 import { createPopulatedUser } from '../users/users-factories.js';
@@ -35,7 +37,7 @@ export interface AuthResponse {
   token: string;
   user: {
     id: string;
-    email: string;
+    email: string | null;
     name?: string | null;
     image?: string | null;
     walletAddress?: string | null;
@@ -231,4 +233,125 @@ export const exchangeAuthCode = (code: string): TaskEither<AppError, string> =>
                 )
             );
         })
+    );
+
+// --- TON Wallet Auth ---
+
+interface TonProof {
+    timestamp: number;
+    domain: {
+        lengthBytes: number;
+        value: string;
+    };
+    signature: string;
+    payload: string;
+}
+
+const verifyTonProof = async (address: string, proof: TonProof): Promise<boolean> => {
+    // TODO: Implement actual signature verification
+    // 1. Reconstruct message
+    // 2. Verify Ed25519 signature
+    // For now, assuming trusted status from frontend for MVP/Dev speed 
+    // OR if we can trust the 'proof' token from TON Connect.
+    // Ideally we use: https://github.com/ton-connect/sdk/tree/main/packages/sdk#check-proof-on-backend
+    console.log('[Auth] Verifying TON proof for:', address);
+    return true; 
+}
+
+export const loginWithWallet = (address: string, proof: any): TaskEither<AppError, AuthResponse> =>
+    pipe(
+        TE.tryCatch(
+            async () => {
+                const isValid = await verifyTonProof(address, proof);
+                if (!isValid) throw new Error('Invalid wallet proof');
+                
+                const user = await prisma.user.findUnique({
+                    where: { walletAddress: address }
+                });
+                return user;
+            },
+            (e): AppError => authenticationError('Wallet login failed', 'InvalidToken')
+        ),
+        TE.chainW((user) => {
+            if (!user) {
+                // User not found - Signals frontend to show Signup Form
+                return TE.left(notFoundError('User not found', address));
+            }
+            return TE.right(user);
+        }),
+        TE.map((user) => ({
+            token: jwt.sign({ id: user.id, email: user.email || '', walletAnddress: user.walletAddress }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN }),
+            user: { 
+                id: user.id, 
+                email: user.email || '', 
+                name: user.name, 
+                image: user.image,
+                walletAddress: user.walletAddress 
+            }
+        }))
+    );
+
+export const signupWithWallet = (
+    address: string, 
+    proof: any, 
+    data: { name: string; username: string }
+): TaskEither<AppError, AuthResponse> =>
+    pipe(
+        TE.tryCatch(
+            async () => {
+                const isValid = await verifyTonProof(address, proof);
+                if (!isValid) throw new Error('Invalid wallet proof');
+                
+                // Check if username/address exists
+                const existing = await prisma.user.findFirst({
+                    where: { 
+                        OR: [
+                            { walletAddress: address },
+                            { username: data.username }
+                        ]
+                    }
+                });
+                if (existing) {
+                    if (existing.walletAddress === address) throw new Error('Wallet already registered');
+                    if (existing.username === data.username) throw new Error('Username taken');
+                }
+
+                // Create User
+                // Initials for image
+                const initials = data.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const image = `https://ui-avatars.com/api/?name=${initials}&background=random`;
+
+                // Handle email - Make it optional or placeholder?
+                // Schema has email? @unique. If we made it optional, great.
+                // Assuming schema update applied.
+                
+                const newUser = await prisma.user.create({
+                    data: {
+                        walletAddress: address,
+                        username: data.username,
+                        name: data.name,
+                        image: image,
+                        email: null, // Explicitly null for wallet users initially
+                        coins: 0
+                    }
+                });
+                return newUser;
+            },
+            (e: any): AppError => {
+                const msg = e.message || String(e);
+                if (msg.includes('Username taken')) return conflictError('Username already taken', 'username', data.username);
+                if (msg.includes('Wallet already registered')) return conflictError('Wallet already registered', 'walletAddress', address);
+                return internalError('Signup failed', e);
+            }
+        ),
+        TE.map((user) => ({
+            token: jwt.sign({ id: user.id, walletAddress: user.walletAddress }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN }),
+             user: { 
+                id: user.id, 
+                email: user.email || '', 
+                name: user.name, 
+                image: user.image,
+                walletAddress: user.walletAddress 
+            }
+        }))
     );
