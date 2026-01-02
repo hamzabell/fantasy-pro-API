@@ -212,13 +212,13 @@ export const exchangeAuthCode = (code: string): TaskEither<AppError, string> =>
             },
             (e) => internalError('Database error finding auth code', e)
         ),
-        TE.chain((authCode) => {
+        TE.chainW((authCode) => {
             if (!authCode) {
-                return TE.left(authenticationError('Invalid auth code', 'InvalidCode'));
+                return TE.left(authenticationError('Invalid auth code', 'InvalidToken'));
             }
             if (new Date() > authCode.expiresAt) {
                  // Clean up expired code?
-                 return TE.left(authenticationError('Auth code expired', 'ExpiredCode'));
+                 return TE.left(authenticationError('Auth code expired', 'ExpiredToken'));
             }
             
             return pipe(
