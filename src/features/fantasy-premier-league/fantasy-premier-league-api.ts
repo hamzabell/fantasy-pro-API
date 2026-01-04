@@ -146,6 +146,43 @@ export const fetchPlayerGoalsByGameweek = async (playerId: number, gameweekId: n
 	return gameweek?.goals_scored ?? 0;
 };
 
+export const fetchPlayerStatsByGameweek = async (playerId: number, gameweekId: number): Promise<any> => {
+    const [player, summary] = await Promise.all([
+        fetchPlayerById(playerId),
+        fetchJson<PlayerSummary>(API_ENDPOINTS.PLAYER_SUMMARY(playerId))
+    ]);
+    
+    const gameweek = summary.history.find((h) => h.round === gameweekId);
+    
+    if (!gameweek) {
+        // Return zeros if no data for this gameweek (did not play or future)
+        return {
+            name: player.name,
+            position: player.position,
+            total_points: 0,
+            goals_scored: 0,
+            assists: 0,
+            clean_sheets: 0,
+            goals_conceded: 0,
+            own_goals: 0,
+            penalties_saved: 0,
+            penalties_missed: 0,
+            yellow_cards: 0,
+            red_cards: 0,
+            saves: 0,
+            bonus: 0,
+            bps: 0,
+            minutes: 0
+        };
+    }
+
+    return {
+        name: player.name,
+        position: player.position,
+        ...gameweek
+    };
+};
+
 export const fetchPlayerGameweekDetails = async (
 	playerId: number,
 	gameweekId: number,

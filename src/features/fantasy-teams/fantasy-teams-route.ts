@@ -8,6 +8,7 @@ import type { User } from '../../generated/prisma/index.js';
 import { RealLifeLeague } from '../../generated/prisma/index.js';
 import { runProgram } from '../../fp/middleware/ErrorHandler.js';
 import { createTeamService, getTeamService, updateTeamService, updateTeamCaptainService, getAllTeamsService } from './service/TeamService.js';
+import { getTeamPointsService } from './service/TeamPointsService.js';
 
 const fantasyTeamsApp = new OpenAPIHono();
 
@@ -387,6 +388,77 @@ fantasyTeamsApp.openapi(updateTeamRoute, (async (c: any) => {
 			},
 		}, 200)
 	);
+}) as any);
+
+// Define the route for getting team points
+const getTeamPointsRoute = createRoute({
+    method: 'get',
+    path: '/points',
+    security: [{ BearerAuth: [] }],
+    tags: ["Fantasy Teams"],
+    request: {
+        query: z.object({
+            gameweekId: z.string().transform(Number),
+            realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default(RealLifeLeague.PREMIER_LEAGUE)
+        })
+    },
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        gameweekId: z.number(),
+                        totalPoints: z.number(),
+                        players: z.array(z.object({
+                            id: z.number(),
+                            name: z.string(),
+                            position: z.string(),
+                            stats: z.object({
+                                points: z.number(),
+                                goals: z.number(),
+                                assists: z.number(),
+                                clean_sheets: z.number(),
+                                goals_conceded: z.number(),
+                                own_goals: z.number(),
+                                penalties_saved: z.number(),
+                                penalties_missed: z.number(),
+                                yellow_cards: z.number(),
+                                red_cards: z.number(),
+                                saves: z.number(),
+                                bonus: z.number(),
+                                minutes: z.number()
+                            })
+                        }))
+                    })
+                }
+            },
+            description: 'Team points retrieved successfully'
+        },
+        500: {
+            content: {
+                'application/json': {
+                    schema: ErrorResponseSchema
+                }
+            },
+            description: 'Internal server error'
+        }
+    }
+});
+
+fantasyTeamsApp.openapi(getTeamPointsRoute, (async (c: any) => {
+    const { gameweekId, realLifeLeague } = c.req.valid('query');
+    return await runProgram(c,
+        pipe(
+            RTE.ask<AppEnvironment>(),
+            RTE.chainW(() => {
+                const user = c.get('user');
+                if (!user) return RTE.left({ _tag: 'AuthenticationError', message: 'Unauthorized: Please log in' } as any);
+                return getTeamPointsService(user.id, gameweekId, realLifeLeague);
+            })
+        )
+    )(
+        (result) => c.json(result, 200)
+    );
 }) as any);
 
 export default fantasyTeamsApp;
