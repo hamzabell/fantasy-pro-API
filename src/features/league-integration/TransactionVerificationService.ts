@@ -99,7 +99,7 @@ export class TransactionVerificationService {
      * For stake transactions, check the contract address instead of user wallet.
      */
     public async verifyMembershipTransaction(membershipId: string, txHash: string, walletAddress: string): Promise<boolean> {
-        // Get membership to extract leagueId and userId (contract uses these, not membershipId)
+        // Get membership
         const membership = await this.prisma.fantasyLeagueMembership.findUnique({
             where: { id: membershipId },
             select: { leagueId: true, userId: true }
@@ -109,14 +109,29 @@ export class TransactionVerificationService {
             logger.error(`Membership ${membershipId} not found`);
             return false;
         }
+
+        // 1. Primary Check: Verify by Transaction Hash on User Wallet
+        // This is much more reliable than opcode scanning on the contract if we have the hash.
+        logger.info(`[Queue] Verifying membership ${membershipId} via hash ${txHash} on wallet ${walletAddress}`);
+        const hashResult = await this.verifyOnChain(walletAddress, txHash);
+
+        if (hashResult && hashResult.success) {
+             logger.info(`[Queue] Stake verified via Hash for membership ${membershipId}. Updating to active.`);
+             await this.prisma.fantasyLeagueMembership.update({
+                where: { id: membershipId },
+                data: { status: 'active' }
+            });
+            verificationEvents.emit('membership_status_update', { membershipId, status: 'active' });
+            return true;
+        }
         
-        // Stake transactions: verify by opcode, leagueId, and userId
+        // 2. Fallback: Opcode Match on Contract (Legacy/Backup)
         const contractAddress = process.env.TON_CONTRACT_ADDRESS || process.env.VITE_TON_CONTRACT_ADDRESS || 'kQAh44E_ar-pkJjYdqIgs4_NJeMClCtd9mNzNc-FxGttIy5S';
-        logger.info(`[Queue] Checking contract for stake: league=${membership.leagueId}, user=${membership.userId}`);
+        logger.info(`[Queue] Hash check failed/pending. Falling back to Contract Opcode check for stake: league=${membership.leagueId}, user=${membership.userId}`);
         
-        const result = await this.checkViaStakeOpcodeMatch(contractAddress, membership.leagueId, membership.userId);
-        if (result && result.success) {
-            logger.info(`[Queue] Stake verified for membership ${membershipId}. Updating to active.`);
+        const opcodeResult = await this.checkViaStakeOpcodeMatch(contractAddress, membership.leagueId, membership.userId);
+        if (opcodeResult && opcodeResult.success) {
+            logger.info(`[Queue] Stake verified via Opcode for membership ${membershipId}. Updating to active.`);
             await this.prisma.fantasyLeagueMembership.update({
                 where: { id: membershipId },
                 data: { status: 'active' }
@@ -124,6 +139,7 @@ export class TransactionVerificationService {
             verificationEvents.emit('membership_status_update', { membershipId, status: 'active' });
             return true;
         }
+
         return false;
     }
 

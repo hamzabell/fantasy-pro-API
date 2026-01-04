@@ -129,8 +129,29 @@ export class VerificationWorker {
             logger.debug(`Job ${job.id} completed!`);
         });
 
-        this.worker.on('failed', (job, err) => {
-            logger.warn(`Job ${job?.id} failed: ${err.message}`);
+        this.worker.on('failed', async (job, err) => {
+            logger.warn(`Job ${job?.id} failed permanently: ${err.message}`);
+            
+            if (job && job.data) {
+                try {
+                    const { type, entityId } = job.data;
+                    if (type === 'LEAGUE_CREATION') {
+                        await env.prisma.fantasyLeague.update({
+                            where: { id: entityId },
+                            data: { status: 'failed' }
+                        });
+                        logger.info(`Marked League ${entityId} as failed.`);
+                    } else if (type === 'LEAGUE_JOIN') {
+                        await env.prisma.fantasyLeagueMembership.update({
+                            where: { id: entityId },
+                            data: { status: 'failed' }
+                        });
+                        logger.info(`Marked Membership ${entityId} as failed.`);
+                    }
+                } catch (dbError: any) {
+                    logger.error(`Failed to update status on job failure: ${dbError.message}`);
+                }
+            }
         });
 
         this.worker.on('error', (err) => {
