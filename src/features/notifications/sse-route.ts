@@ -30,7 +30,17 @@ sseApp.openapi(sseRoute, async (c) => {
 
             const sendEvent = (event: string, data: any) => {
                 const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-                controller.enqueue(encoder.encode(message));
+                try {
+                    controller.enqueue(encoder.encode(message));
+                } catch (e: any) {
+                    // Controller might be closed
+                    if (e.code === 'ERR_INVALID_STATE' || e.message?.includes('closed')) {
+                       // Silent fail or cleanup
+                       // We can try to proactively clean up here if we know it's dead
+                       verificationEvents.off('league_status_update', onLeagueUpdate);
+                       clearInterval(interval);
+                    }
+                }
             };
 
             // Send initial connection message
