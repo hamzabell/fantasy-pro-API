@@ -38,6 +38,7 @@ sseApp.openapi(sseRoute, async (c) => {
                        // Silent fail or cleanup
                        // We can try to proactively clean up here if we know it's dead
                        verificationEvents.off('league_status_update', onLeagueUpdate);
+                       verificationEvents.off('membership_status_update', onMembershipUpdate);
                        clearInterval(interval);
                     }
                 }
@@ -51,8 +52,13 @@ sseApp.openapi(sseRoute, async (c) => {
                 sendEvent('league_status_update', data);
             };
 
+            const onMembershipUpdate = (data: { membershipId: string, status: string }) => {
+                sendEvent('membership_status_update', data);
+            };
+
             // Subscribe
             verificationEvents.on('league_status_update', onLeagueUpdate);
+            verificationEvents.on('membership_status_update', onMembershipUpdate);
 
             // Ping to keep connection alive every 30s
             const interval = setInterval(() => {
@@ -71,6 +77,7 @@ sseApp.openapi(sseRoute, async (c) => {
             
             c.req.raw.signal.addEventListener('abort', () => {
                 verificationEvents.off('league_status_update', onLeagueUpdate);
+                verificationEvents.off('membership_status_update', onMembershipUpdate);
                 clearInterval(interval);
                 controller.close();
             });
