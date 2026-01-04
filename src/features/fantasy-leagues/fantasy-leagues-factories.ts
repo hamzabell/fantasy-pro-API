@@ -24,6 +24,7 @@ export const createPopulatedFantasyLeague = ({
     paymentMethod = 'UPFRONT',
     commissionRate = new Prisma.Decimal(0),
     creatorCommission = new Prisma.Decimal(0),
+    verificationAttempts = 0
 } ={} ) => ({
 	name,
 	description,
@@ -45,6 +46,7 @@ export const createPopulatedFantasyLeague = ({
     realLifeLeague,
     paymentMethod,
     commissionRate,
-    creatorCommission
+    creatorCommission,
+    verificationAttempts
 })
 

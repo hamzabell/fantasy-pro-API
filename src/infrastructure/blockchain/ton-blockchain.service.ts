@@ -354,7 +354,7 @@ export class TonBlockchainService {
                     .storeCoins(feeAmount)
                     .endCell();
 
-                const seqno = await this.wallet.getSeqno(this.client.provider(this.wallet.address, null));
+                const seqno = await this.wallet.getSeqno(this.client!.provider(this.wallet.address, null));
                 logger.info(`[TON] Wallet seqno: ${seqno}, Sending to: ${contractAddress.toString()}`);
                 
                 await this.waitIfLimited();
@@ -377,7 +377,7 @@ export class TonBlockchainService {
                 });
 
                 logger.info(`[TON] Sending external message...`);
-                await this.client.sendExternalMessage(this.wallet, transfer);
+                await this.client!.sendExternalMessage(this.wallet, transfer);
                 logger.info(`[TON] External message sent successfully`);
                 
                 const msgHash = (transfer as any).hash().toString('hex');

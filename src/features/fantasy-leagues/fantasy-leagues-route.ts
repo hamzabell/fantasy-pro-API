@@ -611,7 +611,7 @@ TE.chain((league) => {
                 },
                 (e: any) => {
                      if (e._tag === 'BusinessRuleError') return e;
-                     return databaseError('CreateOrUpdateMembership', 'createOrUpdateMembership', e);
+                     return databaseError('Update', 'FantasyLeagueMembership', e);
                 }
             ),
             TE.map((membership) => {
