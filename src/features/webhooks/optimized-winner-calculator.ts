@@ -73,6 +73,51 @@ function calculateTeamPoints(
 }
 
 /**
+ * Calculate winners for a SINGLE league (used by worker)
+ */
+export async function calculateLeagueWinners(gameweekId: number, leagueId: string): Promise<LeagueWinnerResult> {
+    // 1. Fetch League Data
+    const league = await prisma.fantasyLeague.findUnique({
+        where: { id: leagueId },
+        include: {
+            members: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            teams: {
+                                select: {
+                                    realLifeLeague: true,
+                                    teamPlayers: true,
+                                    captainId: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!league) throw new Error(`League ${leagueId} not found`);
+
+    // 2. Fetch Player Scores (cached?)
+    // In a worker context, we might fetch every time or rely on a short-term cache. 
+    // For now, fetch direct.
+    const playerScores = await getPlayerScoresForGameweek(gameweekId);
+
+    // 3. Process
+    // Reuse existing batch logic but for 1 item
+    // Note: processBatch accepts array of leagues.
+    const results = await processBatch([league], playerScores, 1);
+    
+    // 4. Update & Payout
+    await updateWinnersInBatch(results);
+
+    return results[0];
+}
+
+/**
  * Process a batch of leagues for winner calculation
  */
 async function processBatch(

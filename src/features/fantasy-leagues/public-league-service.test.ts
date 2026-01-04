@@ -42,7 +42,8 @@ describe('PublicLeagueService', () => {
             createWalletForUser: vi.fn().mockImplementation(() => () => Promise.resolve({ _tag: 'Right', right: {} }))
         };
 
-        service = new PublicLeagueService(prisma, walletService);
+        const mockBlockchainService = {} as any;
+        service = new PublicLeagueService(prisma, walletService, mockBlockchainService);
     });
 
     describe('checkAndCreateWeeklyLeagues', () => {

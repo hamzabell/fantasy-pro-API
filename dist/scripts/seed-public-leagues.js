@@ -24,10 +24,16 @@ function main() {
         // PublicLeagueService creation logic: Uses Prisma.
         // We need to construct the service.
         const walletRepo = createWalletRepository(prisma);
-        // Mock blockchain service to avoid errors during instantiation or unused calls
+        // Mock blockchain service (EVM)
         const blockchainService = createBlockchainService('', '', '');
         const walletService = createWalletService(walletRepo, blockchainService);
-        const publicLeagueService = createPublicLeagueService(prisma, walletService);
+        // Mock TON Blockchain Service
+        const tonEndpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+        const tonMnemonic = process.env.TON_MNEMONIC || '';
+        // We need to import createTonBlockchainService
+        const { createTonBlockchainService } = yield import('../src/infrastructure/blockchain/ton-blockchain.service.js');
+        const tonBlockchainService = createTonBlockchainService(tonEndpoint, tonMnemonic);
+        const publicLeagueService = createPublicLeagueService(prisma, walletService, tonBlockchainService);
         // Force run the check
         console.log('Running checkAndCreateWeeklyLeagues...');
         yield publicLeagueService.checkAndCreateWeeklyLeagues();

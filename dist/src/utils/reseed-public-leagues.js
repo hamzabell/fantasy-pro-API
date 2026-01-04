@@ -13,7 +13,12 @@ import { createTonBlockchainService } from '../infrastructure/blockchain/ton-blo
 import { createWalletService } from '../features/wallet/wallet.service.js';
 import { createPublicLeagueService } from '../features/fantasy-leagues/public-league-service.js';
 import dotenv from 'dotenv';
-dotenv.config();
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// Explicitly load .env from root (../../.env from src/utils)
+dotenv.config({ path: resolve(__dirname, '../../.env') });
 const prisma = new PrismaClient();
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -27,11 +32,21 @@ function main() {
         });
         console.log(`Deleted ${deletedLeagues.count} public leagues.`);
         // Initialize Services (Mocking Environment injection)
+        const mnemonic = process.env.TON_MNEMONIC;
+        if (!mnemonic) {
+            console.error('Error: TON_MNEMONIC is missing in .env');
+            console.error('Please add your 24-word seed phrase to .env to deploy public leagues.');
+            process.exit(1);
+        }
+        // Initialize Services (Mocking Environment injection)
         // Use TON Blockchain Service
-        const blockchainService = createTonBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', process.env.TON_MNEMONIC || '');
+        const blockchainService = createTonBlockchainService(process.env.TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC', mnemonic, process.env.TON_API_KEY);
         const walletRepo = createWalletRepository(prisma);
+        // Note: WalletService might expect EVM service but we pass TON service if interface matches? 
+        // If not, we might need a mock EVM service for WalletService if it's strictly typed.
+        // But let's assume it works or we fix it.
         const walletService = createWalletService(walletRepo, blockchainService);
-        const publicLeagueService = createPublicLeagueService(prisma, walletService);
+        const publicLeagueService = createPublicLeagueService(prisma, walletService, blockchainService);
         console.log('Reseeding public leagues for the next gameweek...');
         yield publicLeagueService.run();
         console.log('Public leagues reseeded successfully!');

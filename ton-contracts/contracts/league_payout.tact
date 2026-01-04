@@ -33,6 +33,12 @@ message Stake {
     amount: Int as coins;
 }
 
+message CreatePublicLeague {
+    leagueId: String;
+    commissionPercentage: Int as uint64;
+    feeAmount: Int as coins; // What users will pay to join
+}
+
 message PayoutWinners {
     leagueId: String;
     winningPercentages: map<Int, Int>; // Winner index -> Percentage (basis points)
@@ -123,6 +129,30 @@ contract LeaguePayout with Deployable {
             leagueId: msg.leagueId,
             commissionPercentage: msg.commissionPercentage,
             feePaid: feePaid,
+            totalStaked: 0
+        };
+        
+        self.leagues.set(leagueHash, info);
+        emit(LeagueCreated{leagueId: msg.leagueId}.toCell());
+    }
+
+    // --- Create Public League (Owner Only) ---
+    receive(msg: CreatePublicLeague) {
+        let ctx: Context = context();
+        require(ctx.sender == self.owner, "Only owner can create public leagues");
+        
+        let leagueHash: Int = sha256(msg.leagueId);
+        
+        // check if exists
+        require(self.leagues.get(leagueHash) == null, "League already exists");
+        
+        // For public leagues, no fee is paid upfront
+        // The feeAmount is stored so users know what to pay when staking
+        let info: LeagueInfo = LeagueInfo{
+            owner: self.owner, // Public leagues are owned by the contract owner
+            leagueId: msg.leagueId,
+            commissionPercentage: msg.commissionPercentage,
+            feePaid: false, // No fee paid for public league creation
             totalStaked: 0
         };
         

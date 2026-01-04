@@ -345,4 +345,132 @@ describe('LeaguePayout', () => {
              });
         });
     });
+
+    describe("Create Public League", () => {
+        it("given owner creates a public league: it should succeed without paying fee amount", async () => {
+            const result = await leaguePayout.send(
+                deployer.getSender(),
+                { value: toNano('0.1') }, // Only gas, no fee
+                {
+                    $$type: 'CreatePublicLeague',
+                    leagueId: 'public_league_1',
+                    commissionPercentage: 1000n, // 10%
+                    feeAmount: toNano('0.5') // What users will pay to stake
+                }
+            );
+
+            expect(result.transactions).toHaveTransaction({
+                from: deployer.address,
+                to: leaguePayout.address,
+                success: true
+            });
+
+            // Check event
+            expect(result.externals).toHaveLength(1);
+            const event = loadLeagueCreated(result.externals[0].body.beginParse());
+            expect(event.leagueId).toEqual('public_league_1');
+
+            // Verify league state
+            const league = await leaguePayout.getLeague('public_league_1');
+            expect(league).not.toBeNull();
+            expect(league!.owner.equals(deployer.address)).toBe(true);
+            expect(league!.feePaid).toBe(false); // No fee paid for public league
+            expect(league!.totalStaked).toBe(0n);
+            expect(league!.commissionPercentage).toBe(1000n);
+        });
+
+        it("given a non-owner tries to create a public league: it should revert", async () => {
+            const nonOwner = await blockchain.treasury('nonOwner');
+
+            const result = await leaguePayout.send(
+                nonOwner.getSender(),
+                { value: toNano('0.1') },
+                {
+                    $$type: 'CreatePublicLeague',
+                    leagueId: 'public_league_unauthorized',
+                    commissionPercentage: 1000n,
+                    feeAmount: toNano('0.5')
+                }
+            );
+
+            expect(result.transactions).toHaveTransaction({
+                from: nonOwner.address,
+                to: leaguePayout.address,
+                success: false,
+                exitCode: 19126 // "Only owner can create public leagues"
+            });
+        });
+
+        it("given a public league is created: users should be able to stake", async () => {
+            // Owner creates public league
+            await leaguePayout.send(
+                deployer.getSender(),
+                { value: toNano('0.1') },
+                {
+                    $$type: 'CreatePublicLeague',
+                    leagueId: 'public_stakeable',
+                    commissionPercentage: 1000n,
+                    feeAmount: toNano('0.5')
+                }
+            );
+
+            // User stakes
+            const staker = await blockchain.treasury('staker_public');
+            const stakeAmount = toNano('0.5');
+
+            const result = await leaguePayout.send(
+                staker.getSender(),
+                { value: toNano('1.0') },
+                {
+                    $$type: 'Stake',
+                    leagueId: 'public_stakeable',
+                    userId: 'user_public_1',
+                    amount: stakeAmount
+                }
+            );
+
+            expect(result.transactions).toHaveTransaction({
+                from: staker.address,
+                to: leaguePayout.address,
+                success: true
+            });
+
+            // Verify stake was recorded
+            const league = await leaguePayout.getLeague('public_stakeable');
+            expect(league!.totalStaked).toBe(stakeAmount);
+        });
+
+        it("given a public league already exists: creating with same ID should revert", async () => {
+            // Create first league
+            await leaguePayout.send(
+                deployer.getSender(),
+                { value: toNano('0.1') },
+                {
+                    $$type: 'CreatePublicLeague',
+                    leagueId: 'duplicate_public',
+                    commissionPercentage: 1000n,
+                    feeAmount: toNano('0.5')
+                }
+            );
+
+            // Try to create again with same ID
+            const result = await leaguePayout.send(
+                deployer.getSender(),
+                { value: toNano('0.1') },
+                {
+                    $$type: 'CreatePublicLeague',
+                    leagueId: 'duplicate_public',
+                    commissionPercentage: 1000n,
+                    feeAmount: toNano('0.5')
+                }
+            );
+
+            expect(result.transactions).toHaveTransaction({
+                from: deployer.address,
+                to: leaguePayout.address,
+                success: false,
+                exitCode: 9821 // "League already exists"
+            });
+        });
+    });
 });

@@ -13,6 +13,7 @@ export const startMembershipWorker = (env: AppEnvironment, blockchainService: To
     setInterval(async () => {
         try {
             await processPendingMemberships(env, blockchainService);
+            await processPendingLeagues(env, blockchainService);
         } catch (e) {
             logger.error(`Error in Membership Worker: ${e}`);
         }
@@ -29,9 +30,7 @@ const processPendingMemberships = async (env: AppEnvironment, blockchainService:
         include: { league: true }
     });
 
-    if (pending.length === 0) return;
-
-    logger.info(`Found ${pending.length} pending memberships to verify.`);
+    if (pending.length > 0) logger.info(`Found ${pending.length} pending memberships to verify.`);
 
     for (const membership of pending) {
         if (!membership.blockchainTxHash) continue;
@@ -39,29 +38,31 @@ const processPendingMemberships = async (env: AppEnvironment, blockchainService:
         try {
             // Check if txHash is actually a BOC (if it's long)
             let txHash = membership.blockchainTxHash;
-            let senderAddress = ''; 
 
             if (txHash.length > 100) {
                  // It's likely a BOC
                  try {
                      const cell = Cell.fromBase64(txHash);
                      txHash = cell.hash().toString('hex');
-                     // We could extract sender if needed, but keeping it simple
                  } catch (e) {
                      logger.warn(`Failed to parse BOC for membership ${membership.id}: ${e}`);
-                     // If invalid BOC, maybe mark failed?
                      continue;
                  }
             }
 
             // Verify Transaction
-            const result = await blockchainService.verifyTransaction(txHash)();
+            const result = await blockchainService.waitForTransaction(txHash)();
             
             if (E.isRight(result) && result.right === true) {
-                // Determine Success based on verification result.
-                // For now, our mock verification returns true.
-                
                 // Update Membership Status
+                const isCreator = membership.userId === membership.league.ownerId;
+                const updateLeagueData: any = {
+                    currentParticipants: { increment: 1 }
+                };
+                if (isCreator && membership.league.status === 'pending') {
+                    updateLeagueData.status = 'active';
+                }
+
                 await env.prisma.fantasyLeagueMembership.update({
                     where: { id: membership.id },
                     data: { status: 'JOINED' } // Use 'active' or 'JOINED' based on Enum? Schema says String.
@@ -70,15 +71,12 @@ const processPendingMemberships = async (env: AppEnvironment, blockchainService:
                     // Frontend uses 'JOINED'.
                 });
 
-                // Increment Participants
                 await env.prisma.fantasyLeague.update({
                     where: { id: membership.leagueId },
-                    data: {
-                        currentParticipants: { increment: 1 }
-                    }
+                    data: updateLeagueData
                 });
 
-                logger.info(`Updated membership ${membership.id} to JOINED.`);
+                logger.info(`Updated membership ${membership.id} (and league) to JOINED/ACTIVE.`);
             } else {
                  // Check if it's explicitly failed or just not found yet.
                  // If not found, leave as pending.
@@ -87,6 +85,43 @@ const processPendingMemberships = async (env: AppEnvironment, blockchainService:
 
         } catch (e) {
             logger.error(`Error processing membership ${membership.id}: ${e}`);
+        }
+    }
+};
+
+const processPendingLeagues = async (env: AppEnvironment, blockchainService: TonBlockchainService) => {
+    // Find pending leagues with tx hash (e.g. Public Leagues created by service)
+    const pendingLeagues = await env.prisma.fantasyLeague.findMany({
+        where: {
+            status: 'pending',
+            blockchainTxHash: { not: null }
+        }
+    });
+
+    if (pendingLeagues.length === 0) return;
+    logger.info(`Found ${pendingLeagues.length} pending leagues to verify directly.`);
+
+    for (const league of pendingLeagues) {
+        if (!league.blockchainTxHash) continue;
+        try {
+            let txHash = league.blockchainTxHash;
+            if (txHash.length > 100) {
+                 try {
+                     const cell = Cell.fromBase64(txHash);
+                     txHash = cell.hash().toString('hex');
+                 } catch (e) { continue; }
+            }
+
+            const result = await blockchainService.waitForTransaction(txHash)();
+            if (E.isRight(result) && result.right === true) {
+                await env.prisma.fantasyLeague.update({
+                    where: { id: league.id },
+                    data: { status: 'active' }
+                });
+                logger.info(`Updated League ${league.id} to ACTIVE.`);
+            }
+        } catch(e) {
+             logger.error(`Error processing league ${league.id}: ${e}`);
         }
     }
 };

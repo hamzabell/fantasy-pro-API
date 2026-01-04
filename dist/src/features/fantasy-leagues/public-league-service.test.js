@@ -43,7 +43,8 @@ describe('PublicLeagueService', () => {
             creditUser: vi.fn().mockImplementation(() => () => Promise.resolve({ _tag: 'Right', right: '1000' })),
             createWalletForUser: vi.fn().mockImplementation(() => () => Promise.resolve({ _tag: 'Right', right: {} }))
         };
-        service = new PublicLeagueService(prisma, walletService);
+        const mockBlockchainService = {};
+        service = new PublicLeagueService(prisma, walletService, mockBlockchainService);
     });
     describe('checkAndCreateWeeklyLeagues', () => {
         it('given no weekly leagues exist: it should create them', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -55,7 +56,7 @@ describe('PublicLeagueService', () => {
             expect(prisma.fantasyLeague.create).toHaveBeenCalledTimes(4);
             const firstCallArg = prisma.fantasyLeague.create.mock.calls[0][0];
             expect(firstCallArg.data.gameweekId).toBe(22);
-            expect(firstCallArg.data.entryFeeUsd).toBe(10);
+            expect(firstCallArg.data.entryFeeUsd).toBe(0.1);
             expect(firstCallArg.data.ownerId).toBeUndefined();
         }));
         it('given weekly leagues exist: it should not create them', () => __awaiter(void 0, void 0, void 0, function* () {

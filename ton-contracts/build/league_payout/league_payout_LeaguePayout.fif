@@ -562,6 +562,65 @@ PROGRAM{
       $LeaguePayout$_contract_store INLINECALLDICT
     }>
     OVER
+    1462801691 PUSHINT
+    EQUAL
+    IFJMP:<{
+      NIP
+      LDREF
+      SWAP
+      CTOS
+      SWAP
+      64 LDU
+      DROP
+      __tact_context_get INLINECALLDICT
+      2DROP
+      19126 PUSHINT
+      s2 POP
+      s4 PUSH
+      SDEQ
+      THROWANYIFNOT
+      OVER
+                  <{
+                      <{ DUP SREFS }> PUSHCONT
+                      <{ LDREFRTOS }> PUSHCONT
+                      WHILE
+                      DEPTH
+                      HASHEXT_SHA256
+                  }> PUSHCONT
+                  1 1 CALLXARGS
+      9821 PUSHINT
+      s5 PUSH
+      257 PUSHINT
+      s3 PUSH
+      __tact_dict_get_int_cell INLINECALLDICT
+      $LeagueInfo$_load_opt INLINECALLDICT
+      ISNULL
+      THROWANYIFNOT
+      FALSE
+      0 PUSHINT
+      s5 PUSH
+      s3 s5 XCPU
+      s5 s3 s3 XCHG3
+      s0 s5 XCHG
+      $LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked INLINECALLDICT
+      s0 s4 XCHG
+      s3 s1 s3 XCHG3
+      257 PUSHINT
+      s2 s5 XCHG2
+      NEWC
+      $LeagueInfo$_store_cell INLINECALLDICT
+      s3 s5 XCHG
+      s1 s2 XCHG
+      __tact_dict_set_int_cell INLINECALLDICT
+      s0 s2 XCHG
+      $LeagueCreated$_constructor_leagueId INLINECALLDICT
+      NEWC
+      $LeagueCreated$_store_cell INLINECALLDICT
+      $global_emit INLINECALLDICT
+      s0 s2 XCHG
+      $LeaguePayout$_contract_store INLINECALLDICT
+    }>
+    OVER
     1454696319 PUSHINT
     EQUAL
     IFJMP:<{

@@ -12,11 +12,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 export const authMiddleware = async (c: Context, next: Next) => {
   const authHeader = c.req.header('Authorization');
   
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return await next();
+  let token: string | undefined;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (c.req.query('token')) {
+    token = c.req.query('token');
   }
 
-  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return await next();
+  }
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { id: string };
     

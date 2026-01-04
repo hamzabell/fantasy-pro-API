@@ -8,17 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { RealLifeLeague } from '../../generated/prisma/index.js';
+import { TonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 import { COMMISSION_RATES, calculatePayouts, calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { Decimal } from '../../generated/prisma/runtime/library.js';
+import { beginCell, toNano } from "@ton/core";
 import { faker } from '@faker-js/faker';
 import cron from 'node-cron';
-const PUBLIC_LEAGUE_STAKES_TON = [0.1, 0.2, 0.5, 1];
+import * as E from 'fp-ts/lib/Either.js';
+const PUBLIC_LEAGUE_STAKES_TON = [0.1]; // Only one league at 0.1 TON
 const PUBLIC_LEAGUE_LIMIT = 100;
 export class PublicLeagueService {
-    constructor(prisma, walletService) {
+    constructor(prisma, walletService, blockchainService) {
         this.prisma = prisma;
         this.walletService = walletService;
+        this.blockchainService = blockchainService;
     }
     startScheduler() {
         // Run weekly on Monday at 00:00
@@ -28,6 +32,7 @@ export class PublicLeagueService {
         });
         console.log('[PublicLeagueService] Scheduler started (Weekly).');
     }
+    // ... (run and checkAndCreateWeeklyLeagues methods - same as before) ...
     /**
      * Main entry point for the scheduled job.
      */
@@ -49,40 +54,46 @@ export class PublicLeagueService {
      */
     checkAndCreateWeeklyLeagues() {
         return __awaiter(this, void 0, void 0, function* () {
-            // 1. Get Next Gameweek
-            let nextGameweek;
+            // 1. Get Strictly Future Gameweeks
+            let targetGameweek;
             try {
-                nextGameweek = yield fetchGameweek('next');
+                const { fetchFutureGameweeks } = yield import('../fantasy-premier-league/fantasy-premier-league-api.js');
+                const futureGws = yield fetchFutureGameweeks();
+                // Filter for gameweeks that:
+                // - Are NOT current
+                // - Have a deadline in the future
+                const strictlyFuture = futureGws.filter(gw => {
+                    const isFuture = new Date(gw.deadlineTime) > new Date();
+                    const isNotCurrent = !gw.isCurrent;
+                    return isFuture && isNotCurrent;
+                });
+                if (strictlyFuture.length > 0) {
+                    targetGameweek = strictlyFuture[0];
+                    console.log(`[PublicLeagueService] Target gameweek for seeding: GW ${targetGameweek.id} (${targetGameweek.name})`);
+                }
+                else {
+                    console.warn('[PublicLeagueService] No strictly future gameweeks found.');
+                }
             }
             catch (e) {
-                console.warn('[PublicLeagueService] Could not fetch next gameweek. Trying current.', e);
-                try {
-                    const current = yield fetchGameweek('current');
-                    if (!current)
-                        return;
-                    nextGameweek = current;
-                }
-                catch (e2) {
-                    console.error('[PublicLeagueService] Failed to fetch gameweek info.', e2);
-                    return;
-                }
+                console.error('[PublicLeagueService] Failed to fetch future gameweeks.', e);
             }
-            if (!nextGameweek) {
-                console.log('[PublicLeagueService] No next gameweek found. Skipping creation.');
+            if (!targetGameweek) {
+                console.log('[PublicLeagueService] No target gameweek found. Skipping creation.');
                 return;
             }
             // 2. Ensure Gameweek exists in DB
             yield this.prisma.gameweek.upsert({
-                where: { id: nextGameweek.id },
+                where: { id: targetGameweek.id },
                 update: {
-                    deadline: new Date(nextGameweek.deadlineTime),
-                    isActive: nextGameweek.isActive,
+                    deadline: new Date(targetGameweek.deadlineTime),
+                    isActive: targetGameweek.isActive,
                     realLifeLeague: RealLifeLeague.PREMIER_LEAGUE
                 },
                 create: {
-                    id: nextGameweek.id,
-                    deadline: new Date(nextGameweek.deadlineTime),
-                    isActive: nextGameweek.isActive,
+                    id: targetGameweek.id,
+                    deadline: new Date(targetGameweek.deadlineTime),
+                    isActive: targetGameweek.isActive,
                     realLifeLeague: RealLifeLeague.PREMIER_LEAGUE
                 }
             });
@@ -90,7 +101,7 @@ export class PublicLeagueService {
             for (const stake of PUBLIC_LEAGUE_STAKES_TON) {
                 const existing = yield this.prisma.fantasyLeague.findFirst({
                     where: {
-                        gameweekId: nextGameweek.id,
+                        gameweekId: targetGameweek.id,
                         leagueType: 'public',
                         entryFeeUsd: stake,
                         ownerId: null,
@@ -98,18 +109,27 @@ export class PublicLeagueService {
                     }
                 });
                 if (!existing) {
-                    console.log(`[PublicLeagueService] Creating Public League for GW ${nextGameweek.id} at ${stake} TON`);
-                    yield this.createPublicLeague(nextGameweek.id, stake);
+                    console.log(`[PublicLeagueService] Creating Public League for GW ${targetGameweek.id} at ${stake} TON`);
+                    yield this.createPublicLeague(targetGameweek.id, stake);
                 }
                 else {
-                    console.log(`[PublicLeagueService] League already exists for GW ${nextGameweek.id} at ${stake} TON`);
+                    // If league exists but has no blockchain tx, it was created incorrectly
+                    // Delete it and recreate properly (on-chain first)
+                    if (!existing.blockchainTxHash) {
+                        console.log(`[PublicLeagueService] Existing league ${existing.id} missing on-chain tx. Deleting and recreating...`);
+                        yield this.prisma.fantasyLeague.delete({ where: { id: existing.id } });
+                        yield this.createPublicLeague(targetGameweek.id, stake);
+                    }
+                    else {
+                        console.log(`[PublicLeagueService] League already exists for GW ${targetGameweek.id} at ${stake} TON`);
+                    }
                 }
+                // Delay to avoid 429 (Rate Limit)
+                yield new Promise(resolve => setTimeout(resolve, 5000));
             }
         });
     }
-    /**
-     * Processes payouts for finished weekly public leagues.
-     */
+    // ... (checkAndProcessPayouts methods - same as before) ...
     checkAndProcessPayouts() {
         return __awaiter(this, void 0, void 0, function* () {
             const leaguesToProcess = yield this.prisma.fantasyLeague.findMany({
@@ -199,34 +219,77 @@ export class PublicLeagueService {
             });
         });
     }
-    createPublicLeague(gameweekId, stake) {
-        return __awaiter(this, void 0, void 0, function* () {
+    createPublicLeague(gameweekId_1, stake_1) {
+        return __awaiter(this, arguments, void 0, function* (gameweekId, stake, attempt = 1) {
+            var _a;
+            const MAX_RETRIES = 3;
             const code = faker.string.alphanumeric(6).toUpperCase();
             const winners = Math.ceil(PUBLIC_LEAGUE_LIMIT * 0.20); // Top 20% win
             const paddedGw = gameweekId.toString().padStart(2, '0');
-            // Pattern: GW [GameweekNumber] [League: Premier League] [Stake Amount in TON]
             const leagueName = `GW${paddedGw} Premier League ${stake} TON`;
-            yield this.prisma.fantasyLeague.create({
-                data: {
-                    name: leagueName,
-                    description: 'Automated Weekly Public League',
-                    entryFeeUsd: stake,
-                    limit: PUBLIC_LEAGUE_LIMIT,
-                    leagueType: 'public',
-                    leagueMode: 'classic',
-                    winners: winners,
-                    code: code,
-                    ownerId: undefined, // Defaults to null
-                    gameweekId: gameweekId,
-                    status: 'open', // Open for joining
-                    realLifeLeague: RealLifeLeague.PREMIER_LEAGUE,
-                    prizeDistribution: calculatePrizeDistribution(winners),
-                    totalPoolUsd: 0,
-                    commissionRate: 10, // Standard Public League Commission
-                    creatorCommission: 0
+            // Generate league ID first (we need it for on-chain creation)
+            const leagueId = `pl_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+            console.log(`[PublicLeagueService] Creating league ${leagueId} on-chain (Attempt ${attempt}/${MAX_RETRIES})...`);
+            // 1. CREATE ON-CHAIN FIRST using createPublicLeague (owner-only, gas fees only)
+            try {
+                const result = yield this.blockchainService.createPublicLeague(leagueId, 10, // commission percentage
+                toNano(String(stake)), // fee amount (what users will pay to join)
+                "0.1" // gas for the transaction (we pay this, NOT the stake)
+                )();
+                if (E.isLeft(result)) {
+                    const error = result.left;
+                    console.error(`[PublicLeagueService] Failed to create league ${leagueId} on-chain (Attempt ${attempt}):`, error);
+                    // Check if it's a rate limit error
+                    if (error._tag === 'BlockchainError' && ((_a = error.txHash) === null || _a === void 0 ? void 0 : _a.includes('429'))) {
+                        if (attempt < MAX_RETRIES) {
+                            const delay = 5000 * Math.pow(2, attempt); // 10s, 20s, 40s
+                            console.log(`[PublicLeagueService] Rate limit hit. Retrying in ${delay / 1000}s...`);
+                            yield new Promise(r => setTimeout(r, delay));
+                            return this.createPublicLeague(gameweekId, stake, attempt + 1);
+                        }
+                    }
+                    throw new Error(`On-chain creation failed: ${error._tag}`);
                 }
-            });
+                const txHash = result.right;
+                console.log(`[PublicLeagueService] League ${leagueId} created on-chain. Tx: ${txHash}`);
+                // 2. ONLY AFTER ON-CHAIN SUCCESS, CREATE IN DB
+                const league = yield this.prisma.fantasyLeague.create({
+                    data: {
+                        id: leagueId, // Use the same ID we used on-chain
+                        name: leagueName,
+                        description: 'Automated Weekly Public League',
+                        entryFeeUsd: stake,
+                        limit: PUBLIC_LEAGUE_LIMIT,
+                        leagueType: 'public',
+                        leagueMode: 'classic',
+                        winners: winners,
+                        code: code,
+                        ownerId: undefined, // Defaults to null
+                        gameweekId: gameweekId,
+                        status: 'open', // Open for recruitment
+                        realLifeLeague: RealLifeLeague.PREMIER_LEAGUE,
+                        prizeDistribution: calculatePrizeDistribution(winners),
+                        totalPoolUsd: 0,
+                        commissionRate: 10,
+                        creatorCommission: 0,
+                        blockchainTxHash: txHash // Store the transaction hash
+                    }
+                });
+                console.log(`[PublicLeagueService] League ${leagueId} added to database with status 'open'`);
+                return league;
+            }
+            catch (error) {
+                console.error(`[PublicLeagueService] Failed to create public league:`, error);
+                // Retry on any error if we haven't exceeded max retries
+                if (attempt < MAX_RETRIES) {
+                    const delay = 5000 * Math.pow(2, attempt);
+                    console.log(`[PublicLeagueService] Retrying in ${delay / 1000}s...`);
+                    yield new Promise(r => setTimeout(r, delay));
+                    return this.createPublicLeague(gameweekId, stake, attempt + 1);
+                }
+                throw error; // Let the caller handle it after max retries
+            }
         });
     }
 }
-export const createPublicLeagueService = (prisma, walletService) => new PublicLeagueService(prisma, walletService);
+export const createPublicLeagueService = (prisma, walletService, blockchainService) => new PublicLeagueService(prisma, walletService, blockchainService);

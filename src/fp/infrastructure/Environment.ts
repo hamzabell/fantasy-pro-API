@@ -10,6 +10,8 @@ import type { PaymentService } from '../../infrastructure/payment/payment.servic
 import { createPaymentService } from '../../infrastructure/payment/payment.service.js'
 import type { PublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
 import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
+import type { TonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
+import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 
 import { TonClient } from '@ton/ton'
 
@@ -21,6 +23,7 @@ export interface AppEnvironment {
 	walletRepo: WalletRepository
 	walletService: WalletService
 	blockchainService: BlockchainService
+	tonBlockchainService: TonBlockchainService
 	paymentService: PaymentService
 	publicLeagueService: PublicLeagueService
 	tonClient: TonClient
@@ -58,12 +61,14 @@ export const createEnvironment = (
         process.env.SERVER_PRIVATE_KEY || ''
 	)
 
-	const walletService = createWalletService(walletRepo, blockchainService)
-	const paymentService = createPaymentService()
-	const publicLeagueService = createPublicLeagueService(prisma, walletService)
-
 	const tonEndpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+	const tonMnemonic = process.env.TON_MNEMONIC || '';
 	const tonApiKey = process.env.TON_API_KEY;
+	const tonBlockchainService = createTonBlockchainService(tonEndpoint, tonMnemonic, tonApiKey);
+ 
+ 	const walletService = createWalletService(walletRepo, blockchainService)
+ 	const paymentService = createPaymentService()
+	const publicLeagueService = createPublicLeagueService(prisma, walletService, tonBlockchainService)
 
 	const tonClient = new TonClient({
 		endpoint: tonEndpoint,
@@ -77,6 +82,7 @@ export const createEnvironment = (
 		walletRepo,
 		walletService,
 		blockchainService,
+		tonBlockchainService,
 		paymentService,
 		publicLeagueService,
 		tonClient

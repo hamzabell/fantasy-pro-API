@@ -280,7 +280,7 @@ export const loginWithWallet = (address: string, proof: any): TaskEither<AppErro
             return TE.right(user);
         }),
         TE.map((user) => ({
-            token: jwt.sign({ id: user.id, email: user.email || '', walletAnddress: user.walletAddress }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN }),
+            token: jwt.sign({ id: user.id, email: user.email || '', walletAddress: user.walletAddress }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN }),
             user: { 
                 id: user.id, 
                 email: user.email || '', 

@@ -123,7 +123,7 @@ describe("Fantasy Leagues", () => {
 			const actual = await response.json();
 
 			// Verify the structure of the response
-			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+			expect(actual).toHaveProperty('message', 'Fantasy league created. Verification pending.');
 			expect(actual.league).toHaveProperty('name', league.name);
 			expect(actual.league).toHaveProperty('ownerId', user.id);
 
@@ -142,8 +142,9 @@ describe("Fantasy Leagues", () => {
 				}
 			});
 			
-			expect(memberships).toHaveLength(1);
-			expect(memberships[0]).toHaveProperty('teamName', 'Owner Team');
+			expect(memberships).toHaveLength(0); // Decoupled membership: owner must join explicitly later
+			// expect(memberships[0]).toHaveProperty('teamName', 'Owner Team');
+			// expect(memberships[0]).toHaveProperty('status', 'pending');
 			
 			// Only try to delete if the league was actually created
 			if (actual.league.id) {
@@ -211,7 +212,7 @@ describe("Fantasy Leagues", () => {
 				
 			const actual = await response.json();
 
-			expect(actual).toHaveProperty('message', 'Fantasy league created successfully');
+			expect(actual).toHaveProperty('message', 'Fantasy league created. Verification pending.');
 			
 			// Clean up the created league and user
 			if (actual.league && actual.league.id) {
@@ -1118,7 +1119,8 @@ describe("Fantasy Leagues", () => {
 		const league = createPopulatedFantasyLeague({
 			ownerId: owner.id,
 			leagueType: 'public',
-			limit: 10
+			limit: 10,
+            status: 'active'
 		});
 
 		const savedLeague = await saveFantasyLeagueToDatabase(league);
@@ -1176,7 +1178,8 @@ describe("Fantasy Leagues", () => {
 			const league = createPopulatedFantasyLeague({
 				ownerId: owner.id,
 				leagueType: 'public',
-				limit: 1
+				limit: 1,
+                status: 'active'
 			});
 
 			const savedLeague = await saveFantasyLeagueToDatabase(league);
@@ -1236,7 +1239,8 @@ describe("Fantasy Leagues", () => {
 		const privateLeague = createPopulatedFantasyLeague({
 			ownerId: owner.id,
 			leagueType: 'private',
-			limit: 10
+			limit: 10,
+            status: 'active'
 		});
 
 		const savedPrivateLeague = await saveFantasyLeagueToDatabase(privateLeague);
@@ -1334,7 +1338,8 @@ describe("Fantasy Leagues", () => {
 			ownerId: owner.id,
 			leagueType: 'public',
 			limit: 10,
-			gameweekId: 5
+			gameweekId: 5,
+            status: 'active'
 		});
 
 		const savedLeague = await saveFantasyLeagueToDatabase(league);
@@ -1438,7 +1443,8 @@ describe("Fantasy Leagues", () => {
 			ownerId: owner.id,
 			leagueType: 'public',
 			limit: 10,
-			gameweekId: 5 // Future gameweek (greater than current gameweek id 3, which is active)
+			gameweekId: 5, // Future gameweek (greater than current gameweek id 3, which is active)
+            status: 'active'
 		});
 
 		const savedFutureLeague = await saveFantasyLeagueToDatabase(futureLeague);

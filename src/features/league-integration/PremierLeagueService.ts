@@ -6,25 +6,16 @@ import {
     fetchTeamById, 
     fetchGameweek as fetchFplGameweek,
     fetchFutureGameweeks,
-    fetchPlayersByIds
+    fetchPlayersByIds,
+    getBootstrapData
 } from '../fantasy-premier-league/fantasy-premier-league-api.js';
-import type { Player, Team } from '../fantasy-premier-league/types.js';
+import type { Player, Team, BootstrapData } from '../fantasy-premier-league/types.js';
 import type { DomainGameweek, ILeagueIntegrationService } from './LeagueIntegrationService.js';
 import { fetchJson } from '../../utils/api.js';
 
 // FPL specific types needed for mapping
-interface FplEvent {
-    id: number;
-    name: string;
-    deadline_time: string;
-    finished: boolean;
-    is_current: boolean;
-    is_next: boolean;
-}
+// We use inferred types from fantasy-premier-league-api now
 
-interface BootstrapData {
-    events: FplEvent[];
-}
 
 export class PremierLeagueService implements ILeagueIntegrationService {
     
@@ -57,23 +48,19 @@ export class PremierLeagueService implements ILeagueIntegrationService {
     }
 
     async fetchGameweeks(): Promise<DomainGameweek[]> {
-        // We need to fetch all gameweeks from bootstrap-static
-        // Creating a local helper here similar to getBootstrapData in api.ts
-        // Ideally we should export getBootstrapData from api.ts to avoid code duplication
-        
-        // For now, let's reuse fetchFutureGameweeks logic but for ALL gameweeks
-        const data = await fetchJson<BootstrapData>('/bootstrap-static/');
+        // Use cached data to prevent excessive API calls
+        const data = await getBootstrapData();
         return data.events.map(this.mapToDomainGameweek);
     }
 
     async fetchCurrentGameweek(): Promise<DomainGameweek | null> {
-        const data = await fetchJson<BootstrapData>('/bootstrap-static/');
+        const data = await getBootstrapData();
         const current = data.events.find(e => e.is_current);
         return current ? this.mapToDomainGameweek(current) : null; 
     }
 
     async fetchNextGameweek(): Promise<DomainGameweek | null> {
-        const data = await fetchJson<BootstrapData>('/bootstrap-static/');
+        const data = await getBootstrapData();
         const next = data.events.find(e => e.is_next);
         return next ? this.mapToDomainGameweek(next) : null;
     }
@@ -97,7 +84,7 @@ export class PremierLeagueService implements ILeagueIntegrationService {
         }));
     }
 
-    private mapToDomainGameweek(event: FplEvent): DomainGameweek {
+    private mapToDomainGameweek(event: { id: number; name: string; deadline_time: string; finished: boolean; is_current: boolean; is_next: boolean }): DomainGameweek {
         return {
             id: event.id,
             name: event.name,

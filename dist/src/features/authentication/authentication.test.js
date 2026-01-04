@@ -92,8 +92,8 @@ describe('Authentication Routes', () => {
             mockAuthService.loginWithGoogleCode.mockReturnValue(TE.left({ _tag: 'AuthenticationError', message: 'Failed' }));
             const res = yield testApp.request(`/google/callback?code=${mockCode}`);
             expect(res.status).toBe(400);
-            const body = yield res.json();
-            expect(body).toHaveProperty('error');
+            const body = yield res.text();
+            expect(body).toContain('Authentication Failed');
         }));
     });
     describe('GET /user', () => {
@@ -105,13 +105,13 @@ describe('Authentication Routes', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     image: 'http://image.com',
-                    walletAddress: null,
+                    walletAddress: '0x123',
                     coins: 50 // Mock user has coins
                 });
                 yield next();
             }));
             authApp.route('/', app);
-            mockWalletService.getUserWallet.mockReturnValue(TE.right({ address: '0x123' }));
+            // mockWalletService.getUserWallet.mockReturnValue(TE.right({ address: '0x123' })); // Deprecated
             const mockStats = { matches: 5, points: 100, trophies: 1 };
             vi.mocked(retrieveUserStats).mockReturnValue(TE.right(mockStats));
             const res = yield authApp.request('/user', { method: 'GET' });

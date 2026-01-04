@@ -4,6 +4,7 @@ import { createWalletService } from '../../features/wallet/wallet.service.js';
 import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js';
 import { createPaymentService } from '../../infrastructure/payment/payment.service.js';
 import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js';
+import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 import { TonClient } from '@ton/ton';
 // Constructor for creating the environment (called at app startup)
 export const createEnvironment = (prisma, logger, config) => {
@@ -15,11 +16,13 @@ export const createEnvironment = (prisma, logger, config) => {
     const alchemyWsUrl = `wss://${networkName}.g.alchemy.com/v2/${alchemyKey}`;
     const rpcEndpoint = process.env.POLYGON_RPC_ENDPOINT || alchemyRpcUrl;
     const blockchainService = createBlockchainService(rpcEndpoint, process.env.LEAGUE_CONTRACT_ADDRESS || '0x0', process.env.SERVER_PRIVATE_KEY || '');
+    const tonEndpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+    const tonMnemonic = process.env.TON_MNEMONIC || '';
+    const tonApiKey = process.env.TON_API_KEY;
+    const tonBlockchainService = createTonBlockchainService(tonEndpoint, tonMnemonic, tonApiKey);
     const walletService = createWalletService(walletRepo, blockchainService);
     const paymentService = createPaymentService();
-    const publicLeagueService = createPublicLeagueService(prisma, walletService);
-    const tonEndpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
-    const tonApiKey = process.env.TON_API_KEY;
+    const publicLeagueService = createPublicLeagueService(prisma, walletService, tonBlockchainService);
     const tonClient = new TonClient({
         endpoint: tonEndpoint,
         apiKey: tonApiKey
@@ -31,6 +34,7 @@ export const createEnvironment = (prisma, logger, config) => {
         walletRepo,
         walletService,
         blockchainService,
+        tonBlockchainService,
         paymentService,
         publicLeagueService,
         tonClient

@@ -1,9 +1,9 @@
 # Tact compilation report
 Contract: LeaguePayout
-BoC Size: 1706 bytes
+BoC Size: 1923 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 23
+Total structures: 24
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -60,6 +60,10 @@ Signature: `CreateLeague{leagueId:^string,userId:^string,commissionPercentage:ui
 ### Stake
 TL-B: `stake#56b4e77f leagueId:^string userId:^string amount:coins = Stake`
 Signature: `Stake{leagueId:^string,userId:^string,amount:coins}`
+
+### CreatePublicLeague
+TL-B: `create_public_league#5730951b leagueId:^string commissionPercentage:uint64 feeAmount:coins = CreatePublicLeague`
+Signature: `CreatePublicLeague{leagueId:^string,commissionPercentage:uint64,feeAmount:coins}`
 
 ### PayoutWinners
 TL-B: `payout_winners#a12dd911 leagueId:^string winningPercentages:dict<int, int> winners:dict<int, address> count:uint8 commissionPercentage:uint64 = PayoutWinners`
@@ -143,6 +147,7 @@ Argument: id
 * 5902: Winner did not stake
 * 9821: League already exists
 * 18492: Insufficient stake amount sent
+* 19126: Only owner can create public leagues
 * 26825: Only owner can withdraw
 * 27168: Insufficient fee sent
 * 35380: Only owner can payout

@@ -9,13 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { TonClient } from '@ton/ton';
 import { createLogger } from '../../fp/infrastructure/Logger.js';
-import { Address, Cell } from '@ton/core';
+import { Address, Cell, beginCell, storeMessage } from '@ton/core';
 import { Decimal } from '../../generated/prisma/runtime/library.js';
+import { TonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 const logger = createLogger('TransactionVerificationService');
 export class TransactionVerificationService {
     constructor(env) {
         this.prisma = env.prisma;
         this.tonClient = env.tonClient;
+        this.tonBlockchainService = env.tonBlockchainService;
     }
     checkPendingTransactions() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -46,22 +48,51 @@ export class TransactionVerificationService {
                     // Actually, creation transaction comes from User Wallet.
                     // But we don't have the User Wallet stored on the league record easily?
                     // Wait, league.ownerId -> User -> Wallet Address.
-                    const owner = yield this.prisma.user.findUnique({
-                        where: { id: league.ownerId },
-                        select: { walletAddress: true }
-                    });
-                    if (!owner || !owner.walletAddress) {
-                        logger.warn(`Owner or wallet not found for pending league ${league.id}`);
+                    let walletAddress = null;
+                    if (league.ownerId) {
+                        const owner = yield this.prisma.user.findUnique({
+                            where: { id: league.ownerId },
+                            select: { walletAddress: true }
+                        });
+                        walletAddress = (owner === null || owner === void 0 ? void 0 : owner.walletAddress) || null;
+                    }
+                    else {
+                        // System League (Public)
+                        walletAddress = yield this.tonBlockchainService.getWalletAddress();
+                    }
+                    if (!walletAddress) {
+                        logger.warn(`Owner or System wallet not found for pending league ${league.id}`);
                         continue;
                     }
-                    const txs = yield this.tonClient.getTransactions(Address.parse(owner.walletAddress), {
+                    const txs = yield this.tonClient.getTransactions(Address.parse(walletAddress), {
                         limit: 20 // Check last 20 transactions of the owner
                     });
-                    const match = txs.find(tx => tx.hash().toString('hex') === league.blockchainTxHash ||
-                        tx.hash().toString('base64') === league.blockchainTxHash);
-                    // TODO: Robust hash comparison needed (hex vs base64).
-                    // Let's assume we store HEX.
-                    // If not found in last 20, maybe it's older or not propagated yet?
+                    let targetHash = league.blockchainTxHash;
+                    // Handle BOC vs Hash for Leagues (Frontend sends BOC)
+                    if (league.blockchainTxHash.length > 100) {
+                        try {
+                            const cell = Cell.fromBase64(league.blockchainTxHash);
+                            targetHash = cell.hash().toString('hex');
+                        }
+                        catch (e) {
+                            logger.warn(`Failed to parse BOC for league ${league.id}`);
+                            // Fallback?
+                        }
+                    }
+                    // Match against Transaction Hash OR InMessage Hash
+                    const match = txs.find(tx => {
+                        const txHashHex = tx.hash().toString('hex');
+                        let msgHashHex;
+                        try {
+                            if (tx.inMessage) {
+                                msgHashHex = beginCell().store(storeMessage(tx.inMessage)).endCell().hash().toString('hex');
+                            }
+                        }
+                        catch (e) {
+                            // ignore serialization error
+                        }
+                        return txHashHex === targetHash || msgHashHex === targetHash;
+                    });
                     // If found, check status? In TON, presence in blockchain usually means success unless it's a failed phase.
                     // We should check 'computePhase' and 'actionPhase'.
                     if (match) {
@@ -145,7 +176,7 @@ export class TransactionVerificationService {
                             yield this.prisma.fantasyLeagueMembership.update({
                                 where: { id: membership.id },
                                 data: {
-                                    status: 'JOINED', // Corrected from 'active' to 'JOINED'
+                                    status: 'active',
                                 }
                             });
                             yield this.prisma.fantasyLeague.update({

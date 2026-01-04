@@ -11,6 +11,7 @@
     "prisma:studio": "npx prisma studio",
     "prisma:seed": "tsx prisma/seed.ts && tsx src/utils/reseed-public-leagues.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
+    "reseed-leagues": "tsx src/utils/reseed-public-leagues.ts",
     "get-auth-token": "tsx src/utils/get-auth-token.ts",
     "generate:api-key": "tsx scripts/generate-api-key.ts"
   },
@@ -35,6 +36,7 @@
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.3",
     "bs58": "^6.0.0",
+    "bullmq": "^5.66.4",
     "cors": "^2.8.5",
     "ethers": "^6.16.0",
     "fp-ts": "^2.16.11",
@@ -42,6 +44,7 @@
     "hono": "^4.8.5",
     "io-ts": "^2.2.22",
     "io-ts-types": "^0.5.19",
+    "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.3",
     "monocle-ts": "^2.3.13",
     "node-cron": "^4.2.1",

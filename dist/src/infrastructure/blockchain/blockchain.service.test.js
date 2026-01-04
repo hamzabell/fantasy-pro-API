@@ -90,9 +90,7 @@ describe('BlockchainService', () => {
                     { address: '0x456', amount: '20' }
                 ], [BigInt(3333), BigInt(6666)], BigInt(0))();
                 // Check mock call args
-                expect(mockPayoutWinners).toHaveBeenCalledWith('league123', ['0xUser1', '0xUser2'], [BigInt(5000), BigInt(5000)], // 50% each
-                0 // Commission defaults to 0 in current service impl
-                );
+                expect(mockPayoutWinners).toHaveBeenCalledWith('league123', ['0x123', '0x456'], [BigInt(3333), BigInt(6666)], BigInt(0));
             }
             finally {
                 vi.unstubAllEnvs();

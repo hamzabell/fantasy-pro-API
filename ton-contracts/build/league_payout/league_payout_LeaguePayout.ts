@@ -827,6 +827,65 @@ export function dictValueParserStake(): DictionaryValue<Stake> {
     }
 }
 
+export type CreatePublicLeague = {
+    $$type: 'CreatePublicLeague';
+    leagueId: string;
+    commissionPercentage: bigint;
+    feeAmount: bigint;
+}
+
+export function storeCreatePublicLeague(src: CreatePublicLeague) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(1462801691, 32);
+        b_0.storeStringRefTail(src.leagueId);
+        b_0.storeUint(src.commissionPercentage, 64);
+        b_0.storeCoins(src.feeAmount);
+    };
+}
+
+export function loadCreatePublicLeague(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 1462801691) { throw Error('Invalid prefix'); }
+    const _leagueId = sc_0.loadStringRefTail();
+    const _commissionPercentage = sc_0.loadUintBig(64);
+    const _feeAmount = sc_0.loadCoins();
+    return { $$type: 'CreatePublicLeague' as const, leagueId: _leagueId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount };
+}
+
+export function loadTupleCreatePublicLeague(source: TupleReader) {
+    const _leagueId = source.readString();
+    const _commissionPercentage = source.readBigNumber();
+    const _feeAmount = source.readBigNumber();
+    return { $$type: 'CreatePublicLeague' as const, leagueId: _leagueId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount };
+}
+
+export function loadGetterTupleCreatePublicLeague(source: TupleReader) {
+    const _leagueId = source.readString();
+    const _commissionPercentage = source.readBigNumber();
+    const _feeAmount = source.readBigNumber();
+    return { $$type: 'CreatePublicLeague' as const, leagueId: _leagueId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount };
+}
+
+export function storeTupleCreatePublicLeague(source: CreatePublicLeague) {
+    const builder = new TupleBuilder();
+    builder.writeString(source.leagueId);
+    builder.writeNumber(source.commissionPercentage);
+    builder.writeNumber(source.feeAmount);
+    return builder.build();
+}
+
+export function dictValueParserCreatePublicLeague(): DictionaryValue<CreatePublicLeague> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeCreatePublicLeague(src)).endCell());
+        },
+        parse: (src) => {
+            return loadCreatePublicLeague(src.loadRef().beginParse());
+        }
+    }
+}
+
 export type PayoutWinners = {
     $$type: 'PayoutWinners';
     leagueId: string;
@@ -1351,7 +1410,7 @@ function initLeaguePayout_init_args(src: LeaguePayout_init_args) {
 }
 
 async function LeaguePayout_init() {
-    const __code = Cell.fromHex('b5ee9c724102160100069e000114ff00f4a413f4bcf2c80b01020162021404c6d001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019afa40f404f40455206c1396306d6df84259e204925f04e002d70d1ff2e0822182100d850c3dbae30221821056b4e77fbae302218210a12dd911bae3022182100ba69751ba03070a1102fe31d401d001d431d33ffa0030f8416f243032249b9320d74a91d5e868f90400da1181265d288101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f47024c200923333e30d54443014700443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c90406019630816a205134be13f2f4727088280406552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb007f5805002e000000004c6561677565204372656174696f6e204665650098103512206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5401ea31d401d001d401d001fa0030f8416f243032249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f2581483c5189be18f2f4c85250cbff26cf16c9f9008200e41c2e8101012359f40d6fa192306ddf0801fc206e92306d8e10d0fa40810101d700d20055206c136f03e26ef2f451687f028101015023c855205023ce810101cf00ca00c9103e4170206e953059f45a30944133f415e2541876c85520821061ac041c5004cb1f02c8ce12cd01c8cecd01fa02c9c88258c000000000000000000000000101cb67ccc970fb005034a0458809007c81010109c855405045ce02c8ce12cd810101cf00ca0001fa02c910344550206e953059f45a30944133f415e258c87f01ca0055205023cef400f400c9ed5402fe31d401d001f404f404d307d33f30f8416f245b82008a343227c705f2f4249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f258200f27621c200f2f421998200ac8f27c000f2f4de5301b39327c2009170e2923730e30d700b0d01a6305207a8812710a9045166a126c2008ebf7270882e040a552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009136e20c001c00000000436f6d6d697373696f6e02fc52088eef288101012259f40c6fa192306ddf810101545b0052404133f40c6fa19401d70030925b6de2c85280cbff22cf16c9f90081170e8101015612401359f40d6fa192306ddf206e92306d8e10d0fa40810101d700d20055206c136f03e26eb3f2f45280a8812710a90420c200915be30da4e4303535353544308101010e1001e8727088245134413310246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00545c22c85520821043bc92235004cb1f02c8ce12cdce01fa02c9c88258c000000000000000000000000101cb67ccc970fb0018a0070f0014000000005061796f757400ca505470c855405045ce02c8ce12cd810101cf00ca0001fa02c9103512206e953059f45a30944133f415e202c80182103a5ba86658cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5402e68ee131fa0030f8416f245b8168c93223c705f2f472708824553010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed54e0018210946a98b6bae3025f04f2c0821213001c000000005769746864726177616c00c2d33f30f84270804003c8018210aff90f5758cb1fcb3fc941305a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed540165a12885da89a1a4000335f481e809e808aa40d8272c60dadbf084b3c4aa05b678d86240dd2460db28de4ade0bc440dd2460dbbd150076810101019b9320d74a91d5e868f90400da11235959f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e2af13d3b7');
+    const __code = Cell.fromHex('b5ee9c7241021801000777000114ff00f4a413f4bcf2c80b01020162021604c6d001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019afa40f404f40455206c1396306d6df84259e204925f04e002d70d1ff2e0822182100d850c3dbae3022182105730951bbae30221821056b4e77fbae302218210a12dd911ba0307090c02fe31d401d001d431d33ffa0030f8416f243032249b9320d74a91d5e868f90400da1181265d288101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f47024c200923333e30d54443014700443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c90406019630816a205134be13f2f4727088280406552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb007f5805002e000000004c6561677565204372656174696f6e204665650098103512206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5401fe31d401d001d33f30f8416f245b814ab63224c705f2f4219b9320d74a91d5e868f90400da1181265d258101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f470702551354533050443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c9103508009412206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5401ea31d401d001d401d001fa0030f8416f243032249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f2581483c5189be18f2f4c85250cbff26cf16c9f9008200e41c2e8101012359f40d6fa192306ddf0a01fc206e92306d8e10d0fa40810101d700d20055206c136f03e26ef2f451687f028101015023c855205023ce810101cf00ca00c9103e4170206e953059f45a30944133f415e2541876c85520821061ac041c5004cb1f02c8ce12cd01c8cecd01fa02c9c88258c000000000000000000000000101cb67ccc970fb005034a045880b007c81010109c855405045ce02c8ce12cd810101cf00ca0001fa02c910344550206e953059f45a30944133f415e258c87f01ca0055205023cef400f400c9ed5403fae3022182100ba69751ba8ee131fa0030f8416f245b8168c93223c705f2f472708824553010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed54e0018210946a98b6bae3025f04f2c0820d141502fe31d401d001f404f404d307d33f30f8416f245b82008a343227c705f2f4249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f258200f27621c200f2f421998200ac8f27c000f2f4de5301b39327c2009170e2923730e30d700e1001a6305207a8812710a9045166a126c2008ebf7270882e040a552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009136e20f001c00000000436f6d6d697373696f6e02fc52088eef288101012259f40c6fa192306ddf810101545b0052404133f40c6fa19401d70030925b6de2c85280cbff22cf16c9f90081170e8101015612401359f40d6fa192306ddf206e92306d8e10d0fa40810101d700d20055206c136f03e26eb3f2f45280a8812710a90420c200915be30da4e430353535354430810101111301e8727088245134413310246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00545c22c85520821043bc92235004cb1f02c8ce12cdce01fa02c9c88258c000000000000000000000000101cb67ccc970fb0018a007120014000000005061796f757400ca505470c855405045ce02c8ce12cd810101cf00ca0001fa02c9103512206e953059f45a30944133f415e202c80182103a5ba86658cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed54001c000000005769746864726177616c00c2d33f30f84270804003c8018210aff90f5758cb1fcb3fc941305a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed540165a12885da89a1a4000335f481e809e808aa40d8272c60dadbf084b3c4aa05b678d86240dd2460db28de4ade0bc440dd2460dbbd170076810101019b9320d74a91d5e868f90400da11235959f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e23d3047e5');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initLeaguePayout_init_args({ $$type: 'LeaguePayout_init_args' })(builder);
@@ -1399,6 +1458,7 @@ export const LeaguePayout_errors = {
     5902: { message: "Winner did not stake" },
     9821: { message: "League already exists" },
     18492: { message: "Insufficient stake amount sent" },
+    19126: { message: "Only owner can create public leagues" },
     26825: { message: "Only owner can withdraw" },
     27168: { message: "Insufficient fee sent" },
     35380: { message: "Only owner can payout" },
@@ -1447,6 +1507,7 @@ export const LeaguePayout_errors_backward = {
     "Winner did not stake": 5902,
     "League already exists": 9821,
     "Insufficient stake amount sent": 18492,
+    "Only owner can create public leagues": 19126,
     "Only owner can withdraw": 26825,
     "Insufficient fee sent": 27168,
     "Only owner can payout": 35380,
@@ -1470,6 +1531,7 @@ const LeaguePayout_types: ABIType[] = [
     {"name":"DeployOk","header":2952335191,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"CreateLeague","header":226823229,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"userId","type":{"kind":"simple","type":"string","optional":false}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"feeAmount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"Stake","header":1454696319,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"userId","type":{"kind":"simple","type":"string","optional":false}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
+    {"name":"CreatePublicLeague","header":1462801691,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"feeAmount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"PayoutWinners","header":2704136465,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"winningPercentages","type":{"kind":"dict","key":"int","value":"int"}},{"name":"winners","type":{"kind":"dict","key":"int","value":"address"}},{"name":"count","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"Withdraw","header":195467089,"fields":[{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"LeagueCreated","header":1156593961,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}}]},
@@ -1486,6 +1548,7 @@ const LeaguePayout_opcodes = {
     "DeployOk": 2952335191,
     "CreateLeague": 226823229,
     "Stake": 1454696319,
+    "CreatePublicLeague": 1462801691,
     "PayoutWinners": 2704136465,
     "Withdraw": 195467089,
     "LeagueCreated": 1156593961,
@@ -1504,6 +1567,7 @@ export const LeaguePayout_getterMapping: { [key: string]: string } = {
 
 const LeaguePayout_receivers: ABIReceiver[] = [
     {"receiver":"internal","message":{"kind":"typed","type":"CreateLeague"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"CreatePublicLeague"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Stake"}},
     {"receiver":"internal","message":{"kind":"typed","type":"PayoutWinners"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Withdraw"}},
@@ -1545,11 +1609,14 @@ export class LeaguePayout implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: CreateLeague | Stake | PayoutWinners | Withdraw | Deploy) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: CreateLeague | CreatePublicLeague | Stake | PayoutWinners | Withdraw | Deploy) {
         
         let body: Cell | null = null;
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'CreateLeague') {
             body = beginCell().store(storeCreateLeague(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'CreatePublicLeague') {
+            body = beginCell().store(storeCreatePublicLeague(message)).endCell();
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'Stake') {
             body = beginCell().store(storeStake(message)).endCell();

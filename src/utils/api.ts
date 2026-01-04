@@ -1,10 +1,14 @@
 import axios from 'axios';
+import https from 'https';
 
 const FPL_API_BASE_URL = 'https://fantasy.premierleague.com/api';
 
 const handleError = (error: unknown): never => {
 	if (axios.isAxiosError(error)) {
-		throw new Error(`HTTP Error: ${error.response?.status} - ${error.response?.statusText}`);
+        const message = error.response 
+            ? `HTTP Error: ${error.response.status} - ${error.response.statusText}`
+            : `Network/Axios Error: ${error.message}`;
+		throw new Error(message);
 	}
 	throw new Error(`Unexpected Error: ${String(error)}`);
 };
@@ -24,7 +28,12 @@ export const fetchJson = async <T>(
 		const response = await axios({
 			url: url.toString(),
 			method,
-			headers,
+			headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                ...headers
+            },
+            httpsAgent: new https.Agent({ keepAlive: true }),
+            timeout: 10000 // 10s timeout
 		});
 
 		return response.data;

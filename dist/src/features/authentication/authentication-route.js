@@ -9,22 +9,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import * as E from 'fp-ts/lib/Either.js';
-import { generateGoogleAuthUrl, loginWithGoogleCode } from './auth.service.js';
 import { retrieveUserStats } from '../users/users-model.js';
 import prisma from '../../prisma.js';
 import { createWalletRepository } from '../wallet/wallet.repository.js';
 import { createWalletService } from '../wallet/wallet.service.js';
 import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 const app = new OpenAPIHono();
+app.get('/test', (c) => c.text('Auth test working'));
 // Schemas
 const GoogleLoginRequestSchema = z.object({
     token: z.string().describe('Google ID Token')
 }).openapi('GoogleLoginRequest');
+const ExchangeAuthCodeSchema = z.object({
+    code: z.string()
+}).openapi('ExchangeAuthCodeSchema');
+const WalletLoginRequestSchema = z.object({
+    address: z.string(),
+    proof: z.any()
+}).openapi('WalletLoginRequest');
+const WalletSignupRequestSchema = z.object({
+    address: z.string(),
+    proof: z.any(),
+    name: z.string(),
+    username: z.string()
+}).openapi('WalletSignupRequest');
 const AuthResponseSchema = z.object({
     token: z.string(),
     user: z.object({
         id: z.string(),
-        email: z.string(),
+        email: z.string().nullable().optional(),
         name: z.string().optional().nullable(),
         image: z.string().optional().nullable(),
         walletAddress: z.string().optional().nullable()
@@ -73,8 +86,10 @@ const getErrorMessage = (error) => {
         return 'Database error';
     return 'Unknown error';
 };
-// Routes
-// 1. GET /auth/google/url - Get Auth URL
+import { generateGoogleAuthUrl, loginWithGoogleCode, createAuthCode, exchangeAuthCode, loginWithWallet, signupWithWallet } from './auth.service.js';
+import jwt from 'jsonwebtoken';
+import { retrieveUserFromDatabaseByEmail } from '../users/users-model.js';
+// 1. GET /auth/google/url - Generate Auth URL
 const getGoogleAuthUrlRoute = createRoute({
     method: 'get',
     path: '/google/url',
@@ -82,7 +97,7 @@ const getGoogleAuthUrlRoute = createRoute({
     request: {
         query: z.object({
             referralCode: z.string().optional(),
-            platform: z.enum(['web', 'mobile']).optional().default('web'),
+            platform: z.enum(['web', 'mobile', 'telegram']).optional().default('web'),
             redirectUrl: z.string().optional()
         })
     },
@@ -93,11 +108,14 @@ const getGoogleAuthUrlRoute = createRoute({
         }
     }
 });
-app.openapi(getGoogleAuthUrlRoute, (c) => {
+app.openapi(getGoogleAuthUrlRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
     const { referralCode, platform, redirectUrl } = c.req.valid('query');
+    console.log('[Auth] Generating Google URL. Platform:', platform, 'Referral:', referralCode, 'Redirect:', redirectUrl);
     const url = generateGoogleAuthUrl(referralCode, platform, redirectUrl);
     return c.json({ url });
-});
+}));
+// Duplicate removed
+// ... existing code ...
 // 2. GET /auth/google/callback - Handle Redirect Code
 const googleCallbackRoute = createRoute({
     method: 'get',
@@ -128,6 +146,7 @@ app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, functi
     if (state) {
         try {
             const parsedState = JSON.parse(state);
+            console.log('[Auth] Parsed State:', parsedState);
             referralCode = parsedState.referralCode;
             if (parsedState.platform)
                 platform = parsedState.platform;
@@ -135,22 +154,174 @@ app.openapi(googleCallbackRoute, (c) => __awaiter(void 0, void 0, void 0, functi
                 redirectUrl = parsedState.redirectUrl;
         }
         catch (e) {
+            console.error('[Auth] Failed to parse state:', e);
             // Ignore state parsing error
         }
     }
+    console.log('[Auth] Processing callback for platform:', platform);
     const result = yield loginWithGoogleCode(code, referralCode, redirectUrl)();
     if (E.isRight(result)) {
         const { token } = result.right;
+        console.log('[Auth] Login successful. Token generated.');
         if (platform === 'mobile') {
             return c.redirect(`fantasypro://auth/callback?token=${token}`);
         }
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8100';
+        if (platform === 'telegram') {
+            // Create Short Code
+            console.log('[Auth] Telegram platform detected. Creating auth code...');
+            const codeResult = yield createAuthCode(token)();
+            if (E.isRight(codeResult)) {
+                const authCode = codeResult.right;
+                const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'FantasyProBot';
+                console.log('[Auth] Auth Code created:', authCode, 'Redirecting to bot:', botUsername);
+                // Redirect to Telegram Mini App with startapp param
+                return c.redirect(`https://t.me/${botUsername}/app?startapp=${authCode}`);
+            }
+            else {
+                console.error('[Auth] Failed to generate auth code:', codeResult.left);
+                return c.json({ error: 'Failed to generate auth code' }, 500);
+            }
+        }
+        const frontendUrl = redirectUrl || process.env.FRONTEND_URL || 'http://localhost:8100';
         return c.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     }
     else {
         const error = result.left;
+        console.error('[Auth] Login failed:', error);
         const msg = getErrorMessage(error);
-        return c.json({ error: msg }, 400); // Or redirect to frontend error page
+        // Return HTML with error for visibility
+        return c.html(`
+            <html>
+                <body style="font-family: sans-serif; padding: 20px; text-align: center;">
+                    <h1>Authentication Failed</h1>
+                    <p style="color: red; font-size: 18px;">${msg}</p>
+                    <p>Referral: ${referralCode || 'None'}</p>
+                    <p>Platform: ${platform}</p>
+                    <p>Redirect: ${redirectUrl || 'None'}</p>
+                    <p>Full Error: ${JSON.stringify(error)}</p>
+                    <a href="https://t.me/${process.env.TELEGRAM_BOT_USERNAME || 'FantasyProBot'}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #3390ec; color: white; text-decoration: none; border-radius: 5px;">Return to Telegram</a>
+                </body>
+            </html>
+        `, 400);
+    }
+}));
+// 2.5 POST /auth/exchange - Exchange Auth Code for Token
+const exchangeAuthCodeRoute = createRoute({
+    method: 'post',
+    path: '/exchange',
+    summary: 'Exchange Auth Code for Token',
+    request: {
+        body: {
+            content: {
+                'application/json': { schema: ExchangeAuthCodeSchema }
+            }
+        }
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: AuthResponseSchema } },
+            description: 'Auth Success'
+        },
+        400: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'Invalid Code'
+        }
+    }
+});
+app.openapi(exchangeAuthCodeRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const { code } = c.req.valid('json');
+    const result = yield exchangeAuthCode(code)();
+    if (E.isRight(result)) {
+        const token = result.right;
+        const decoded = jwt.decode(token);
+        const email = decoded.email;
+        const userResult = yield retrieveUserFromDatabaseByEmail(email)();
+        if (E.isRight(userResult) && userResult.right) {
+            const user = userResult.right;
+            return c.json({
+                token,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    image: user.image,
+                    walletAddress: user.walletAddress
+                }
+            }, 200);
+        }
+        return c.json({ error: 'User not found' }, 400);
+    }
+    else {
+        return c.json({ error: getErrorMessage(result.left) }, 400);
+    }
+}));
+// 2.6 POST /auth/login-wallet
+const loginWalletRoute = createRoute({
+    method: 'post',
+    path: '/login-wallet',
+    summary: 'Login with TON Wallet',
+    request: {
+        body: {
+            content: { 'application/json': { schema: WalletLoginRequestSchema } }
+        }
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: AuthResponseSchema } },
+            description: 'Login Success'
+        },
+        404: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'User Not Found (Redirect to Signup)'
+        },
+        400: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Bad Request' },
+        500: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Internal Error' }
+    }
+});
+app.openapi(loginWalletRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const { address, proof } = c.req.valid('json');
+    const result = yield loginWithWallet(address, proof)();
+    if (E.isRight(result)) {
+        return c.json(result.right, 200);
+    }
+    else {
+        const error = result.left;
+        const status = toHttpStatus(error);
+        return c.json({ error: getErrorMessage(error) }, status);
+    }
+}));
+// 2.7 POST /auth/signup-wallet
+const signupWalletRoute = createRoute({
+    method: 'post',
+    path: '/signup-wallet',
+    summary: 'Signup with TON Wallet',
+    request: {
+        body: {
+            content: { 'application/json': { schema: WalletSignupRequestSchema } }
+        }
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: AuthResponseSchema } },
+            description: 'Signup Success'
+        },
+        409: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Conflict (User/Wallet exists)' },
+        400: { content: { 'application/json': { schema: ErrorResponseSchema } }, description: 'Bad Request' }
+    }
+});
+app.openapi(signupWalletRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const { address, proof, name, username } = c.req.valid('json');
+    const result = yield signupWithWallet(address, proof, { name, username })();
+    if (E.isRight(result)) {
+        return c.json(result.right, 200);
+    }
+    else {
+        const error = result.left;
+        let status = toHttpStatus(error);
+        if (getErrorMessage(error).includes('taken') || getErrorMessage(error).includes('registered')) {
+            status = 409;
+        }
+        return c.json({ error: getErrorMessage(error) }, status);
     }
 }));
 // 3. GET /user - Get Authenticated User

@@ -692,6 +692,22 @@ _ %league(slice $id) method_id(103490) {
         return ();
     }
     
+    ;; Receive CreatePublicLeague message
+    if (op == 1462801691) {
+        var $msg'leagueId = in_msg~load_ref().begin_parse();
+        var $msg'commissionPercentage = in_msg~load_uint(64);
+        var $msg'feeAmount = in_msg~load_varuint16();
+        var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+        throw_unless(19126, ( equal_slices_bits($ctx'sender, $self'owner) ));
+        int $leagueHash = __tact_sha256($msg'leagueId);
+        throw_unless(9821, null?($LeagueInfo$_load_opt(__tact_dict_get_int_cell($self'leagues, 257, $leagueHash))));
+        var ($info'owner, $info'leagueId, $info'commissionPercentage, $info'feePaid, $info'totalStaked) = $LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked($self'owner, $msg'leagueId, $msg'commissionPercentage, false, 0);
+        $self'leagues~__tact_dict_set_int_cell(257, $leagueHash, $LeagueInfo$_store_cell(($info'owner, $info'leagueId, $info'commissionPercentage, $info'feePaid, $info'totalStaked), begin_cell()));
+        $global_emit($LeagueCreated$_store_cell($LeagueCreated$_constructor_leagueId($msg'leagueId), begin_cell()));
+        $LeaguePayout$_contract_store(($self'owner, $self'leagues, $self'stakes));
+        return ();
+    }
+    
     ;; Receive Stake message
     if (op == 1454696319) {
         var $msg'leagueId = in_msg~load_ref().begin_parse();

@@ -67,14 +67,12 @@ describe('Optimized Winner Calculator', () => {
             for (let i = 0; i < numUsers; i++) {
                 const user = yield prisma.user.create({
                     data: {
-                        id: faker.string.uuid(),
                         email: `perftest${i}-${timestamp}@example.com`
                     }
                 });
                 // Create team for user
                 yield prisma.team.create({
                     data: {
-                        id: faker.string.uuid(),
                         userId: user.id,
                         teamValue: 1000,
                         teamPlayers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -112,7 +110,7 @@ describe('Optimized Winner Calculator', () => {
                             leagueType: 'public',
                             leagueMode: 'classic',
                             winners: 1,
-                            code: `PERF${i.toString().padStart(3, '0')}`,
+                            code: `PERF${i}-${faker.string.alphanumeric(5).toUpperCase()}`,
                             ownerId: ownerId,
                             gameweekId: testGameweek.id,
                             status: 'ongoing'

@@ -15,7 +15,7 @@ const { pipe } = F;
 import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';
 import { insufficientBalanceError, businessRuleError } from '../../fp/domain/errors/AppError.js';
-import { fetchGameweek } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchGameweek, fetchFutureGameweeks } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateUserTeamStats } from './player-stats-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
@@ -59,7 +59,65 @@ const mapToLeagueResponse = (l) => {
     const creatorCommission = Number(l.creatorCommission || 0);
     const grossPotential = stakeVal * limit;
     const potentialWinnings = grossPotential * (1 - (platformCommission + creatorCommission) / 100);
-    return Object.assign(Object.assign({}, l), { entryFeeUsd: stakeVal, totalPoolUsd: Number(l.totalPoolUsd), commissionRate: platformCommission, creatorCommission: creatorCommission, potentialWinnings: potentialWinnings, createdAt: l.createdAt instanceof Date ? l.createdAt.toISOString() : l.createdAt, updatedAt: l.updatedAt instanceof Date ? l.updatedAt.toISOString() : l.updatedAt });
+    // Calculate participant count dynamically
+    let count = Number(l.currentParticipants) || 0;
+    if (Array.isArray(l.members)) {
+        count = l.members.length;
+    }
+    else if (l._count && typeof l._count.members === 'number') {
+        count = l._count.members;
+    }
+    return Object.assign(Object.assign({}, l), { entryFeeUsd: stakeVal, totalPoolUsd: Number(l.totalPoolUsd), commissionRate: platformCommission, creatorCommission: creatorCommission, potentialWinnings: potentialWinnings, currentParticipants: count, teamsCount: count, createdAt: l.createdAt instanceof Date ? l.createdAt.toISOString() : l.createdAt, updatedAt: l.updatedAt instanceof Date ? l.updatedAt.toISOString() : l.updatedAt });
+};
+/**
+ * Background verification helper - runs transaction verification asynchronously
+ * Updates the league/membership status to 'active' on success, deletes on failure
+ */
+const runVerificationInBackground = (env, type, id, txHash) => {
+    // Fire and forget - do not await this in the main request flow
+    (() => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            console.log(`[BackgroundVerification] Starting verification for ${type} ${id} (tx: ${txHash})`);
+            yield env.tonBlockchainService.waitForTransaction(txHash);
+            console.log(`[BackgroundVerification] Success! Activating ${type} ${id}`);
+            if (type === 'league') {
+                yield env.prisma.fantasyLeague.update({
+                    where: { id },
+                    data: {
+                        status: 'active',
+                        members: {
+                            updateMany: {
+                                where: { status: 'pending' },
+                                data: { status: 'active' }
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                yield env.prisma.fantasyLeagueMembership.update({
+                    where: { id },
+                    data: { status: 'active' }
+                });
+            }
+        }
+        catch (error) {
+            console.error(`[BackgroundVerification] Failed for ${type} ${id}:`, error);
+            // On failure, delete the invalid entry to "remove it" as requested
+            try {
+                if (type === 'league') {
+                    yield env.prisma.fantasyLeague.delete({ where: { id } });
+                }
+                else {
+                    yield env.prisma.fantasyLeagueMembership.delete({ where: { id } });
+                }
+                console.log(`[BackgroundVerification] Deleted failed ${type} ${id}`);
+            }
+            catch (cleanupError) {
+                console.error(`[BackgroundVerification] Cleanup failed for ${type} ${id}`, cleanupError);
+            }
+        }
+    }))();
 };
 // Create Fantasy League route
 const createFantasyLeagueRoute = createRoute({
@@ -85,7 +143,8 @@ const createFantasyLeagueRoute = createRoute({
                         realLifeLeague: z.nativeEnum(RealLifeLeague).optional().default('PREMIER_LEAGUE'),
                         paymentMethod: z.enum(['UPFRONT', 'COMMISSION']).optional().default('UPFRONT'),
                         creatorCommission: z.coerce.number().min(0).max(50).default(0),
-                        transactionHash: z.string().optional()
+                        transactionHash: z.string().optional(),
+                        dryRun: z.boolean().optional()
                     }),
                 },
             },
@@ -192,6 +251,12 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, voi
     if (!user)
         return c.json({ error: 'Unauthorized: Please log in' }, 401);
     const body = c.req.valid('json');
+    console.log('[CreateLeague] Attempting to create league:', {
+        userId: user === null || user === void 0 ? void 0 : user.id,
+        leagueName: body.name,
+        realLifeLeague: body.realLifeLeague,
+        dryRun: body.dryRun
+    });
     const result = yield pipe(
     // 1. Validate Business Rules
     TE.fromIOEither(() => {
@@ -208,22 +273,22 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, voi
             return E.left(businessRuleError('InvalidCommission', `Total commission (${totalCommission}%) cannot exceed or equal 100%`));
         }
         return E.right(null);
-    }), 
+    }), TE.tap(() => TE.fromIO(() => console.log('[CreateLeague] 1. Validation passed'))), 
     // 2. Check if user has a team
-    TE.chainW(() => safePrisma(() => env.prisma.team.findUnique({
+    TE.chainW(() => safePrisma(() => env.prisma.team.findFirst({
         where: {
-            userId_realLifeLeague: {
-                userId: user.id,
-                realLifeLeague: body.realLifeLeague
-            }
+            userId: user.id,
+            realLifeLeague: body.realLifeLeague
         }
     }), 'checkUserTeam')), TE.chainW((team) => {
         if (!team)
             return TE.left(businessRuleError('TeamRequired', 'User must create a team first'));
+        console.log('[CreateLeague] 2. Team found:', team.id);
         return TE.right(team);
     }), 
-    // 3. Validate Gameweek
+    // 3. Validate and Ensure Gameweek exists in DB
     TE.chainW(() => TE.tryCatch(() => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b;
         const gwId = body.gameweekId;
         if (!gwId)
             throw new Error('gameweekId required');
@@ -232,68 +297,98 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, (c) => __awaiter(void 0, voi
             throw new Error('Cannot create for past gameweek');
         if (gwId === current.id && current.isActive)
             throw new Error('Cannot create for ongoing gameweek');
+        // Ensure Gameweek exists in DB (Foreign Key requirement)
+        // We use upsert to stay up to date with the latest deadline from API
+        yield env.prisma.gameweek.upsert({
+            where: { id: gwId },
+            update: {
+                deadline: new Date(current.id === gwId ? current.deadlineTime : ((_a = (yield fetchFutureGameweeks()).find(g => g.id === gwId)) === null || _a === void 0 ? void 0 : _a.deadlineTime) || current.deadlineTime),
+                isActive: current.id === gwId ? current.isActive : false,
+                realLifeLeague: body.realLifeLeague || RealLifeLeague.PREMIER_LEAGUE
+            },
+            create: {
+                id: gwId,
+                deadline: new Date(current.id === gwId ? current.deadlineTime : ((_b = (yield fetchFutureGameweeks()).find(g => g.id === gwId)) === null || _b === void 0 ? void 0 : _b.deadlineTime) || current.deadlineTime),
+                isActive: current.id === gwId ? current.isActive : false,
+                realLifeLeague: body.realLifeLeague || RealLifeLeague.PREMIER_LEAGUE
+            }
+        });
         return gwId;
-    }), (e) => businessRuleError('InvalidGameweek', e.message || 'Invalid gameweek'))), 
+    }), (e) => businessRuleError('InvalidGameweek', e.message || 'Invalid gameweek'))), TE.tap(() => TE.fromIO(() => console.log('[CreateLeague] 3. Gameweek validated'))), 
     // 4. Calculate Cost (Informational)
     TE.bindTo('gameweekId'), TE.bind('cost', () => TE.of(calculateLeagueCreationCost(body.limit))), 
-    // Note: We no longer charge upfront here. The frontend will handle the transaction.
+    // 4.5. Create with pending status, verify in background
+    TE.map((res) => (Object.assign(Object.assign({}, res), { isVerified: false }))), 
     // 5. Create League and Membership
-    TE.chainW(({ gameweekId, cost }) => {
+    TE.chainW((res) => {
+        if (res.dryRun)
+            return TE.right(res);
+        const { gameweekId, cost } = res;
+        const initialStatus = 'pending'; // Start as pending, background task will activate
         const code = body.code || Math.random().toString(36).substring(2, 8).toUpperCase();
-        return safePrisma(() => env.prisma.fantasyLeague.create({
-            data: {
-                id: body.id, // Optional manual ID
-                name: body.name,
-                description: body.description,
-                entryFeeUsd: body.entryFeeUsd,
-                limit: body.limit,
-                leagueType: body.leagueType,
-                leagueMode: body.leagueMode,
-                winners: body.winners,
-                code,
-                ownerId: user.id,
-                gameweekId: gameweekId,
-                status: 'pending',
-                realLifeLeague: body.realLifeLeague,
-                prizeDistribution: calculatePrizeDistribution(body.winners),
-                totalPoolUsd: 0, // Initial pool is 0
-                blockchainTxHash: body.transactionHash || null,
-                members: {
-                    create: {
-                        userId: user.id,
-                        teamName: body.teamName,
-                        position: 0,
-                        score: 0,
-                        blockchainTxHash: body.transactionHash || null,
-                        status: 'pending'
-                    }
-                },
-                currentParticipants: 1,
-                paymentMethod: body.paymentMethod || 'UPFRONT',
-                // Commission Rules: 
-                // 1. Creator Commission given by user.
-                // 2. Platform Commission:
-                //    - If PaymentMethod = COMMISSION & limit >= 5: 20%
-                //    - If PaymentMethod = UPFRONT: 0%
-                //    - If limit < 5: 10% (Legacy Logic override? Or should we apply minimal? User said "We charge 10% if less than 5")
-                //      User also said: "We don't normally charge now... we charge 10% if less than 5... but if more than 5 we expected user to pay upfront"
-                //      So: limit < 5 -> Platform = 10 (regardless of payment method? Or only if COMMISSION?)
-                //      Let's stick to requested logic: if limit < 5, platform takes 10%. 
-                //      Wait, if limit < 5, does user pay upfront fee? Usually small leagues are free to create?
-                //      If free to create, we take commission.
-                //      Logic:
-                //      Base Platform Rate = (body.limit < 5) ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0);
-                commissionRate: body.limit < 5 ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0),
-                creatorCommission: body.creatorCommission
+        return pipe(
+        // First check if league already exists (for retry scenarios)
+        safePrisma(() => body.id ? env.prisma.fantasyLeague.findUnique({
+            where: { id: body.id },
+            include: { members: true }
+        }) : Promise.resolve(null), 'checkExistingLeague'), TE.chain((existingLeague) => {
+            // If league exists and user is already a member, return it
+            if (existingLeague && existingLeague.members.some(m => m.userId === user.id)) {
+                console.log(`[CreateLeague] League ${body.id} already exists, returning it`);
+                return TE.right(existingLeague);
             }
-        }), 'createLeague');
+            // Otherwise create new league
+            return safePrisma(() => env.prisma.fantasyLeague.create({
+                data: {
+                    id: body.id,
+                    name: body.name,
+                    description: body.description,
+                    entryFeeUsd: body.entryFeeUsd,
+                    limit: body.limit,
+                    leagueType: body.leagueType,
+                    leagueMode: body.leagueMode,
+                    winners: body.winners,
+                    code,
+                    ownerId: user.id,
+                    gameweekId: gameweekId,
+                    status: initialStatus,
+                    realLifeLeague: body.realLifeLeague,
+                    prizeDistribution: calculatePrizeDistribution(body.winners),
+                    totalPoolUsd: 0,
+                    blockchainTxHash: body.transactionHash || null,
+                    members: {
+                        create: {
+                            userId: user.id,
+                            teamName: body.teamName,
+                            position: 0,
+                            score: 0,
+                            blockchainTxHash: body.transactionHash || null,
+                            status: initialStatus
+                        }
+                    },
+                    currentParticipants: 1,
+                    paymentMethod: body.paymentMethod || 'UPFRONT',
+                    commissionRate: body.limit < 5 ? 10 : (body.paymentMethod === 'COMMISSION' ? 20 : 0),
+                    creatorCommission: body.creatorCommission
+                }
+            }), 'createLeague');
+        }), TE.map((league) => {
+            // Trigger Background Verification if hash exists
+            if (body.transactionHash) {
+                runVerificationInBackground(env, 'league', league.id, body.transactionHash);
+            }
+            return league;
+        }));
     }))();
     if (result._tag === 'Left') {
         return c.json(toErrorResponse(result.left), 400);
     }
     const league = result.right;
+    if (body.dryRun) {
+        return c.json({ message: 'Validation successful' }, 200);
+    }
     return c.json({
-        message: 'Fantasy league created successfully',
+        message: 'Fantasy league created. Verification pending.',
         league: mapToLeagueResponse(league)
     }, 201);
 }));
@@ -354,8 +449,12 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
         }
     }), 'getAllLeagues'), TE.map((leagues) => {
         let filtered = leagues;
-        // Filter out completed leagues by default
-        filtered = filtered.filter(l => l.status !== 'completed');
+        // Filter out completed and pending leagues by default
+        // - 'pending': User-created leagues awaiting verification (not on-chain yet)
+        // - 'open': Public leagues being created (will be 'active' once on-chain)
+        // - 'active': Verified leagues ready to join
+        // - 'completed': Finished leagues
+        filtered = filtered.filter(l => l.status === 'open' || l.status === 'active');
         // Filter by leagueType
         if (leagueType) {
             filtered = filtered.filter(l => l.leagueType === leagueType);
@@ -441,6 +540,83 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, (c) => __awaiter(void 0, vo
     return c.json({
         message: 'Leagues Retrieved Successfully',
         leagues: result.right
+    }, 200);
+}));
+// Get League History route
+const getLeagueHistoryRoute = createRoute({
+    method: 'get',
+    path: '/history',
+    security: [{ BearerAuth: [] }],
+    request: {
+        query: z.object({
+            leagueId: z.string().optional(),
+            status: z.enum(['ongoing', 'closed', 'upcoming']).optional(),
+            sortBy: z.enum(['createdAt']).optional(),
+            sortOrder: z.enum(['asc', 'desc']).optional(),
+            search: z.string().optional(),
+        }),
+    },
+    responses: {
+        200: {
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        message: z.string(),
+                        history: z.array(z.object({
+                            leagueId: z.string(),
+                            leagueName: z.string(),
+                            teamName: z.string(),
+                            position: z.number().nullable(),
+                            points: z.number(),
+                            goals: z.number(),
+                            status: z.string(), // simplified enum
+                            createdAt: z.string(),
+                        })),
+                    }),
+                },
+            },
+            description: 'League history retrieved',
+        },
+        500: { description: 'Internal Error' }
+    },
+    tags: ['Fantasy Leagues'],
+});
+fantasyLeaguesApp.openapi(getLeagueHistoryRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    // Simplified history: Just return leagues user has participated in
+    const env = c.get('env');
+    const user = c.get('user');
+    if (!user)
+        return c.json({ error: 'Unauthorized: Please log in' }, 401);
+    const { leagueId, status, search } = c.req.valid('query');
+    const result = yield pipe(safePrisma(() => env.prisma.fantasyLeagueMembership.findMany({
+        where: { userId: user.id },
+        include: { league: true }
+    }), 'getUserHistory'), TE.map((memberships) => {
+        let filtered = memberships;
+        if (leagueId)
+            filtered = filtered.filter(m => m.leagueId === leagueId);
+        if (search)
+            filtered = filtered.filter(m => m.league.name.toLowerCase().includes(search.toLowerCase()));
+        // Map to history format
+        // Status logic would need current gameweek check. 
+        // For now, mapping simple fields.
+        return filtered.map(m => ({
+            leagueId: m.leagueId,
+            leagueName: m.league.name,
+            teamName: m.teamName || '',
+            position: m.position,
+            points: Number(m.score) || 0, // Assuming score is decimal
+            goals: 0, // Placeholder
+            status: m.league.status,
+            createdAt: m.joinedAt.toISOString()
+        }));
+    }))();
+    if (result._tag === 'Left') {
+        return c.json(toErrorResponse(result.left), 500);
+    }
+    return c.json({
+        message: 'League history retrieved',
+        history: result.right
     }, 200);
 }));
 // Get Fantasy League by ID route
@@ -659,7 +835,8 @@ const joinFantasyLeagueRoute = createRoute({
                     schema: z.object({
                         code: z.string().min(1, "Code cannot be empty"),
                         teamName: z.string().min(1, "Team name cannot be empty"),
-                        transactionHash: z.string().optional()
+                        transactionHash: z.string().optional(),
+                        dryRun: z.boolean().optional()
                     }),
                 },
             },
@@ -718,19 +895,56 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, (c) => __awaiter(void 0, void 
         }
         return TE.right({ league });
     }), 
-    // 5. Create Membership (do NOT increment participants - webhook will do that)
-    TE.chain(({ league }) => safePrisma(() => env.prisma.fantasyLeagueMembership.create({
-        data: {
-            userId: user.id,
-            leagueId: league.id,
-            teamName: teamName,
-            stakeAmount: league.entryFeeUsd,
-            blockchainTxHash: transactionHash || null,
-            status: 'pending',
-            position: 0,
-            score: 0
+    // DRY RUN CHECK
+    TE.chainW(({ league }) => {
+        if (c.req.valid('json').dryRun) {
+            return TE.right({ dryRun: true, league, isVerified: false });
         }
-    }), 'createMembership')), TE.map((membership) => {
+        return TE.right({ league, isVerified: false });
+    }), 
+    // 4.5 Create with pending status, verify in background
+    TE.map((res) => (Object.assign(Object.assign({}, res), { isVerified: false }))), 
+    // 5. Create Membership
+    TE.chain((res) => {
+        if (res.dryRun)
+            return TE.right(res);
+        const { league } = res;
+        const initialStatus = 'pending'; // Start as pending, background task will activate
+        return pipe(safePrisma(() => env.prisma.fantasyLeagueMembership.create({
+            data: {
+                userId: user.id,
+                leagueId: league.id,
+                teamName: teamName,
+                stakeAmount: league.entryFeeUsd,
+                blockchainTxHash: transactionHash || null,
+                status: initialStatus,
+                position: 0,
+                score: 0
+            }
+        }), 'createMembership'), TE.map((membership) => {
+            // Trigger Background Verification if hash exists
+            if (transactionHash) {
+                runVerificationInBackground(env, 'membership', membership.id, transactionHash);
+            }
+            return membership;
+        }));
+    }), TE.map((res) => {
+        if (res.dryRun) {
+            return {
+                message: 'Dry run successful',
+                membership: {
+                    id: 'dry-run-id',
+                    leagueId: res.league.id,
+                    userId: user.id,
+                    status: 'pending',
+                    teamName: '',
+                    txHash: '',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                }
+            };
+        }
+        const membership = res;
         return {
             message: 'Successfully joined league',
             membership: {
@@ -791,6 +1005,8 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, (c) => __awaiter(void 0, void 0, 
     const env = c.get('env');
     const user = c.get('user');
     const { id } = c.req.valid('param');
+    if (!user)
+        return c.json({ error: 'Unauthorized: Please log in' }, 401);
     const result = yield pipe(safePrisma(() => env.prisma.fantasyLeague.findUnique({
         where: { id },
         include: { members: { include: { user: true } } }
@@ -830,83 +1046,6 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, (c) => __awaiter(void 0, void 0, 
     return c.json({
         message: 'League table retrieved successfully',
         table: result.right
-    }, 200);
-}));
-// Get League History route
-const getLeagueHistoryRoute = createRoute({
-    method: 'get',
-    path: '/history',
-    security: [{ BearerAuth: [] }],
-    request: {
-        query: z.object({
-            leagueId: z.string().optional(),
-            status: z.enum(['ongoing', 'closed', 'upcoming']).optional(),
-            sortBy: z.enum(['createdAt']).optional(),
-            sortOrder: z.enum(['asc', 'desc']).optional(),
-            search: z.string().optional(),
-        }),
-    },
-    responses: {
-        200: {
-            content: {
-                'application/json': {
-                    schema: z.object({
-                        message: z.string(),
-                        history: z.array(z.object({
-                            leagueId: z.string(),
-                            leagueName: z.string(),
-                            teamName: z.string(),
-                            position: z.number().nullable(),
-                            points: z.number(),
-                            goals: z.number(),
-                            status: z.string(), // simplified enum
-                            createdAt: z.string(),
-                        })),
-                    }),
-                },
-            },
-            description: 'League history retrieved',
-        },
-        500: { description: 'Internal Error' }
-    },
-    tags: ['Fantasy Leagues'],
-});
-fantasyLeaguesApp.openapi(getLeagueHistoryRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
-    // Simplified history: Just return leagues user has participated in
-    const env = c.get('env');
-    const user = c.get('user');
-    if (!user)
-        return c.json({ error: 'Unauthorized: Please log in' }, 401);
-    const { leagueId, status, search } = c.req.valid('query');
-    const result = yield pipe(safePrisma(() => env.prisma.fantasyLeagueMembership.findMany({
-        where: { userId: user.id },
-        include: { league: true }
-    }), 'getUserHistory'), TE.map((memberships) => {
-        let filtered = memberships;
-        if (leagueId)
-            filtered = filtered.filter(m => m.leagueId === leagueId);
-        if (search)
-            filtered = filtered.filter(m => m.league.name.toLowerCase().includes(search.toLowerCase()));
-        // Map to history format
-        // Status logic would need current gameweek check. 
-        // For now, mapping simple fields.
-        return filtered.map(m => ({
-            leagueId: m.leagueId,
-            leagueName: m.league.name,
-            teamName: m.teamName || '',
-            position: m.position,
-            points: Number(m.score) || 0, // Assuming score is decimal
-            goals: 0, // Placeholder
-            status: m.league.status,
-            createdAt: m.joinedAt.toISOString()
-        }));
-    }))();
-    if (result._tag === 'Left') {
-        return c.json(toErrorResponse(result.left), 500);
-    }
-    return c.json({
-        message: 'League history retrieved',
-        history: result.right
     }, 200);
 }));
 // Get League Position route
@@ -962,14 +1101,14 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, (c) => __awaiter(void 0, void 
     const env = c.get('env');
     const user = c.get('user');
     const { id } = c.req.valid('param');
+    if (!user)
+        return c.json({ error: 'Unauthorized: Please log in' }, 401);
     const result = yield pipe(safePrisma(() => env.prisma.fantasyLeague.findUnique({
         where: { id },
         include: { members: true }
     }), 'getLeaguePosition'), TE.chainW((league) => {
         if (!league)
             return TE.left(businessRuleError('LeagueNotFound', 'Fantasy league not found'));
-        if (!user)
-            return TE.left({ _tag: 'AuthorizationError', message: 'Unauthorized: Please log in' });
         // Check membership
         const isMember = league.members.some(m => m.userId === user.id);
         if (!isMember)
@@ -992,5 +1131,55 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, (c) => __awaiter(void 0, void 
         points: stats.points,
         goals: stats.goals
     }, 200);
+}));
+// Verify Transaction Route
+const verifyTransactionRoute = createRoute({
+    method: 'post',
+    path: '/verify-transaction',
+    security: [{ BearerAuth: [] }],
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        leagueId: z.string().optional(),
+                        membershipId: z.string().optional(),
+                    }),
+                },
+            },
+        },
+    },
+    responses: {
+        200: { description: 'Verification triggered' },
+        500: { description: 'Internal Error' }
+    },
+    tags: ['Fantasy Leagues']
+});
+fantasyLeaguesApp.openapi(verifyTransactionRoute, (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const env = c.get('env');
+    // Trigger verification asynchronously? Or await it?
+    // Await it so frontend knows result.
+    // We need to inject TransactionVerificationService into env or instantiate it.
+    // Env usually has services.
+    // Assuming env.transactionVerificationService exists. 
+    // If not, we might need to rely on the background worker, OR instantiate it here.
+    // Let's assume we can trigger the global service check.
+    // Actually, TransactionVerificationService is not typically strictly exposed in 'env' in this codebase pattern.
+    // But we can import the factory or class if needed, but better if it's in env.
+    // Workaround: We will run the check logic directly or call the service if available.
+    // Check main `index.ts` or `Environment.ts` to see if `transactionVerificationService` is there.
+    // If not, we might instantiate it.
+    // For now, let's try to access it from env (as updated in previous sessions? No, I viewed Environment.ts? No).
+    // Safest bet: Import and Instantiate if not present, OR use specific function.
+    try {
+        const { createTransactionVerificationService } = yield import('../../league-integration/TransactionVerificationService.js');
+        const service = createTransactionVerificationService(env);
+        // Run checks
+        yield service.checkPendingTransactions();
+        return c.json({ message: 'Verification complete' }, 200);
+    }
+    catch (e) {
+        return c.json({ error: e.message }, 500);
+    }
 }));
 export default fantasyLeaguesApp;

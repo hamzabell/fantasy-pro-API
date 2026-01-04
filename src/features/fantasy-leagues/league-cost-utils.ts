@@ -12,14 +12,17 @@
  */
 export function calculateLeagueCreationCost(limit: number): number {
   if (limit <= 5) return 0;
-  if (limit <= 10) return 10;
-
-  const baseCost = 10;
-  const growthRate = 1.05; // 5% increase per player
-  const excessPlayers = limit - 10;
-
-  const cost = baseCost * Math.pow(growthRate, excessPlayers);
   
-  // Return rounded to 2 decimal places for currency
-  return Number(cost.toFixed(2));
+  // Base cost 0.1 TON for verification/spam prevention
+  let cost = 0.1;
+  
+  // Small increment for larger leagues
+  if (limit > 10) {
+      const growthRate = 1.01; // 1% per player
+      const excessPlayers = limit - 10;
+      cost = cost * Math.pow(growthRate, excessPlayers);
+  }
+  
+  // Return rounded to 4 decimal places for TON
+  return Number(cost.toFixed(4));
 }

@@ -12,7 +12,7 @@ const API_ENDPOINTS = {
 
 let bootstrapDataCache: BootstrapData | null = null;
 
-const getBootstrapData = async (): Promise<BootstrapData> => {
+export const getBootstrapData = async (): Promise<BootstrapData> => {
 	if (!bootstrapDataCache) {
 		bootstrapDataCache = await fetchJson<BootstrapData>(API_ENDPOINTS.BOOTSTRAP);
 	}
@@ -70,7 +70,7 @@ export const fetchTeamById = async (teamId: number): Promise<Team> => {
 	return teamMapper(team);
 };
 
-export const fetchGameweek = async (filter: 'previous' | 'next' | 'current'): Promise<Gameweek> => {
+export const fetchGameweek = async (filter: 'previous' | 'next' | 'current', includeFixtures: boolean = true): Promise<Gameweek> => {
 	const bootstrapData = await getBootstrapData();
 
 	let targetGameweek = bootstrapData.events.find((event) => {
@@ -100,6 +100,19 @@ export const fetchGameweek = async (filter: 'previous' | 'next' | 'current'): Pr
 		}
 		throw new Error(`No ${filter} gameweek found`);
 	}
+
+    if (!includeFixtures) {
+        return {
+            id: targetGameweek.id,
+            name: `Gameweek ${targetGameweek.id}`,
+            fixtures: [],
+            isActive: !targetGameweek.finished,
+            deadlineTime: targetGameweek.deadline_time,
+            isFinished: targetGameweek.finished,
+            isCurrent: targetGameweek.is_current,
+            isNext: targetGameweek.is_next
+        };
+    }
 
 	const fixturesData = await fetchJson<ApiFixture[]>(API_ENDPOINTS.FIXTURES(targetGameweek.id));
 	const fixtures: Fixture[] = fixturesData.map((fixture) => ({
@@ -175,7 +188,7 @@ export const fetchTotalCostForPlayers = async (playerIds: number[]): Promise<num
 	return selectedPlayers.reduce((total, player) => total + player.cost, 0);
 };
 
-export const fetchFutureGameweeks = async (): Promise<Gameweek[]> => {
+export const fetchFutureGameweeks = async (includeFixtures: boolean = true): Promise<Gameweek[]> => {
 	const bootstrapData = await getBootstrapData();
 	const currentGameweek = bootstrapData.events.find(event => event.is_current);
 	
@@ -195,6 +208,20 @@ export const fetchFutureGameweeks = async (): Promise<Gameweek[]> => {
 		}
 		return false;
 	});
+
+    if (!includeFixtures) {
+        // Optimization: Return gameweeks without fetching fixtures (lightweight)
+        return futureGameweeks.map(gameweek => ({
+            id: gameweek.id,
+            name: `Gameweek ${gameweek.id}`,
+            fixtures: [],
+            isActive: !gameweek.finished,
+            deadlineTime: gameweek.deadline_time,
+            isFinished: gameweek.finished,
+            isCurrent: gameweek.is_current,
+            isNext: gameweek.is_next
+        }));
+    }
 	
 	const gameweeksWithFixtures = await Promise.all(
 		futureGameweeks.map(async (gameweek) => {

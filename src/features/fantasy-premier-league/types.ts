@@ -68,6 +68,7 @@ export interface BootstrapData {
 	}>;
 	events: Array<{
 		id: number;
+        name: string;
 		is_current: boolean;
 		is_next: boolean;
 		finished: boolean;

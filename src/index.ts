@@ -18,18 +18,19 @@ import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
 import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
-import { startTransactionScheduler } from './features/league-integration/TransactionScheduler.js';
 // import paymentApp from './features/payments/payment.routes.js';
 
 import { cors } from 'hono/cors';
 import { authMiddleware } from './middlewares/authMiddleware.js';
+import { startVerificationWorker } from './infrastructure/queue/verification-worker.js';
+import { startPayoutWorker } from './infrastructure/queue/payout-worker.js';
 
 const app = new OpenAPIHono();
 
 // Add cors middleware
 app.use('/api/*', cors({
   origin: ['http://localhost:5173', 'http://localhost:8100', 'https://www.fantasypro.app', 'https://play.fantasypro.app', 'https://fantasypro.app'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowHeaders: ['Content-Type', 'Authorization', 'x-admin-password'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
@@ -41,6 +42,7 @@ const env = createEnvironment(
 
 // Inject Environment into Context (Early)
 app.use('*', async (c, next) => {
+  console.log(`[Request] ${c.req.method} ${c.req.path}`);
   c.set('env', env);
   await next();
 });
@@ -53,20 +55,30 @@ env.publicLeagueService.startScheduler();
 if (process.env.NODE_ENV !== 'test') {
 	// env.blockchainService.listenForEvents(); // Removed in favor of Webhooks
     payoutScheduler.initializeScheduler(); // Start Payout Scheduler
-    startTransactionScheduler(env); // Start Transaction Verification Scheduler
+    // Keep references to workers to prevent garbage collection
+    const verificationWorker = startVerificationWorker(env); // Start BullMQ Worker
+    const paymentWorker = startPayoutWorker(env); // Start Payout Worker
+
     
-    // Trigger initial public league seeding if needed
-    env.publicLeagueService.run().catch(e => console.error('[Startup] Failed to run PublicLeagueService:', e));
+
 }
 //...
 app.route('/api/auth', authenticationApp);
 // app.route('/api/payment', paymentApp); // Mount payment webhook section
 app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
 // app.route('/api/webhooks/ton', tonWebhookApp); // Deprecated
+import verificationWebhookApp from './features/webhooks/verification-webhook-route.js';
+app.route('/api/webhooks', verificationWebhookApp);
+import sseApp from './features/notifications/sse-route.js';
+app.route('/api/notifications', sseApp);
 app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.route('/api/fantasy-teams', fantasyTeamsApp); // Restore Fantasy Teams
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint
 // app.route('/api/fpl', fantasyPremierLeagueApp); // Restore FPL specific routes if needed
+import adminApp from './features/admin/admin-route.js';
+app.route('/api/admin', adminApp);
+import adminSeedingApp from './features/admin/admin-seeding.route.js';
+app.route('/api/admin/seeding', adminSeedingApp);
 app.doc('/doc', {
 	openapi: '3.0.0',
 	info: {

@@ -11,6 +11,9 @@ export const PlayerSchema = z.object({
     position: z.string(),
     image: z.string().optional(),
     cost: z.number(),
+    status: z.enum(['available', 'injured', 'suspended', 'unavailable', 'doubtful']).optional(), // Normalized status
+    chance_of_playing_next_round: z.number().nullable().optional(),
+    news: z.string().optional(),
 });
 export const TeamSchema = z.object({
     id: z.string(),

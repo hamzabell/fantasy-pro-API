@@ -47,12 +47,13 @@ export const toErrorResponse = (error) => {
                 timestamp
             };
         case 'DatabaseError':
-            // Don't expose internal database errors to client
+            // Don't expose internal database errors to client in production, but for debugging we include it
             return {
                 error: 'Database operation failed',
                 details: {
                     operation: error.operation,
-                    model: error.model
+                    model: error.model,
+                    originalError: error.originalError instanceof Error ? error.originalError.message : String(error.originalError)
                 },
                 timestamp
             };

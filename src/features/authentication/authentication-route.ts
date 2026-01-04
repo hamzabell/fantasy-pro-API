@@ -11,6 +11,8 @@ import type { User } from '../../generated/prisma/index.js';
 
 const app = new OpenAPIHono<{ Variables: { user: User | null } }>();
 
+app.get('/test', (c) => c.text('Auth test working'));
+
 // Schemas
 const GoogleLoginRequestSchema = z.object({
   token: z.string().describe('Google ID Token')
