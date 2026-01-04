@@ -11,6 +11,8 @@ const API_ENDPOINTS = {
 };
 
 let bootstrapDataCache: BootstrapData | null = null;
+const liveStatsCache = new Map<number, { data: any, timestamp: number }>();
+const CACHE_TTL = 30 * 1000; // 30 seconds
 
 export const getBootstrapData = async (): Promise<BootstrapData> => {
 	if (!bootstrapDataCache) {
@@ -298,4 +300,49 @@ export const fetchFutureGameweeks = async (includeFixtures: boolean = true): Pro
 	);
 	
 	return gameweeksWithFixtures;
+};
+
+export const fetchGameweekLiveStats = async (gameweekId: number): Promise<Map<number, any>> => {
+    // Check cache first
+    const cached = liveStatsCache.get(gameweekId);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+        return cached.data;
+    }
+
+    try {
+        const data = await fetchJson<{ elements: any[] }>(`/event/${gameweekId}/live/`);
+        
+        // Convert to Map for O(1) Access: PlayerID -> Stats
+        const statsMap = new Map<number, any>();
+        
+        if (data && data.elements) {
+            data.elements.forEach((el: any) => {
+                 // Format to match what fetchPlayerStatsByGameweek returns
+                 statsMap.set(el.id, {
+                     total_points: el.stats.total_points,
+                     goals_scored: el.stats.goals_scored,
+                     assists: el.stats.assists,
+                     clean_sheets: el.stats.clean_sheets,
+                     goals_conceded: el.stats.goals_conceded,
+                     own_goals: el.stats.own_goals,
+                     penalties_saved: el.stats.penalties_saved,
+                     penalties_missed: el.stats.penalties_missed,
+                     yellow_cards: el.stats.yellow_cards,
+                     red_cards: el.stats.red_cards,
+                     saves: el.stats.saves,
+                     bonus: el.stats.bonus,
+                     bps: el.stats.bps,
+                     minutes: el.stats.minutes
+                 });
+            });
+        }
+
+        // Cache the map
+        liveStatsCache.set(gameweekId, { data: statsMap, timestamp: Date.now() });
+
+        return statsMap;
+    } catch (e) {
+        console.error(`Failed to fetch live stats for GW ${gameweekId}`, e);
+        return new Map(); // Return empty map on failure to allow fallback or safe failure
+    }
 };

@@ -10,7 +10,7 @@ import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';
 import { insufficientBalanceError, businessRuleError, databaseError } from '../../fp/domain/errors/AppError.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
-import { fetchGameweek, fetchFutureGameweeks } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchGameweek, fetchFutureGameweeks, fetchGameweekLiveStats } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateUserTeamStats } from './player-stats-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
@@ -1312,8 +1312,11 @@ fantasyLeaguesApp.openapi(getLeagueTableRoute, async (c) => {
                    // Only show active (staked) members in the table
                    const activeMembers = league.members.filter(m => m.status === 'active');
                    
+                   // Batch Fetch Stats (Optimization)
+                   const gameweekLiveStats = await fetchGameweekLiveStats(league.gameweekId);
+
                    const entries = await Promise.all(activeMembers.map(async (m) => {
-                       const { points, goals } = await calculateUserTeamStats(m.userId, league.gameweekId, league.realLifeLeague);
+                       const { points, goals } = await calculateUserTeamStats(m.userId, league.gameweekId, league.realLifeLeague, gameweekLiveStats);
                        return {
                            userId: m.userId,
                            userName: m.user.email,
@@ -1422,7 +1425,8 @@ fantasyLeaguesApp.openapi(getLeaguePositionRoute, async (c) => {
     TE.chainW((league) =>  
         TE.tryCatch(
             async () => {
-                const stats = await calculateLeaguePosition(league.id, league.gameweekId, user.id, league.realLifeLeague);
+                const gameweekLiveStats = await fetchGameweekLiveStats(league.gameweekId);
+                const stats = await calculateLeaguePosition(league.id, league.gameweekId, user.id, league.realLifeLeague, gameweekLiveStats);
                 return stats;
             },
             (e) => businessRuleError('CalculationError', 'Failed to calculate position')

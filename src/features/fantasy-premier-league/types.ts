@@ -98,6 +98,36 @@ export interface PlayerSummary {
 	}>;
 }
 
+export interface GameweekLiveStats {
+    elements: Array<{
+        id: number;
+        stats: {
+            total_points: number;
+            goals_scored: number;
+            assists: number;
+            clean_sheets: number;
+            goals_conceded: number;
+            own_goals: number;
+            penalties_saved: number;
+            penalties_missed: number;
+            yellow_cards: number;
+            red_cards: number;
+            saves: number;
+            bonus: number;
+            bps: number;
+            minutes: number;
+        };
+        explain: Array<{
+            fixture: number;
+            stats: Array<{
+                identifier: string;
+                points: number;
+                value: number;
+            }>;
+        }>;
+    }>;
+}
+
 export interface ApiFixture {
 	id: number;
 	team_h: number;

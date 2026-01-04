@@ -12,7 +12,13 @@ import type {Team, RealLifeLeague} from '../../generated/prisma/index.js';
  * @param userId - The ID of the user whose position to calculate
  * @returns Object containing position, teamName, points, and goals
  */
-export async function calculateLeaguePosition(leagueId: string, gameweekId: number, userId: string, realLifeLeague: RealLifeLeague) {
+export async function calculateLeaguePosition(
+  leagueId: string, 
+  gameweekId: number, 
+  userId: string, 
+  realLifeLeague: RealLifeLeague,
+  playerStatsMap?: Map<number, any>
+) {
   // Get all members of the league
   const memberships = await retrieveFantasyLeagueMembershipsByLeagueId(leagueId);
   
@@ -29,6 +35,12 @@ export async function calculateLeaguePosition(leagueId: string, gameweekId: numb
       ? await Promise.all(
           team.teamPlayers.map(async (playerId: Team['teamPlayers'][0]) => {
             try {
+              let stats;
+              if (playerStatsMap && playerStatsMap.has(playerId)) {
+                  stats = playerStatsMap.get(playerId);
+                  return { points: stats.total_points || 0, goals: stats.goals_scored || 0 };
+              }
+              
               const playerPoints = await fetchPlayerPointsByGameweek(playerId, gameweekId);
               const playerGoals = await fetchPlayerGoalsByGameweek(playerId, gameweekId);
               return { points: playerPoints, goals: playerGoals };
