@@ -39,19 +39,20 @@ export const retrieveUserFromDatabaseById = (id: string) =>
 export const retrieveUserStats = (userId: string) =>
     TE.tryCatch(
         async () => {
-            const memberships = await prisma.fantasyLeagueMembership.findMany({
-                where: { userId },
-                select: {
-                    score: true,
-                    position: true
-                }
-            });
+            const [matches, pointsAgg, trophies] = await prisma.$transaction([
+                prisma.fantasyLeagueMembership.count({ where: { userId } }),
+                prisma.fantasyLeagueMembership.aggregate({
+                    _sum: { score: true },
+                    where: { userId }
+                }),
+                prisma.fantasyLeagueMembership.count({ where: { userId, position: 1 } })
+            ]);
 
-            const matches = memberships.length;
-            const points = memberships.reduce((acc, m) => acc + (Number(m.score) || 0), 0);
-            const trophies = memberships.filter(m => m.position === 1).length;
-
-            return { matches, points, trophies };
+            return { 
+                matches, 
+                points: Number(pointsAgg._sum.score || 0), 
+                trophies 
+            };
         },
         (e) => databaseError('Read', 'UserStats', e)
     );

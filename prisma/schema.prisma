@@ -34,7 +34,11 @@ model User {
   mobileMoneyNumber String?   // New
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-
+  
+  // Telegram Integration
+  telegramId        String?   // Telegram User ID
+  telegramUsername  String?   // Telegram Username
+  telegramPhotoUrl  String?   // Telegram Profile Photo URL
   // Existing relations
   teams             Team[]
   

@@ -22,16 +22,28 @@ const ExchangeAuthCodeSchema = z.object({
     code: z.string()
 }).openapi('ExchangeAuthCodeSchema');
 
+const TelegramUserSchema = z.object({
+  id: z.number(),
+  first_name: z.string(),
+  last_name: z.string().optional(),
+  username: z.string().optional(),
+  photo_url: z.string().optional(),
+  auth_date: z.number().optional(),
+  hash: z.string().optional()
+}).openapi('TelegramUser');
+
 const WalletLoginRequestSchema = z.object({
   address: z.string(),
-  proof: z.any() 
+  proof: z.any(),
+  telegramUser: TelegramUserSchema.optional()
 }).openapi('WalletLoginRequest');
 
 const WalletSignupRequestSchema = z.object({
   address: z.string(),
   proof: z.any(),
   name: z.string(),
-  username: z.string()
+  username: z.string(),
+  telegramUser: TelegramUserSchema.optional()
 }).openapi('WalletSignupRequest');
 
 const AuthResponseSchema = z.object({
@@ -298,7 +310,9 @@ const loginWalletRoute = createRoute({
 
 app.openapi(loginWalletRoute, async (c) => {
     const { address, proof } = c.req.valid('json');
+    console.time(`[Performance] LoginWallet ${address}`);
     const result = await loginWithWallet(address, proof)();
+    console.timeEnd(`[Performance] LoginWallet ${address}`);
     
     if (E.isRight(result)) {
         return c.json(result.right, 200);
@@ -330,8 +344,8 @@ const signupWalletRoute = createRoute({
 });
 
 app.openapi(signupWalletRoute, async (c) => {
-    const { address, proof, name, username } = c.req.valid('json');
-    const result = await signupWithWallet(address, proof, { name, username })();
+    const { address, proof, name, username, telegramUser } = c.req.valid('json');
+    const result = await signupWithWallet(address, proof, { name, username, telegramUser })();
     
     if (E.isRight(result)) {
         return c.json(result.right, 200);

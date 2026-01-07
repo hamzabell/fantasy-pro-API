@@ -294,7 +294,17 @@ export const loginWithWallet = (address: string, proof: any): TaskEither<AppErro
 export const signupWithWallet = (
     address: string, 
     proof: any, 
-    data: { name: string; username: string }
+    data: { 
+        name: string; 
+        username: string;
+        telegramUser?: {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+            photo_url?: string;
+        }
+    }
 ): TaskEither<AppError, AuthResponse> =>
     pipe(
         TE.tryCatch(
@@ -316,23 +326,39 @@ export const signupWithWallet = (
                     if (existing.username === data.username) throw new Error('Username taken');
                 }
 
-                // Create User
-                // Initials for image
-                const initials = data.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                const image = `https://ui-avatars.com/api/?name=${initials}&background=random`;
+                // Prepare User Data
+                let name = data.name;
+                let image = `https://ui-avatars.com/api/?name=${data.name}&background=random`;
 
-                // Handle email - Make it optional or placeholder?
-                // Schema has email? @unique. If we made it optional, great.
-                // Assuming schema update applied.
-                
+                // If Telegram data is provided, use it
+                let telegramId: string | null = null;
+                let telegramUsername: string | null = null;
+                let telegramPhotoUrl: string | null = null;
+
+                if (data.telegramUser) {
+                    telegramId = String(data.telegramUser.id);
+                    telegramUsername = data.telegramUser.username || null;
+                    telegramPhotoUrl = data.telegramUser.photo_url || null;
+                    
+                    // Override name/image if Telegram provides better ones? 
+                    // User request: "for other information like their name and profike picture can be obtained from running in the telegram context"
+                    // So we PREFER telegram info if available.
+                    const tgName = [data.telegramUser.first_name, data.telegramUser.last_name].filter(Boolean).join(' ');
+                    if (tgName) name = tgName;
+                    if (data.telegramUser.photo_url) image = data.telegramUser.photo_url;
+                }
+
                 const newUser = await prisma.user.create({
                     data: {
                         walletAddress: address,
                         username: data.username,
-                        name: data.name,
+                        name: name,
                         image: image,
-                        email: null, // Explicitly null for wallet users initially
-                        coins: 0
+                        email: null,
+                        coins: 0,
+                        telegramId,
+                        telegramUsername,
+                        telegramPhotoUrl
                     }
                 });
                 return newUser;
