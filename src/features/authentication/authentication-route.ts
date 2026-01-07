@@ -345,7 +345,9 @@ const signupWalletRoute = createRoute({
 
 app.openapi(signupWalletRoute, async (c) => {
     const { address, proof, name, username, telegramUser } = c.req.valid('json');
+    console.time(`[Performance] SignupWallet ${address}`);
     const result = await signupWithWallet(address, proof, { name, username, telegramUser })();
+    console.timeEnd(`[Performance] SignupWallet ${address}`);
     
     if (E.isRight(result)) {
         return c.json(result.right, 200);
