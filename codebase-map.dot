@@ -1,0 +1,425 @@
+strict digraph "dependency-cruiser output"{
+    rankdir="LR" splines="true" overlap="false" nodesep="0.16" ranksep="0.18" fontname="Helvetica-bold" fontsize="9" style="rounded,bold,filled" fillcolor="#ffffff" compound="true"
+    node [shape="box" style="rounded, filled" height="0.2" color="black" fillcolor="#ffffcc" fontcolor="black" fontname="Helvetica" fontsize="9"]
+    edge [arrowhead="normal" arrowsize="0.6" penwidth="2.0" color="#00000033" fontname="Helvetica" fontsize="9"]
+
+    subgraph "cluster_.." {label=".." subgraph "cluster_../build" {label="build" subgraph "cluster_../build/league_payout" {label="league_payout" "../build/league_payout/tact_LeaguePayout" [label=<tact_LeaguePayout> tooltip="tact_LeaguePayout" ] } } }
+    subgraph "cluster_@hono" {label="@hono" "@hono/zod-openapi" [label=<zod-openapi> tooltip="zod-openapi" ] }
+    "crypto" [label=<crypto> tooltip="crypto" URL="https://nodejs.org/api/crypto.html" color="grey" fontcolor="grey"]
+    "events" [label=<events> tooltip="events" URL="https://nodejs.org/api/events.html" color="grey" fontcolor="grey"]
+    "fs" [label=<fs> tooltip="fs" URL="https://nodejs.org/api/fs.html" color="grey" fontcolor="grey"]
+    subgraph "cluster_hono" {label="hono" "hono/cors" [label=<cors> tooltip="cors" ] }
+    subgraph "cluster_hono" {label="hono" "hono/testing" [label=<testing> tooltip="testing" ] }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@faker-js" {label="@faker-js" subgraph "cluster_node_modules/@faker-js/faker" {label="faker" subgraph "cluster_node_modules/@faker-js/faker/dist" {label="dist" "node_modules/@faker-js/faker/dist/index.cjs" [label=<index.cjs> tooltip="index.cjs" URL="https://www.npmjs.com/package/@faker-js/faker" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@hono" {label="@hono" subgraph "cluster_node_modules/@hono/node-server" {label="node-server" subgraph "cluster_node_modules/@hono/node-server/dist" {label="dist" "node_modules/@hono/node-server/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@hono/node-server" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@hono" {label="@hono" subgraph "cluster_node_modules/@hono/swagger-ui" {label="swagger-ui" subgraph "cluster_node_modules/@hono/swagger-ui/dist" {label="dist" "node_modules/@hono/swagger-ui/dist/index.cjs" [label=<index.cjs> tooltip="index.cjs" URL="https://www.npmjs.com/package/@hono/swagger-ui" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@prisma" {label="@prisma" subgraph "cluster_node_modules/@prisma/client" {label="client" "node_modules/@prisma/client/default.js" [label=<default.js> tooltip="default.js" URL="https://www.npmjs.com/package/@prisma/client" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@prisma" {label="@prisma" subgraph "cluster_node_modules/@prisma/client" {label="client" subgraph "cluster_node_modules/@prisma/client/runtime" {label="runtime" "node_modules/@prisma/client/runtime/library.js" [label=<library.js> tooltip="library.js" URL="https://www.npmjs.com/package/@prisma/client" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@supabase" {label="@supabase" subgraph "cluster_node_modules/@supabase/supabase-js" {label="supabase-js" subgraph "cluster_node_modules/@supabase/supabase-js/dist" {label="dist" subgraph "cluster_node_modules/@supabase/supabase-js/dist/main" {label="main" "node_modules/@supabase/supabase-js/dist/main/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@supabase/supabase-js" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/@ton" {label="@ton" subgraph "cluster_node_modules/@ton/core" {label="core" subgraph "cluster_node_modules/@ton/core/dist" {label="dist" "node_modules/@ton/core/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@ton/core" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/bullmq" {label="bullmq" subgraph "cluster_node_modules/bullmq/dist" {label="dist" subgraph "cluster_node_modules/bullmq/dist/cjs" {label="cjs" "node_modules/bullmq/dist/cjs/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/bullmq" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/dotenv" {label="dotenv" "node_modules/dotenv/config.js" [label=<config.js> tooltip="config.js" URL="https://www.npmjs.com/package/dotenv" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/ethers" {label="ethers" subgraph "cluster_node_modules/ethers/lib.commonjs" {label="lib.commonjs" "node_modules/ethers/lib.commonjs/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/ethers" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/fp-ts" {label="fp-ts" subgraph "cluster_node_modules/fp-ts/lib" {label="lib" "node_modules/fp-ts/lib/Either.js" [label=<Either.js> tooltip="Either.js" URL="https://www.npmjs.com/package/fp-ts" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/fp-ts" {label="fp-ts" subgraph "cluster_node_modules/fp-ts/lib" {label="lib" "node_modules/fp-ts/lib/Option.js" [label=<Option.js> tooltip="Option.js" URL="https://www.npmjs.com/package/fp-ts" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/fp-ts" {label="fp-ts" subgraph "cluster_node_modules/fp-ts/lib" {label="lib" "node_modules/fp-ts/lib/ReaderTaskEither.js" [label=<ReaderTaskEither.js> tooltip="ReaderTaskEither.js" URL="https://www.npmjs.com/package/fp-ts" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/fp-ts" {label="fp-ts" subgraph "cluster_node_modules/fp-ts/lib" {label="lib" "node_modules/fp-ts/lib/TaskEither.js" [label=<TaskEither.js> tooltip="TaskEither.js" URL="https://www.npmjs.com/package/fp-ts" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/fp-ts" {label="fp-ts" subgraph "cluster_node_modules/fp-ts/lib" {label="lib" "node_modules/fp-ts/lib/function.js" [label=<function.js> tooltip="function.js" URL="https://www.npmjs.com/package/fp-ts" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/fp-ts" {label="fp-ts" subgraph "cluster_node_modules/fp-ts/lib" {label="lib" "node_modules/fp-ts/lib/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/fp-ts" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/google-auth-library" {label="google-auth-library" subgraph "cluster_node_modules/google-auth-library/build" {label="build" subgraph "cluster_node_modules/google-auth-library/build/src" {label="src" "node_modules/google-auth-library/build/src/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/google-auth-library" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/hono" {label="hono" subgraph "cluster_node_modules/hono/dist" {label="dist" subgraph "cluster_node_modules/hono/dist/cjs" {label="cjs" "node_modules/hono/dist/cjs/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/hono" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/ioredis" {label="ioredis" subgraph "cluster_node_modules/ioredis/built" {label="built" "node_modules/ioredis/built/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/ioredis" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/jsonwebtoken" {label="jsonwebtoken" "node_modules/jsonwebtoken/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/jsonwebtoken" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/passport-jwt" {label="passport-jwt" subgraph "cluster_node_modules/passport-jwt/lib" {label="lib" "node_modules/passport-jwt/lib/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/passport-jwt" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/passport" {label="passport" subgraph "cluster_node_modules/passport/lib" {label="lib" "node_modules/passport/lib/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/passport" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/pg" {label="pg" subgraph "cluster_node_modules/pg/lib" {label="lib" "node_modules/pg/lib/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/pg" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/ramda" {label="ramda" subgraph "cluster_node_modules/ramda/src" {label="src" "node_modules/ramda/src/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/ramda" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/rollbar" {label="rollbar" subgraph "cluster_node_modules/rollbar/src" {label="src" subgraph "cluster_node_modules/rollbar/src/server" {label="server" "node_modules/rollbar/src/server/rollbar.js" [label=<rollbar.js> tooltip="rollbar.js" URL="https://www.npmjs.com/package/rollbar" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/uuid" {label="uuid" subgraph "cluster_node_modules/uuid/dist" {label="dist" "node_modules/uuid/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/uuid" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    subgraph "cluster_node_modules" {label="node_modules" subgraph "cluster_node_modules/vitest" {label="vitest" subgraph "cluster_node_modules/vitest/dist" {label="dist" "node_modules/vitest/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/vitest" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } }
+    "path" [label=<path> tooltip="path" URL="https://nodejs.org/api/path.html" color="grey" fontcolor="grey"]
+    subgraph "cluster_scripts" {label="scripts" "scripts/cleanup-db.ts" [label=<cleanup-db.ts> tooltip="cleanup-db.ts" URL="scripts/cleanup-db.ts" fillcolor="#ddfeff"] }
+    "scripts/cleanup-db.ts" -> "src/generated/prisma/index.js"
+    subgraph "cluster_scripts" {label="scripts" "scripts/generate-api-key.ts" [label=<generate-api-key.ts> tooltip="generate-api-key.ts" URL="scripts/generate-api-key.ts" fillcolor="#ddfeff"] }
+    "scripts/generate-api-key.ts" -> "crypto" [style="dashed" penwidth="1.0"]
+    "scripts/generate-api-key.ts" -> "node_modules/dotenv/config.js" [penwidth="1.0"]
+    subgraph "cluster_scripts" {label="scripts" "scripts/seed-powerup-categories-pg.cjs" [label=<seed-powerup-categories-pg.cjs> tooltip="seed-powerup-categories-pg.cjs" URL="scripts/seed-powerup-categories-pg.cjs" ] }
+    "scripts/seed-powerup-categories-pg.cjs" -> "node_modules/pg/lib/index.js" [penwidth="1.0"]
+    "scripts/seed-powerup-categories-pg.cjs" -> "node_modules/uuid/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_scripts" {label="scripts" "scripts/seed-powerup-categories.cjs" [label=<seed-powerup-categories.cjs> tooltip="seed-powerup-categories.cjs" URL="scripts/seed-powerup-categories.cjs" ] }
+    "scripts/seed-powerup-categories.cjs" -> "node_modules/@prisma/client/default.js" [penwidth="1.0"]
+    subgraph "cluster_scripts" {label="scripts" "scripts/test-default-import.ts" [label=<test-default-import.ts> tooltip="test-default-import.ts" URL="scripts/test-default-import.ts" fillcolor="#ddfeff"] }
+    "scripts/test-default-import.ts" -> "node_modules/fp-ts/lib/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/authentication" {label="authentication" "src/features/authentication/auth.service.ts" [label=<auth.service.ts> tooltip="auth.service.ts" URL="src/features/authentication/auth.service.ts" fillcolor="#ddfeff"] } } }
+    "src/features/authentication/auth.service.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/features/authentication/auth.service.ts" -> "src/prisma.ts"
+    "src/features/authentication/auth.service.ts" -> "src/features/users/users-factories.ts"
+    "src/features/authentication/auth.service.ts" -> "src/features/users/users-model.ts"
+    "src/features/authentication/auth.service.ts" -> "src/features/wallet/wallet.repository.ts"
+    "src/features/authentication/auth.service.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/authentication/auth.service.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    "src/features/authentication/auth.service.ts" -> "node_modules/google-auth-library/build/src/index.js" [penwidth="1.0"]
+    "src/features/authentication/auth.service.ts" -> "node_modules/jsonwebtoken/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/authentication" {label="authentication" "src/features/authentication/authentication-route.ts" [label=<authentication-route.ts> tooltip="authentication-route.ts" URL="src/features/authentication/authentication-route.ts" fillcolor="#ddfeff"] } } }
+    "src/features/authentication/authentication-route.ts" -> "src/features/users/users-model.ts"
+    "src/features/authentication/authentication-route.ts" -> "src/features/authentication/auth.service.ts"
+    "src/features/authentication/authentication-route.ts" -> "@hono/zod-openapi"
+    "src/features/authentication/authentication-route.ts" -> "node_modules/fp-ts/lib/Either.js" [penwidth="1.0"]
+    "src/features/authentication/authentication-route.ts" -> "node_modules/jsonwebtoken/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/authentication" {label="authentication" "src/features/authentication/authentication.test.ts" [label=<authentication.test.ts> tooltip="authentication.test.ts" URL="src/features/authentication/authentication.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/authentication/authentication.test.ts" -> "src/features/users/users-model.ts"
+    "src/features/authentication/authentication.test.ts" -> "src/features/authentication/authentication-route.ts"
+    "src/features/authentication/authentication.test.ts" -> "node_modules/fp-ts/lib/index.js" [penwidth="1.0"]
+    "src/features/authentication/authentication.test.ts" -> "node_modules/hono/dist/cjs/index.js" [penwidth="1.0"]
+    "src/features/authentication/authentication.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/authentication" {label="authentication" "src/features/authentication/passport.config.ts" [label=<passport.config.ts> tooltip="passport.config.ts" URL="src/features/authentication/passport.config.ts" fillcolor="#ddfeff"] } } }
+    "src/features/authentication/passport.config.ts" -> "src/features/users/users-model.ts"
+    "src/features/authentication/passport.config.ts" -> "node_modules/passport/lib/index.js" [penwidth="1.0"]
+    "src/features/authentication/passport.config.ts" -> "node_modules/passport-jwt/lib/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/fantasy-leagues-factories.ts" [label=<fantasy-leagues-factories.ts> tooltip="fantasy-leagues-factories.ts" URL="src/features/fantasy-leagues/fantasy-leagues-factories.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/fantasy-leagues-factories.ts" -> "src/generated/prisma/index.js"
+    "src/features/fantasy-leagues/fantasy-leagues-factories.ts" -> "node_modules/@faker-js/faker/dist/index.cjs" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" [label=<fantasy-leagues-membership-status.test.ts> tooltip="fantasy-leagues-membership-status.test.ts" URL="src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/index.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/prisma.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/utils/supabaseMocks-factories.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/utils/supabaseMocks.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/utils/testUtils.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/features/supabase/supabase-helpers.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/features/users/users-factories.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/features/users/users-model.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/features/fantasy-leagues/fantasy-leagues-factories.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "src/features/fantasy-leagues/fantasy-leagues-model.ts"
+    "src/features/fantasy-leagues/fantasy-leagues-membership-status.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/fantasy-leagues-model.ts" [label=<fantasy-leagues-model.ts> tooltip="fantasy-leagues-model.ts" URL="src/features/fantasy-leagues/fantasy-leagues-model.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/fantasy-leagues-model.ts" -> "src/prisma.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/fantasy-leagues-route.ts" [label=<fantasy-leagues-route.ts> tooltip="fantasy-leagues-route.ts" URL="src/features/fantasy-leagues/fantasy-leagues-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/fantasy-leagues.test.ts" [label=<fantasy-leagues.test.ts> tooltip="fantasy-leagues.test.ts" URL="src/features/fantasy-leagues/fantasy-leagues.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/generated/prisma/index.js"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/index.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/prisma.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/utils/supabaseMocks-factories.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/utils/supabaseMocks.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/utils/testUtils.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/fantasy-teams/fantasy-teams-model.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/supabase/supabase-helpers.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/users/users-factories.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/users/users-model.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/fantasy-leagues/fantasy-leagues-factories.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "src/features/fantasy-leagues/fantasy-leagues-model.ts"
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "node_modules/@faker-js/faker/dist/index.cjs" [penwidth="1.0"]
+    "src/features/fantasy-leagues/fantasy-leagues.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/league-cost-utils.test.ts" [label=<league-cost-utils.test.ts> tooltip="league-cost-utils.test.ts" URL="src/features/fantasy-leagues/league-cost-utils.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/league-cost-utils.test.ts" -> "src/features/fantasy-leagues/league-cost-utils.ts"
+    "src/features/fantasy-leagues/league-cost-utils.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/league-cost-utils.ts" [label=<league-cost-utils.ts> tooltip="league-cost-utils.ts" URL="src/features/fantasy-leagues/league-cost-utils.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/league-position-utils.test.ts" [label=<league-position-utils.test.ts> tooltip="league-position-utils.test.ts" URL="src/features/fantasy-leagues/league-position-utils.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/league-position-utils.test.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-leagues/league-position-utils.test.ts" -> "src/features/fantasy-teams/fantasy-teams-model.ts"
+    "src/features/fantasy-leagues/league-position-utils.test.ts" -> "src/features/fantasy-leagues/fantasy-leagues-model.ts"
+    "src/features/fantasy-leagues/league-position-utils.test.ts" -> "src/features/fantasy-leagues/league-position-utils.ts"
+    "src/features/fantasy-leagues/league-position-utils.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/league-position-utils.ts" [label=<league-position-utils.ts> tooltip="league-position-utils.ts" URL="src/features/fantasy-leagues/league-position-utils.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/league-position-utils.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-leagues/league-position-utils.ts" -> "src/features/fantasy-teams/fantasy-teams-model.ts"
+    "src/features/fantasy-leagues/league-position-utils.ts" -> "src/features/fantasy-leagues/fantasy-leagues-model.ts"
+    "src/features/fantasy-leagues/league-position-utils.ts" -> "node_modules/ramda/src/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/membership-worker.ts" [label=<membership-worker.ts> tooltip="membership-worker.ts" URL="src/features/fantasy-leagues/membership-worker.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/membership-worker.ts" -> "src/fp/infrastructure/Logger.ts"
+    "src/features/fantasy-leagues/membership-worker.ts" -> "node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    "src/features/fantasy-leagues/membership-worker.ts" -> "node_modules/fp-ts/lib/Either.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/player-stats-utils.test.ts" [label=<player-stats-utils.test.ts> tooltip="player-stats-utils.test.ts" URL="src/features/fantasy-leagues/player-stats-utils.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/player-stats-utils.test.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-leagues/player-stats-utils.test.ts" -> "src/features/fantasy-teams/fantasy-teams-model.ts"
+    "src/features/fantasy-leagues/player-stats-utils.test.ts" -> "src/features/fantasy-leagues/player-stats-utils.ts"
+    "src/features/fantasy-leagues/player-stats-utils.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/player-stats-utils.ts" [label=<player-stats-utils.ts> tooltip="player-stats-utils.ts" URL="src/features/fantasy-leagues/player-stats-utils.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/player-stats-utils.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-leagues/player-stats-utils.ts" -> "src/features/fantasy-teams/fantasy-teams-model.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/prize-distribution-utils.test.ts" [label=<prize-distribution-utils.test.ts> tooltip="prize-distribution-utils.test.ts" URL="src/features/fantasy-leagues/prize-distribution-utils.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/prize-distribution-utils.test.ts" -> "src/features/fantasy-leagues/prize-distribution-utils.ts"
+    "src/features/fantasy-leagues/prize-distribution-utils.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-leagues" {label="fantasy-leagues" "src/features/fantasy-leagues/prize-distribution-utils.ts" [label=<prize-distribution-utils.ts> tooltip="prize-distribution-utils.ts" URL="src/features/fantasy-leagues/prize-distribution-utils.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-leagues/prize-distribution-utils.ts" -> "node_modules/ramda/src/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-premier-league" {label="fantasy-premier-league" "src/features/fantasy-premier-league/fantasy-premier-league-api.ts" [label=<fantasy-premier-league-api.ts> tooltip="fantasy-premier-league-api.ts" URL="src/features/fantasy-premier-league/fantasy-premier-league-api.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-premier-league/fantasy-premier-league-api.ts" -> "src/utils/api.ts"
+    "src/features/fantasy-premier-league/fantasy-premier-league-api.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-factories.ts"
+    "src/features/fantasy-premier-league/fantasy-premier-league-api.ts" -> "node_modules/ramda/src/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-premier-league" {label="fantasy-premier-league" "src/features/fantasy-premier-league/fantasy-premier-league-factories.ts" [label=<fantasy-premier-league-factories.ts> tooltip="fantasy-premier-league-factories.ts" URL="src/features/fantasy-premier-league/fantasy-premier-league-factories.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-premier-league" {label="fantasy-premier-league" "src/features/fantasy-premier-league/fantasy-premier-league-schemas.ts" [label=<fantasy-premier-league-schemas.ts> tooltip="fantasy-premier-league-schemas.ts" URL="src/features/fantasy-premier-league/fantasy-premier-league-schemas.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-premier-league/fantasy-premier-league-schemas.ts" -> "@hono/zod-openapi"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-premier-league" {label="fantasy-premier-league" "src/features/fantasy-premier-league/types.ts" [label=<types.ts> tooltip="types.ts" URL="src/features/fantasy-premier-league/types.ts" fillcolor="#ccffcc"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" "src/features/fantasy-teams/fantasy-teams-model.ts" [label=<fantasy-teams-model.ts> tooltip="fantasy-teams-model.ts" URL="src/features/fantasy-teams/fantasy-teams-model.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-teams/fantasy-teams-model.ts" -> "src/prisma.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" "src/features/fantasy-teams/fantasy-teams-route.ts" [label=<fantasy-teams-route.ts> tooltip="fantasy-teams-route.ts" URL="src/features/fantasy-teams/fantasy-teams-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" "src/features/fantasy-teams/fantasy-teams-schemas.ts" [label=<fantasy-teams-schemas.ts> tooltip="fantasy-teams-schemas.ts" URL="src/features/fantasy-teams/fantasy-teams-schemas.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-teams/fantasy-teams-schemas.ts" -> "@hono/zod-openapi"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" "src/features/fantasy-teams/fantasy-teams.test.ts" [label=<fantasy-teams.test.ts> tooltip="fantasy-teams.test.ts" URL="src/features/fantasy-teams/fantasy-teams.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/generated/prisma/index.js"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/index.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/utils/supabaseMocks-factories.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/utils/supabaseMocks.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/utils/testUtils.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/features/supabase/supabase-helpers.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/features/users/users-model.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "src/features/fantasy-teams/fantasy-teams-model.ts"
+    "src/features/fantasy-teams/fantasy-teams.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" subgraph "cluster_src/features/fantasy-teams/repository" {label="repository" "src/features/fantasy-teams/repository/TeamRepository.ts" [label=<TeamRepository.ts> tooltip="TeamRepository.ts" URL="src/features/fantasy-teams/repository/TeamRepository.ts" fillcolor="#ddfeff"] } } } }
+    "src/features/fantasy-teams/repository/TeamRepository.ts" -> "src/fp/adapters/PrismaAdapter.ts"
+    "src/features/fantasy-teams/repository/TeamRepository.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/repository/TeamRepository.ts" -> "node_modules/fp-ts/lib/Option.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/repository/TeamRepository.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" subgraph "cluster_src/features/fantasy-teams/service" {label="service" "src/features/fantasy-teams/service/TeamPointsService.ts" [label=<TeamPointsService.ts> tooltip="TeamPointsService.ts" URL="src/features/fantasy-teams/service/TeamPointsService.ts" fillcolor="#ddfeff"] } } } }
+    "src/features/fantasy-teams/service/TeamPointsService.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/features/fantasy-teams/service/TeamPointsService.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-teams/service/TeamPointsService.ts" -> "src/features/fantasy-teams/repository/TeamRepository.ts"
+    "src/features/fantasy-teams/service/TeamPointsService.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/service/TeamPointsService.ts" -> "node_modules/fp-ts/lib/ReaderTaskEither.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/service/TeamPointsService.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/fantasy-teams" {label="fantasy-teams" subgraph "cluster_src/features/fantasy-teams/service" {label="service" "src/features/fantasy-teams/service/TeamService.ts" [label=<TeamService.ts> tooltip="TeamService.ts" URL="src/features/fantasy-teams/service/TeamService.ts" fillcolor="#ddfeff"] } } } }
+    "src/features/fantasy-teams/service/TeamService.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/features/fantasy-teams/service/TeamService.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    "src/features/fantasy-teams/service/TeamService.ts" -> "src/features/fantasy-teams/repository/TeamRepository.ts"
+    "src/features/fantasy-teams/service/TeamService.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/service/TeamService.ts" -> "node_modules/fp-ts/lib/Option.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/service/TeamService.ts" -> "node_modules/fp-ts/lib/ReaderTaskEither.js" [penwidth="1.0"]
+    "src/features/fantasy-teams/service/TeamService.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/LeagueFactory.ts" [label=<LeagueFactory.ts> tooltip="LeagueFactory.ts" URL="src/features/league-integration/LeagueFactory.ts" fillcolor="#ddfeff"] } } }
+    "src/features/league-integration/LeagueFactory.ts" -> "src/features/league-integration/PremierLeagueService.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/LeagueIntegrationService.ts" [label=<LeagueIntegrationService.ts> tooltip="LeagueIntegrationService.ts" URL="src/features/league-integration/LeagueIntegrationService.ts" fillcolor="#ccffcc"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/PremierLeagueService.ts" [label=<PremierLeagueService.ts> tooltip="PremierLeagueService.ts" URL="src/features/league-integration/PremierLeagueService.ts" fillcolor="#ddfeff"] } } }
+    "src/features/league-integration/PremierLeagueService.ts" -> "src/generated/prisma/index.js"
+    "src/features/league-integration/PremierLeagueService.ts" -> "src/features/fantasy-premier-league/fantasy-premier-league-api.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/TransactionVerificationService.test.ts" [label=<TransactionVerificationService.test.ts> tooltip="TransactionVerificationService.test.ts" URL="src/features/league-integration/TransactionVerificationService.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/league-integration/TransactionVerificationService.test.ts" -> "src/features/league-integration/TransactionVerificationService.ts"
+    "src/features/league-integration/TransactionVerificationService.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/TransactionVerificationService.ts" [label=<TransactionVerificationService.ts> tooltip="TransactionVerificationService.ts" URL="src/features/league-integration/TransactionVerificationService.ts" fillcolor="#ddfeff"] } } }
+    "src/features/league-integration/TransactionVerificationService.ts" -> "src/fp/infrastructure/Logger.ts"
+    "src/features/league-integration/TransactionVerificationService.ts" -> "node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    "src/features/league-integration/TransactionVerificationService.ts" -> "events" [style="dashed" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/league-integration-route.ts" [label=<league-integration-route.ts> tooltip="league-integration-route.ts" URL="src/features/league-integration/league-integration-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/league-integration-schemas.ts" [label=<league-integration-schemas.ts> tooltip="league-integration-schemas.ts" URL="src/features/league-integration/league-integration-schemas.ts" fillcolor="#ddfeff"] } } }
+    "src/features/league-integration/league-integration-schemas.ts" -> "src/generated/prisma/index.js"
+    "src/features/league-integration/league-integration-schemas.ts" -> "@hono/zod-openapi"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/league-integration" {label="league-integration" "src/features/league-integration/league-integration.test.ts" [label=<league-integration.test.ts> tooltip="league-integration.test.ts" URL="src/features/league-integration/league-integration.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/league-integration/league-integration.test.ts" -> "src/index.ts"
+    "src/features/league-integration/league-integration.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/notifications" {label="notifications" "src/features/notifications/sse-route.ts" [label=<sse-route.ts> tooltip="sse-route.ts" URL="src/features/notifications/sse-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/supabase" {label="supabase" "src/features/supabase/supabase-helpers.ts" [label=<supabase-helpers.ts> tooltip="supabase-helpers.ts" URL="src/features/supabase/supabase-helpers.ts" fillcolor="#ddfeff"] } } }
+    "src/features/supabase/supabase-helpers.ts" -> "src/features/users/users-factories.ts"
+    "src/features/supabase/supabase-helpers.ts" -> "src/features/users/users-model.ts"
+    "src/features/supabase/supabase-helpers.ts" -> "node_modules/@supabase/supabase-js/dist/main/index.js" [penwidth="1.0"]
+    "src/features/supabase/supabase-helpers.ts" -> "node_modules/dotenv/config.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/users" {label="users" subgraph "cluster_src/features/users/repository" {label="repository" "src/features/users/repository/UserRepository.ts" [label=<UserRepository.ts> tooltip="UserRepository.ts" URL="src/features/users/repository/UserRepository.ts" fillcolor="#ddfeff"] } } } }
+    "src/features/users/repository/UserRepository.ts" -> "src/fp/adapters/PrismaAdapter.ts"
+    "src/features/users/repository/UserRepository.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/users/repository/UserRepository.ts" -> "node_modules/fp-ts/lib/Option.js" [penwidth="1.0"]
+    "src/features/users/repository/UserRepository.ts" -> "node_modules/fp-ts/lib/ReaderTaskEither.js" [penwidth="1.0"]
+    "src/features/users/repository/UserRepository.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/users" {label="users" "src/features/users/users-factories.ts" [label=<users-factories.ts> tooltip="users-factories.ts" URL="src/features/users/users-factories.ts" fillcolor="#ddfeff"] } } }
+    "src/features/users/users-factories.ts" -> "node_modules/@faker-js/faker/dist/index.cjs" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/users" {label="users" "src/features/users/users-model.ts" [label=<users-model.ts> tooltip="users-model.ts" URL="src/features/users/users-model.ts" fillcolor="#ddfeff"] } } }
+    "src/features/users/users-model.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/features/users/users-model.ts" -> "src/prisma.ts"
+    "src/features/users/users-model.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/wallet" {label="wallet" "src/features/wallet/encryption.ts" [label=<encryption.ts> tooltip="encryption.ts" URL="src/features/wallet/encryption.ts" fillcolor="#ddfeff"] } } }
+    "src/features/wallet/encryption.ts" -> "crypto" [style="dashed" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/wallet" {label="wallet" "src/features/wallet/wallet.repository.ts" [label=<wallet.repository.ts> tooltip="wallet.repository.ts" URL="src/features/wallet/wallet.repository.ts" fillcolor="#ddfeff"] } } }
+    "src/features/wallet/wallet.repository.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/features/wallet/wallet.repository.ts" -> "src/fp/utils/fp-utils.ts"
+    "src/features/wallet/wallet.repository.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/wallet/wallet.repository.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/wallet" {label="wallet" "src/features/wallet/wallet.service.test.ts" [label=<wallet.service.test.ts> tooltip="wallet.service.test.ts" URL="src/features/wallet/wallet.service.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/wallet/wallet.service.test.ts" -> "src/features/wallet/wallet.service.ts"
+    "src/features/wallet/wallet.service.test.ts" -> "node_modules/fp-ts/lib/index.js" [penwidth="1.0"]
+    "src/features/wallet/wallet.service.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/wallet" {label="wallet" "src/features/wallet/wallet.service.ts" [label=<wallet.service.ts> tooltip="wallet.service.ts" URL="src/features/wallet/wallet.service.ts" fillcolor="#ddfeff"] } } }
+    "src/features/wallet/wallet.service.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/features/wallet/wallet.service.ts" -> "src/generated/prisma/runtime/library.js"
+    "src/features/wallet/wallet.service.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/features/wallet/wallet.service.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/gameweek-webhook-route.ts" [label=<gameweek-webhook-route.ts> tooltip="gameweek-webhook-route.ts" URL="src/features/webhooks/gameweek-webhook-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/gameweek-webhook.test.ts" [label=<gameweek-webhook.test.ts> tooltip="gameweek-webhook.test.ts" URL="src/features/webhooks/gameweek-webhook.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/webhooks/gameweek-webhook.test.ts" -> "src/prisma.ts"
+    "src/features/webhooks/gameweek-webhook.test.ts" -> "src/features/webhooks/gameweek-webhook-route.ts"
+    "src/features/webhooks/gameweek-webhook.test.ts" -> "src/features/webhooks/optimized-winner-calculator.ts"
+    "src/features/webhooks/gameweek-webhook.test.ts" -> "hono/testing"
+    "src/features/webhooks/gameweek-webhook.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/league-winner-calculator.test.ts" [label=<league-winner-calculator.test.ts> tooltip="league-winner-calculator.test.ts" URL="src/features/webhooks/league-winner-calculator.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/webhooks/league-winner-calculator.test.ts" -> "src/prisma.ts"
+    "src/features/webhooks/league-winner-calculator.test.ts" -> "src/features/webhooks/league-winner-calculator.ts"
+    "src/features/webhooks/league-winner-calculator.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/league-winner-calculator.ts" [label=<league-winner-calculator.ts> tooltip="league-winner-calculator.ts" URL="src/features/webhooks/league-winner-calculator.ts" fillcolor="#ddfeff"] } } }
+    "src/features/webhooks/league-winner-calculator.ts" -> "src/prisma.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/optimized-winner-calculator.test.ts" [label=<optimized-winner-calculator.test.ts> tooltip="optimized-winner-calculator.test.ts" URL="src/features/webhooks/optimized-winner-calculator.test.ts" fillcolor="#ddfeff"] } } }
+    "src/features/webhooks/optimized-winner-calculator.test.ts" -> "src/prisma.ts"
+    "src/features/webhooks/optimized-winner-calculator.test.ts" -> "src/features/webhooks/optimized-winner-calculator.ts"
+    "src/features/webhooks/optimized-winner-calculator.test.ts" -> "node_modules/@faker-js/faker/dist/index.cjs" [penwidth="1.0"]
+    "src/features/webhooks/optimized-winner-calculator.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/optimized-winner-calculator.ts" [label=<optimized-winner-calculator.ts> tooltip="optimized-winner-calculator.ts" URL="src/features/webhooks/optimized-winner-calculator.ts" fillcolor="#ddfeff"] } } }
+    "src/features/webhooks/optimized-winner-calculator.ts" -> "src/generated/prisma/runtime/library.js"
+    "src/features/webhooks/optimized-winner-calculator.ts" -> "src/infrastructure/blockchain/ton-blockchain.service.ts"
+    "src/features/webhooks/optimized-winner-calculator.ts" -> "src/prisma.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/payout-scheduler.ts" [label=<payout-scheduler.ts> tooltip="payout-scheduler.ts" URL="src/features/webhooks/payout-scheduler.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/payout-trigger-route.ts" [label=<payout-trigger-route.ts> tooltip="payout-trigger-route.ts" URL="src/features/webhooks/payout-trigger-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/features" {label="features" subgraph "cluster_src/features/webhooks" {label="webhooks" "src/features/webhooks/verification-webhook-route.ts" [label=<verification-webhook-route.ts> tooltip="verification-webhook-route.ts" URL="src/features/webhooks/verification-webhook-route.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/adapters" {label="adapters" "src/fp/adapters/PrismaAdapter.ts" [label=<PrismaAdapter.ts> tooltip="PrismaAdapter.ts" URL="src/fp/adapters/PrismaAdapter.ts" fillcolor="#ddfeff"] } } }
+    "src/fp/adapters/PrismaAdapter.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/fp/adapters/PrismaAdapter.ts" -> "node_modules/@prisma/client/runtime/library.js" [penwidth="1.0"]
+    "src/fp/adapters/PrismaAdapter.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/fp/adapters/PrismaAdapter.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/adapters" {label="adapters" "src/fp/adapters/ZodAdapter.ts" [label=<ZodAdapter.ts> tooltip="ZodAdapter.ts" URL="src/fp/adapters/ZodAdapter.ts" fillcolor="#ddfeff"] } } }
+    "src/fp/adapters/ZodAdapter.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/fp/adapters/ZodAdapter.ts" -> "node_modules/fp-ts/lib/Either.js" [penwidth="1.0"]
+    "src/fp/adapters/ZodAdapter.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    "src/fp/adapters/ZodAdapter.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/domain" {label="domain" subgraph "cluster_src/fp/domain/errors" {label="errors" "src/fp/domain/errors/AppError.ts" [label=<AppError.ts> tooltip="AppError.ts" URL="src/fp/domain/errors/AppError.ts" fillcolor="#ddfeff"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/domain" {label="domain" subgraph "cluster_src/fp/domain/errors" {label="errors" "src/fp/domain/errors/ErrorMapping.ts" [label=<ErrorMapping.ts> tooltip="ErrorMapping.ts" URL="src/fp/domain/errors/ErrorMapping.ts" fillcolor="#ddfeff"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/domain" {label="domain" subgraph "cluster_src/fp/domain/errors" {label="errors" "src/fp/domain/errors/ErrorResponse.ts" [label=<ErrorResponse.ts> tooltip="ErrorResponse.ts" URL="src/fp/domain/errors/ErrorResponse.ts" fillcolor="#ddfeff"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/infrastructure" {label="infrastructure" "src/fp/infrastructure/Environment.ts" [label=<Environment.ts> tooltip="Environment.ts" URL="src/fp/infrastructure/Environment.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/infrastructure" {label="infrastructure" "src/fp/infrastructure/Logger.ts" [label=<Logger.ts> tooltip="Logger.ts" URL="src/fp/infrastructure/Logger.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/infrastructure" {label="infrastructure" "src/fp/infrastructure/Rollbar.ts" [label=<Rollbar.ts> tooltip="Rollbar.ts" URL="src/fp/infrastructure/Rollbar.ts" fillcolor="#ddfeff"] } } }
+    "src/fp/infrastructure/Rollbar.ts" -> "node_modules/rollbar/src/server/rollbar.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/middleware" {label="middleware" "src/fp/middleware/ErrorHandler.ts" [label=<ErrorHandler.ts> tooltip="ErrorHandler.ts" URL="src/fp/middleware/ErrorHandler.ts" fillcolor="#ddfeff"] } } }
+    "src/fp/middleware/ErrorHandler.ts" -> "src/types/hono.ts"
+    "src/fp/middleware/ErrorHandler.ts" -> "src/fp/domain/errors/ErrorMapping.ts"
+    "src/fp/middleware/ErrorHandler.ts" -> "src/fp/domain/errors/ErrorResponse.ts"
+    "src/fp/middleware/ErrorHandler.ts" -> "node_modules/fp-ts/lib/Either.js" [penwidth="1.0"]
+    "src/fp/middleware/ErrorHandler.ts" -> "node_modules/fp-ts/lib/function.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/fp" {label="fp" subgraph "cluster_src/fp/utils" {label="utils" "src/fp/utils/fp-utils.ts" [label=<fp-utils.ts> tooltip="fp-utils.ts" URL="src/fp/utils/fp-utils.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/client.d.ts" [label=<client.d.ts> tooltip="client.d.ts" URL="src/generated/prisma/client.d.ts" fillcolor="#ddfeff"] } } }
+    "src/generated/prisma/client.d.ts" -> "src/generated/prisma/index.js" [arrowhead="inv"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/client.js" [label=<client.js> tooltip="client.js" URL="src/generated/prisma/client.js" ] } } }
+    "src/generated/prisma/client.js" -> "src/generated/prisma/index.js"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/default.d.ts" [label=<default.d.ts> tooltip="default.d.ts" URL="src/generated/prisma/default.d.ts" fillcolor="#ddfeff"] } } }
+    "src/generated/prisma/default.d.ts" -> "src/generated/prisma/index.js" [arrowhead="inv"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/default.js" [label=<default.js> tooltip="default.js" URL="src/generated/prisma/default.js" ] } } }
+    "src/generated/prisma/default.js" -> "src/generated/prisma/index.js"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/edge.d.ts" [label=<edge.d.ts> tooltip="edge.d.ts" URL="src/generated/prisma/edge.d.ts" fillcolor="#ddfeff"] } } }
+    "src/generated/prisma/edge.d.ts" -> "src/generated/prisma/default.js" [arrowhead="inv"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/edge.js" [label=<edge.js> tooltip="edge.js" URL="src/generated/prisma/edge.js" ] } } }
+    "src/generated/prisma/edge.js" -> "src/generated/prisma/runtime/edge.js"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/index-browser.js" [label=<index-browser.js> tooltip="index-browser.js" URL="src/generated/prisma/index-browser.js" ] } } }
+    "src/generated/prisma/index-browser.js" -> "src/generated/prisma/runtime/index-browser.js"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/index.d.ts" [label=<index.d.ts> tooltip="index.d.ts" URL="src/generated/prisma/index.d.ts" fillcolor="#ddfeff"] } } }
+    "src/generated/prisma/index.d.ts" -> "src/generated/prisma/runtime/library.js"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/index.js" [label=<index.js> tooltip="index.js" URL="src/generated/prisma/index.js" ] } } }
+    "src/generated/prisma/index.js" -> "src/generated/prisma/runtime/library.js"
+    "src/generated/prisma/index.js" -> "fs" [style="dashed" penwidth="1.0"]
+    "src/generated/prisma/index.js" -> "path" [style="dashed" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/edge-esm.js" [label=<edge-esm.js> tooltip="edge-esm.js" URL="src/generated/prisma/runtime/edge-esm.js" fillcolor="#ccffcc"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/edge.js" [label=<edge.js> tooltip="edge.js" URL="src/generated/prisma/runtime/edge.js" ] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/index-browser.d.ts" [label=<index-browser.d.ts> tooltip="index-browser.d.ts" URL="src/generated/prisma/runtime/index-browser.d.ts" fillcolor="#ccffcc"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/index-browser.js" [label=<index-browser.js> tooltip="index-browser.js" URL="src/generated/prisma/runtime/index-browser.js" ] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/library.d.ts" [label=<library.d.ts> tooltip="library.d.ts" URL="src/generated/prisma/runtime/library.d.ts" fillcolor="#ccffcc"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/library.js" [label=<library.js> tooltip="library.js" URL="src/generated/prisma/runtime/library.js" ] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/react-native.js" [label=<react-native.js> tooltip="react-native.js" URL="src/generated/prisma/runtime/react-native.js" fillcolor="#ccffcc"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/wasm-compiler-edge.js" [label=<wasm-compiler-edge.js> tooltip="wasm-compiler-edge.js" URL="src/generated/prisma/runtime/wasm-compiler-edge.js" fillcolor="#ccffcc"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" subgraph "cluster_src/generated/prisma/runtime" {label="runtime" "src/generated/prisma/runtime/wasm-engine-edge.js" [label=<wasm-engine-edge.js> tooltip="wasm-engine-edge.js" URL="src/generated/prisma/runtime/wasm-engine-edge.js" fillcolor="#ccffcc"] } } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/wasm.d.ts" [label=<wasm.d.ts> tooltip="wasm.d.ts" URL="src/generated/prisma/wasm.d.ts" fillcolor="#ddfeff"] } } }
+    "src/generated/prisma/wasm.d.ts" -> "src/generated/prisma/index.js" [arrowhead="inv"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/generated" {label="generated" subgraph "cluster_src/generated/prisma" {label="prisma" "src/generated/prisma/wasm.js" [label=<wasm.js> tooltip="wasm.js" URL="src/generated/prisma/wasm.js" ] } } }
+    "src/generated/prisma/wasm.js" -> "src/generated/prisma/runtime/index-browser.js"
+    subgraph "cluster_src" {label="src" "src/index.ts" [label=<index.ts> tooltip="index.ts" URL="src/index.ts" fillcolor="#ddfeff"] }
+    "src/index.ts" -> "src/features/authentication/authentication-route.ts"
+    "src/index.ts" -> "src/features/fantasy-leagues/fantasy-leagues-route.ts"
+    "src/index.ts" -> "src/features/fantasy-teams/fantasy-teams-route.ts"
+    "src/index.ts" -> "src/features/league-integration/league-integration-route.ts"
+    "src/index.ts" -> "src/features/notifications/sse-route.ts"
+    "src/index.ts" -> "src/features/webhooks/gameweek-webhook-route.ts"
+    "src/index.ts" -> "src/features/webhooks/payout-scheduler.ts"
+    "src/index.ts" -> "src/features/webhooks/payout-trigger-route.ts"
+    "src/index.ts" -> "src/features/webhooks/verification-webhook-route.ts"
+    "src/index.ts" -> "src/fp/infrastructure/Environment.ts"
+    "src/index.ts" -> "src/fp/infrastructure/Logger.ts"
+    "src/index.ts" -> "src/infrastructure/queue/payout-worker.ts"
+    "src/index.ts" -> "src/infrastructure/queue/verification-worker.ts"
+    "src/index.ts" -> "src/middlewares/authMiddleware.ts"
+    "src/index.ts" -> "src/prisma.ts"
+    "src/index.ts" -> "src/types/hono.ts"
+    "src/index.ts" -> "node_modules/@hono/node-server/dist/index.js" [penwidth="1.0"]
+    "src/index.ts" -> "node_modules/@hono/swagger-ui/dist/index.cjs" [penwidth="1.0"]
+    "src/index.ts" -> "@hono/zod-openapi"
+    "src/index.ts" -> "node_modules/dotenv/config.js" [penwidth="1.0"]
+    "src/index.ts" -> "hono/cors"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/blockchain" {label="blockchain" "src/infrastructure/blockchain/blockchain.service.test.ts" [label=<blockchain.service.test.ts> tooltip="blockchain.service.test.ts" URL="src/infrastructure/blockchain/blockchain.service.test.ts" fillcolor="#ddfeff"] } } }
+    "src/infrastructure/blockchain/blockchain.service.test.ts" -> "src/infrastructure/blockchain/blockchain.service.ts"
+    "src/infrastructure/blockchain/blockchain.service.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/blockchain" {label="blockchain" "src/infrastructure/blockchain/blockchain.service.ts" [label=<blockchain.service.ts> tooltip="blockchain.service.ts" URL="src/infrastructure/blockchain/blockchain.service.ts" fillcolor="#ddfeff"] } } }
+    "src/infrastructure/blockchain/blockchain.service.ts" -> "src/fp/domain/errors/AppError.ts"
+    "src/infrastructure/blockchain/blockchain.service.ts" -> "node_modules/ethers/lib.commonjs/index.js" [penwidth="1.0"]
+    "src/infrastructure/blockchain/blockchain.service.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/blockchain" {label="blockchain" "src/infrastructure/blockchain/ton-blockchain.service.ts" [label=<ton-blockchain.service.ts> tooltip="ton-blockchain.service.ts" URL="src/infrastructure/blockchain/ton-blockchain.service.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/payment" {label="payment" "src/infrastructure/payment/payment.service.ts" [label=<payment.service.ts> tooltip="payment.service.ts" URL="src/infrastructure/payment/payment.service.ts" fillcolor="#ddfeff"] } } }
+    "src/infrastructure/payment/payment.service.ts" -> "node_modules/fp-ts/lib/TaskEither.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/queue" {label="queue" "src/infrastructure/queue/payout-queue.ts" [label=<payout-queue.ts> tooltip="payout-queue.ts" URL="src/infrastructure/queue/payout-queue.ts" fillcolor="#ddfeff"] } } }
+    "src/infrastructure/queue/payout-queue.ts" -> "src/fp/infrastructure/Logger.ts"
+    "src/infrastructure/queue/payout-queue.ts" -> "src/infrastructure/redis/redis-client.ts"
+    "src/infrastructure/queue/payout-queue.ts" -> "node_modules/bullmq/dist/cjs/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/queue" {label="queue" "src/infrastructure/queue/payout-worker.ts" [label=<payout-worker.ts> tooltip="payout-worker.ts" URL="src/infrastructure/queue/payout-worker.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/queue" {label="queue" "src/infrastructure/queue/verification-queue.ts" [label=<verification-queue.ts> tooltip="verification-queue.ts" URL="src/infrastructure/queue/verification-queue.ts" fillcolor="#ddfeff"] } } }
+    "src/infrastructure/queue/verification-queue.ts" -> "src/fp/infrastructure/Logger.ts"
+    "src/infrastructure/queue/verification-queue.ts" -> "src/infrastructure/redis/redis-client.ts"
+    "src/infrastructure/queue/verification-queue.ts" -> "node_modules/bullmq/dist/cjs/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/queue" {label="queue" "src/infrastructure/queue/verification-worker.ts" [label=<verification-worker.ts> tooltip="verification-worker.ts" URL="src/infrastructure/queue/verification-worker.ts" fillcolor="#ddfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/infrastructure" {label="infrastructure" subgraph "cluster_src/infrastructure/redis" {label="redis" "src/infrastructure/redis/redis-client.ts" [label=<redis-client.ts> tooltip="redis-client.ts" URL="src/infrastructure/redis/redis-client.ts" fillcolor="#ddfeff"] } } }
+    "src/infrastructure/redis/redis-client.ts" -> "src/fp/infrastructure/Logger.ts"
+    "src/infrastructure/redis/redis-client.ts" -> "node_modules/ioredis/built/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/middlewares" {label="middlewares" "src/middlewares/authMiddleware.ts" [label=<authMiddleware.ts> tooltip="authMiddleware.ts" URL="src/middlewares/authMiddleware.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" "src/prisma.ts" [label=<prisma.ts> tooltip="prisma.ts" URL="src/prisma.ts" fillcolor="#ddfeff"] }
+    "src/prisma.ts" -> "src/generated/prisma/index.js"
+    "src/prisma.ts" -> "node_modules/dotenv/config.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/types" {label="types" "src/types/hono.d.ts" [label=<hono.d.ts> tooltip="hono.d.ts" URL="src/types/hono.d.ts" fillcolor="#ccffcc"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/types" {label="types" "src/types/hono.ts" [label=<hono.ts> tooltip="hono.ts" URL="src/types/hono.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/utils" {label="utils" "src/utils/api.ts" [label=<api.ts> tooltip="api.ts" URL="src/utils/api.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/utils" {label="utils" "src/utils/get-auth-token.ts" [label=<get-auth-token.ts> tooltip="get-auth-token.ts" URL="src/utils/get-auth-token.ts" fillcolor="#ddfeff"] } }
+    "src/utils/get-auth-token.ts" -> "node_modules/@supabase/supabase-js/dist/main/index.js" [penwidth="1.0"]
+    "src/utils/get-auth-token.ts" -> "node_modules/dotenv/config.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/utils" {label="utils" "src/utils/schemas.ts" [label=<schemas.ts> tooltip="schemas.ts" URL="src/utils/schemas.ts" fillcolor="#ddfeff"] } }
+    "src/utils/schemas.ts" -> "@hono/zod-openapi"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/utils" {label="utils" "src/utils/supabaseMocks-factories.ts" [label=<supabaseMocks-factories.ts> tooltip="supabaseMocks-factories.ts" URL="src/utils/supabaseMocks-factories.ts" fillcolor="#ddfeff"] } }
+    "src/utils/supabaseMocks-factories.ts" -> "node_modules/@faker-js/faker/dist/index.cjs" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/utils" {label="utils" "src/utils/supabaseMocks.ts" [label=<supabaseMocks.ts> tooltip="supabaseMocks.ts" URL="src/utils/supabaseMocks.ts" fillcolor="#ddfeff"] } }
+    "src/utils/supabaseMocks.ts" -> "src/utils/supabaseMocks-factories.ts"
+    "src/utils/supabaseMocks.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/utils" {label="utils" "src/utils/testUtils.ts" [label=<testUtils.ts> tooltip="testUtils.ts" URL="src/utils/testUtils.ts" fillcolor="#ddfeff"] } }
+    "src/utils/testUtils.ts" -> "node_modules/jsonwebtoken/index.js" [penwidth="1.0"]
+    subgraph "cluster_test" {label="test" "test/prisma-debug.js" [label=<prisma-debug.js> tooltip="prisma-debug.js" URL="test/prisma-debug.js" ] }
+    "test/prisma-debug.js" -> "src/prisma.ts"
+    subgraph "cluster_test" {label="test" "test/prisma.test.ts" [label=<prisma.test.ts> tooltip="prisma.test.ts" URL="test/prisma.test.ts" fillcolor="#ddfeff"] }
+    "test/prisma.test.ts" -> "src/prisma.ts"
+    "test/prisma.test.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_test" {label="test" "test/setup.ts" [label=<setup.ts> tooltip="setup.ts" URL="test/setup.ts" fillcolor="#ddfeff"] }
+    "test/setup.ts" -> "node_modules/dotenv/config.js" [penwidth="1.0"]
+    "test/setup.ts" -> "node_modules/vitest/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/build" {label="build" subgraph "cluster_ton-contracts/build/league_payout" {label="league_payout" "ton-contracts/build/league_payout/league_payout_LeaguePayout.ts" [label=<league_payout_LeaguePayout.ts> tooltip="league_payout_LeaguePayout.ts" URL="ton-contracts/build/league_payout/league_payout_LeaguePayout.ts" fillcolor="#ddfeff"] } } }
+    "ton-contracts/build/league_payout/league_payout_LeaguePayout.ts" -> "ton-contracts/node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/node_modules" {label="node_modules" subgraph "cluster_ton-contracts/node_modules/@ton" {label="@ton" subgraph "cluster_ton-contracts/node_modules/@ton/core" {label="core" subgraph "cluster_ton-contracts/node_modules/@ton/core/dist" {label="dist" "ton-contracts/node_modules/@ton/core/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@ton/core" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } } }
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/node_modules" {label="node_modules" subgraph "cluster_ton-contracts/node_modules/@ton" {label="@ton" subgraph "cluster_ton-contracts/node_modules/@ton/crypto" {label="crypto" subgraph "cluster_ton-contracts/node_modules/@ton/crypto/dist" {label="dist" "ton-contracts/node_modules/@ton/crypto/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@ton/crypto" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } } }
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/node_modules" {label="node_modules" subgraph "cluster_ton-contracts/node_modules/@ton" {label="@ton" subgraph "cluster_ton-contracts/node_modules/@ton/sandbox" {label="sandbox" subgraph "cluster_ton-contracts/node_modules/@ton/sandbox/dist" {label="dist" "ton-contracts/node_modules/@ton/sandbox/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@ton/sandbox" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } } }
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/node_modules" {label="node_modules" subgraph "cluster_ton-contracts/node_modules/@ton" {label="@ton" subgraph "cluster_ton-contracts/node_modules/@ton/test-utils" {label="test-utils" subgraph "cluster_ton-contracts/node_modules/@ton/test-utils/dist" {label="dist" "ton-contracts/node_modules/@ton/test-utils/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@ton/test-utils" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } } }
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/node_modules" {label="node_modules" subgraph "cluster_ton-contracts/node_modules/@ton" {label="@ton" subgraph "cluster_ton-contracts/node_modules/@ton/ton" {label="ton" subgraph "cluster_ton-contracts/node_modules/@ton/ton/dist" {label="dist" "ton-contracts/node_modules/@ton/ton/dist/index.js" [label=<index.js> tooltip="index.js" URL="https://www.npmjs.com/package/@ton/ton" shape="folder" fillcolor="#c40b0a1a" fontcolor="#c40b0a"] } } } } }
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/scripts" {label="scripts" "ton-contracts/scripts/deploy.ts" [label=<deploy.ts> tooltip="deploy.ts" URL="ton-contracts/scripts/deploy.ts" fillcolor="#ddfeff"] } }
+    "ton-contracts/scripts/deploy.ts" -> "../build/league_payout/tact_LeaguePayout"
+    "ton-contracts/scripts/deploy.ts" -> "ton-contracts/node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/scripts" {label="scripts" "ton-contracts/scripts/deploy_mnemonic.ts" [label=<deploy_mnemonic.ts> tooltip="deploy_mnemonic.ts" URL="ton-contracts/scripts/deploy_mnemonic.ts" fillcolor="#ddfeff"] } }
+    "ton-contracts/scripts/deploy_mnemonic.ts" -> "ton-contracts/build/league_payout/league_payout_LeaguePayout.ts"
+    "ton-contracts/scripts/deploy_mnemonic.ts" -> "ton-contracts/node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    "ton-contracts/scripts/deploy_mnemonic.ts" -> "ton-contracts/node_modules/@ton/crypto/dist/index.js" [penwidth="1.0"]
+    "ton-contracts/scripts/deploy_mnemonic.ts" -> "ton-contracts/node_modules/@ton/ton/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/scripts" {label="scripts" "ton-contracts/scripts/format_address.ts" [label=<format_address.ts> tooltip="format_address.ts" URL="ton-contracts/scripts/format_address.ts" fillcolor="#ddfeff"] } }
+    "ton-contracts/scripts/format_address.ts" -> "ton-contracts/node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/scripts" {label="scripts" "ton-contracts/scripts/get_wallet_address.ts" [label=<get_wallet_address.ts> tooltip="get_wallet_address.ts" URL="ton-contracts/scripts/get_wallet_address.ts" fillcolor="#ddfeff"] } }
+    "ton-contracts/scripts/get_wallet_address.ts" -> "ton-contracts/node_modules/@ton/crypto/dist/index.js" [penwidth="1.0"]
+    "ton-contracts/scripts/get_wallet_address.ts" -> "ton-contracts/node_modules/@ton/ton/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/scripts" {label="scripts" "ton-contracts/scripts/new_wallet.ts" [label=<new_wallet.ts> tooltip="new_wallet.ts" URL="ton-contracts/scripts/new_wallet.ts" fillcolor="#ddfeff"] } }
+    "ton-contracts/scripts/new_wallet.ts" -> "ton-contracts/node_modules/@ton/crypto/dist/index.js" [penwidth="1.0"]
+    "ton-contracts/scripts/new_wallet.ts" -> "ton-contracts/node_modules/@ton/ton/dist/index.js" [penwidth="1.0"]
+    subgraph "cluster_ton-contracts" {label="ton-contracts" subgraph "cluster_ton-contracts/tests" {label="tests" "ton-contracts/tests/league_payout.spec.ts" [label=<league_payout.spec.ts> tooltip="league_payout.spec.ts" URL="ton-contracts/tests/league_payout.spec.ts" fillcolor="#ddfeff"] } }
+    "ton-contracts/tests/league_payout.spec.ts" -> "ton-contracts/build/league_payout/league_payout_LeaguePayout.ts"
+    "ton-contracts/tests/league_payout.spec.ts" -> "ton-contracts/node_modules/@ton/core/dist/index.js" [penwidth="1.0"]
+    "ton-contracts/tests/league_payout.spec.ts" -> "ton-contracts/node_modules/@ton/sandbox/dist/index.js" [penwidth="1.0"]
+    "ton-contracts/tests/league_payout.spec.ts" -> "ton-contracts/node_modules/@ton/test-utils/dist/index.js" [penwidth="1.0"]
+}

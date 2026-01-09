@@ -734,7 +734,8 @@ fantasyLeaguesApp.openapi(lockDuelRoute, async (c) => {
   const result = await pipe(
     safePrisma(
        () => env.prisma.fantasyLeague.findUnique({
-           where: { id: leagueId }
+           where: { id: leagueId },
+           include: { members: true }
        }),
        'findLeagueForLock'
     ),
@@ -746,8 +747,9 @@ fantasyLeaguesApp.openapi(lockDuelRoute, async (c) => {
             return TE.left(businessRuleError('LeagueClosed', 'League is not open'));
         }
         
-        // Check if already full
-        if (league.currentParticipants >= league.limit) return TE.left(businessRuleError('Full', 'Duel is full'));
+        // Check if already full using actual members count
+        const validMembers = league.members.filter(m => m.status !== 'failed');
+        if (validMembers.length >= league.limit) return TE.left(businessRuleError('Full', 'Duel is full'));
 
         const now = new Date();
         // Check if already locked by someone else
