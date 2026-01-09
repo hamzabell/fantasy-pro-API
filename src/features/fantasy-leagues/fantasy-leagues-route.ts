@@ -730,7 +730,10 @@ fantasyLeaguesApp.openapi(lockDuelRoute, async (c) => {
     TE.chain((league) => {
         if (!league) return TE.left(businessRuleError('NotFound', 'League not found'));
         if (league.gameMode !== 'DUEL') return TE.left(businessRuleError('InvalidMode', 'Only Duels can be locked'));
-        if (league.status !== 'active' && league.status !== 'open') return TE.left(businessRuleError('LeagueClosed', 'League is not open'));
+        // Allow PENDING duels to be joined (creator's transaction is still verifying)
+        if (league.status !== 'active' && league.status !== 'open' && league.status !== 'pending') {
+            return TE.left(businessRuleError('LeagueClosed', 'League is not open'));
+        }
         
         // Check if already full
         if (league.currentParticipants >= league.limit) return TE.left(businessRuleError('Full', 'Duel is full'));
