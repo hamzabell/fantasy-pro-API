@@ -1,9 +1,9 @@
 # Tact compilation report
 Contract: LeaguePayout
-BoC Size: 1923 bytes
+BoC Size: 2342 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 24
+Total structures: 26
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -54,8 +54,8 @@ TL-B: `deploy_ok#aff90f57 queryId:uint64 = DeployOk`
 Signature: `DeployOk{queryId:uint64}`
 
 ### CreateLeague
-TL-B: `create_league#0d850c3d leagueId:^string userId:^string commissionPercentage:uint64 feeAmount:coins = CreateLeague`
-Signature: `CreateLeague{leagueId:^string,userId:^string,commissionPercentage:uint64,feeAmount:coins}`
+TL-B: `create_league#d68206e7 leagueId:^string userId:^string commissionPercentage:uint64 feeAmount:coins initialStake:coins = CreateLeague`
+Signature: `CreateLeague{leagueId:^string,userId:^string,commissionPercentage:uint64,feeAmount:coins,initialStake:coins}`
 
 ### Stake
 TL-B: `stake#56b4e77f leagueId:^string userId:^string amount:coins = Stake`
@@ -68,6 +68,14 @@ Signature: `CreatePublicLeague{leagueId:^string,commissionPercentage:uint64,feeA
 ### PayoutWinners
 TL-B: `payout_winners#a12dd911 leagueId:^string winningPercentages:dict<int, int> winners:dict<int, address> count:uint8 commissionPercentage:uint64 = PayoutWinners`
 Signature: `PayoutWinners{leagueId:^string,winningPercentages:dict<int, int>,winners:dict<int, address>,count:uint8,commissionPercentage:uint64}`
+
+### PayoutItem
+TL-B: `_ leagueId:^string winningPercentages:dict<int, int> winners:dict<int, address> count:uint8 commissionPercentage:uint64 = PayoutItem`
+Signature: `PayoutItem{leagueId:^string,winningPercentages:dict<int, int>,winners:dict<int, address>,count:uint8,commissionPercentage:uint64}`
+
+### BatchPayoutWinners
+TL-B: `batch_payout_winners#2c578785 items:dict<int, ^PayoutItem{leagueId:^string,winningPercentages:dict<int, int>,winners:dict<int, address>,count:uint8,commissionPercentage:uint64}> count:uint8 = BatchPayoutWinners`
+Signature: `BatchPayoutWinners{items:dict<int, ^PayoutItem{leagueId:^string,winningPercentages:dict<int, int>,winners:dict<int, address>,count:uint8,commissionPercentage:uint64}>,count:uint8}`
 
 ### Withdraw
 TL-B: `withdraw#0ba69751 amount:coins = Withdraw`
@@ -149,11 +157,11 @@ Argument: id
 * 18492: Insufficient stake amount sent
 * 19126: Only owner can create public leagues
 * 26825: Only owner can withdraw
-* 27168: Insufficient fee sent
 * 35380: Only owner can payout
 * 44175: Fee paid, no commission allowed
 * 58396: User already staked
 * 62070: No funds in league
+* 62441: Insufficient value sent
 
 ## Trait inheritance diagram
 

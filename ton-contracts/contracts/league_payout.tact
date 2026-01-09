@@ -48,6 +48,19 @@ message PayoutWinners {
     commissionPercentage: Int as uint64;
 }
 
+struct PayoutItem {
+    leagueId: String;
+    winningPercentages: map<Int, Int>; 
+    winners: map<Int, Address>; 
+    count: Int as uint8;
+    commissionPercentage: Int as uint64;
+}
+
+message BatchPayoutWinners {
+    items: map<Int, PayoutItem>;
+    count: Int as uint8;
+}
+
 message Withdraw {
     amount: Int as coins;
 }
@@ -230,8 +243,25 @@ contract LeaguePayout with Deployable {
     receive(msg: PayoutWinners) {
         let ctx: Context = context();
         require(ctx.sender == self.owner, "Only owner can payout");
+        self._payoutLeague(msg.leagueId, msg.winningPercentages, msg.winners, msg.count, msg.commissionPercentage);
+    }
+
+    // --- Batch Payout Winners ---
+    receive(msg: BatchPayoutWinners) {
+        let ctx: Context = context();
+        require(ctx.sender == self.owner, "Only owner can payout");
         
-        let leagueHash: Int = sha256(msg.leagueId);
+        let i: Int = 0;
+        repeat(msg.count) {
+            let item: PayoutItem = msg.items.get(i)!!;
+            self._payoutLeague(item.leagueId, item.winningPercentages, item.winners, item.count, item.commissionPercentage);
+            i = i + 1;
+        }
+    }
+
+    // --- Private Payout Logic ---
+    fun _payoutLeague(leagueId: String, winningPercentages: map<Int, Int>, winners: map<Int, Address>, count: Int, commissionPercentage: Int) {
+        let leagueHash: Int = sha256(leagueId);
         let league: LeagueInfo = self.leagues.get(leagueHash)!!;
         
         // Calculate Total Staked
@@ -240,35 +270,57 @@ contract LeaguePayout with Deployable {
         
         // Validation: Commission constraints
         if (league.feePaid) {
-            require(msg.commissionPercentage == 0, "Fee paid, no commission allowed");
+            require(commissionPercentage == 0, "Fee paid, no commission allowed");
         }
 
         // Commission Calculation
-        let commAmount: Int = 0;
+        let platComm: Int = 0;
+        let creatorComm: Int = 0;
+        let totalDeductions: Int = 0;
         let distributableAmount: Int = totalStaked;
 
-        if (!league.feePaid && msg.commissionPercentage > 0) {
-            commAmount = totalStaked * msg.commissionPercentage / 10000;
-            distributableAmount = totalStaked - commAmount;
-            
-            if (commAmount > 0) {
-                 send(SendParameters{
-                    to: self.owner,
-                    value: commAmount,
-                    mode: SendIgnoreErrors,
-                    bounce: false,
-                    body: "Commission".asComment()
-                });
-            }
+        // 1. Platform Commission (Passed in msg)
+        if (!league.feePaid && commissionPercentage > 0) {
+            platComm = totalStaked * commissionPercentage / 10000;
+        }
+
+        // 2. Creator Commission (Stored in League)
+        if (league.commissionPercentage > 0) {
+            creatorComm = totalStaked * league.commissionPercentage / 10000;
+        }
+
+        totalDeductions = platComm + creatorComm;
+        distributableAmount = totalStaked - totalDeductions;
+
+        // Send Platform Commission
+        if (platComm > 0) {
+             send(SendParameters{
+                to: self.owner,
+                value: platComm,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Commission".asComment()
+            });
+        }
+
+        // Send Creator Commission (Implicitly to League Owner)
+        if (creatorComm > 0) {
+             send(SendParameters{
+                to: league.owner,
+                value: creatorComm,
+                mode: SendIgnoreErrors,
+                bounce: false,
+                body: "Creator Commission".asComment()
+            });
         }
         
         // Payout Loop
         let i: Int = 0;
         let paidOut: Int = 0;
         
-        repeat(msg.count) {
-             let winnerAddr: Address = msg.winners.get(i)!!;
-             let pct: Int = msg.winningPercentages.get(i)!!;
+        repeat(count) {
+             let winnerAddr: Address = winners.get(i)!!;
+             let pct: Int = winningPercentages.get(i)!!;
              
              // Check if winner staked
              // Fix: Match the stakeKey derivation from Stake message
@@ -284,16 +336,13 @@ contract LeaguePayout with Deployable {
                     bounce: false,
                     body: "Payout".asComment()
                 });
-                emit(PayoutEvent{leagueId: msg.leagueId, winner: winnerAddr, amount: amount}.toCell());
+                emit(PayoutEvent{leagueId: leagueId, winner: winnerAddr, amount: amount}.toCell());
                 paidOut = paidOut + amount;
              }
              i = i + 1;
         }
 
         // Update Total Staked to 0 (Assuming full payout)
-        // Or deduct paidOut + commAmount?
-        // Logic implies the league is "done" or empty.
-        // We set to 0 to prevent double spending.
         self.leagues.set(leagueHash, LeagueInfo{
             owner: league.owner,
             leagueId: league.leagueId,
@@ -301,7 +350,7 @@ contract LeaguePayout with Deployable {
             feePaid: league.feePaid,
             totalStaked: 0 
         });
-        emit(PayoutCompletedEvent{leagueId: msg.leagueId}.toCell());
+        emit(PayoutCompletedEvent{leagueId: leagueId}.toCell());
     }
 
     // --- Withdraw ---

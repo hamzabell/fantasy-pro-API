@@ -709,27 +709,30 @@ export type CreateLeague = {
     userId: string;
     commissionPercentage: bigint;
     feeAmount: bigint;
+    initialStake: bigint;
 }
 
 export function storeCreateLeague(src: CreateLeague) {
     return (builder: Builder) => {
         const b_0 = builder;
-        b_0.storeUint(226823229, 32);
+        b_0.storeUint(3598845671, 32);
         b_0.storeStringRefTail(src.leagueId);
         b_0.storeStringRefTail(src.userId);
         b_0.storeUint(src.commissionPercentage, 64);
         b_0.storeCoins(src.feeAmount);
+        b_0.storeCoins(src.initialStake);
     };
 }
 
 export function loadCreateLeague(slice: Slice) {
     const sc_0 = slice;
-    if (sc_0.loadUint(32) !== 226823229) { throw Error('Invalid prefix'); }
+    if (sc_0.loadUint(32) !== 3598845671) { throw Error('Invalid prefix'); }
     const _leagueId = sc_0.loadStringRefTail();
     const _userId = sc_0.loadStringRefTail();
     const _commissionPercentage = sc_0.loadUintBig(64);
     const _feeAmount = sc_0.loadCoins();
-    return { $$type: 'CreateLeague' as const, leagueId: _leagueId, userId: _userId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount };
+    const _initialStake = sc_0.loadCoins();
+    return { $$type: 'CreateLeague' as const, leagueId: _leagueId, userId: _userId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount, initialStake: _initialStake };
 }
 
 export function loadTupleCreateLeague(source: TupleReader) {
@@ -737,7 +740,8 @@ export function loadTupleCreateLeague(source: TupleReader) {
     const _userId = source.readString();
     const _commissionPercentage = source.readBigNumber();
     const _feeAmount = source.readBigNumber();
-    return { $$type: 'CreateLeague' as const, leagueId: _leagueId, userId: _userId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount };
+    const _initialStake = source.readBigNumber();
+    return { $$type: 'CreateLeague' as const, leagueId: _leagueId, userId: _userId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount, initialStake: _initialStake };
 }
 
 export function loadGetterTupleCreateLeague(source: TupleReader) {
@@ -745,7 +749,8 @@ export function loadGetterTupleCreateLeague(source: TupleReader) {
     const _userId = source.readString();
     const _commissionPercentage = source.readBigNumber();
     const _feeAmount = source.readBigNumber();
-    return { $$type: 'CreateLeague' as const, leagueId: _leagueId, userId: _userId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount };
+    const _initialStake = source.readBigNumber();
+    return { $$type: 'CreateLeague' as const, leagueId: _leagueId, userId: _userId, commissionPercentage: _commissionPercentage, feeAmount: _feeAmount, initialStake: _initialStake };
 }
 
 export function storeTupleCreateLeague(source: CreateLeague) {
@@ -754,6 +759,7 @@ export function storeTupleCreateLeague(source: CreateLeague) {
     builder.writeString(source.userId);
     builder.writeNumber(source.commissionPercentage);
     builder.writeNumber(source.feeAmount);
+    builder.writeNumber(source.initialStake);
     return builder.build();
 }
 
@@ -953,6 +959,128 @@ export function dictValueParserPayoutWinners(): DictionaryValue<PayoutWinners> {
         },
         parse: (src) => {
             return loadPayoutWinners(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type PayoutItem = {
+    $$type: 'PayoutItem';
+    leagueId: string;
+    winningPercentages: Dictionary<bigint, bigint>;
+    winners: Dictionary<bigint, Address>;
+    count: bigint;
+    commissionPercentage: bigint;
+}
+
+export function storePayoutItem(src: PayoutItem) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeStringRefTail(src.leagueId);
+        b_0.storeDict(src.winningPercentages, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
+        b_0.storeDict(src.winners, Dictionary.Keys.BigInt(257), Dictionary.Values.Address());
+        b_0.storeUint(src.count, 8);
+        b_0.storeUint(src.commissionPercentage, 64);
+    };
+}
+
+export function loadPayoutItem(slice: Slice) {
+    const sc_0 = slice;
+    const _leagueId = sc_0.loadStringRefTail();
+    const _winningPercentages = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), sc_0);
+    const _winners = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.Address(), sc_0);
+    const _count = sc_0.loadUintBig(8);
+    const _commissionPercentage = sc_0.loadUintBig(64);
+    return { $$type: 'PayoutItem' as const, leagueId: _leagueId, winningPercentages: _winningPercentages, winners: _winners, count: _count, commissionPercentage: _commissionPercentage };
+}
+
+export function loadTuplePayoutItem(source: TupleReader) {
+    const _leagueId = source.readString();
+    const _winningPercentages = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _winners = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.Address(), source.readCellOpt());
+    const _count = source.readBigNumber();
+    const _commissionPercentage = source.readBigNumber();
+    return { $$type: 'PayoutItem' as const, leagueId: _leagueId, winningPercentages: _winningPercentages, winners: _winners, count: _count, commissionPercentage: _commissionPercentage };
+}
+
+export function loadGetterTuplePayoutItem(source: TupleReader) {
+    const _leagueId = source.readString();
+    const _winningPercentages = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _winners = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.Address(), source.readCellOpt());
+    const _count = source.readBigNumber();
+    const _commissionPercentage = source.readBigNumber();
+    return { $$type: 'PayoutItem' as const, leagueId: _leagueId, winningPercentages: _winningPercentages, winners: _winners, count: _count, commissionPercentage: _commissionPercentage };
+}
+
+export function storeTuplePayoutItem(source: PayoutItem) {
+    const builder = new TupleBuilder();
+    builder.writeString(source.leagueId);
+    builder.writeCell(source.winningPercentages.size > 0 ? beginCell().storeDictDirect(source.winningPercentages, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)).endCell() : null);
+    builder.writeCell(source.winners.size > 0 ? beginCell().storeDictDirect(source.winners, Dictionary.Keys.BigInt(257), Dictionary.Values.Address()).endCell() : null);
+    builder.writeNumber(source.count);
+    builder.writeNumber(source.commissionPercentage);
+    return builder.build();
+}
+
+export function dictValueParserPayoutItem(): DictionaryValue<PayoutItem> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storePayoutItem(src)).endCell());
+        },
+        parse: (src) => {
+            return loadPayoutItem(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type BatchPayoutWinners = {
+    $$type: 'BatchPayoutWinners';
+    items: Dictionary<bigint, PayoutItem>;
+    count: bigint;
+}
+
+export function storeBatchPayoutWinners(src: BatchPayoutWinners) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(743933829, 32);
+        b_0.storeDict(src.items, Dictionary.Keys.BigInt(257), dictValueParserPayoutItem());
+        b_0.storeUint(src.count, 8);
+    };
+}
+
+export function loadBatchPayoutWinners(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 743933829) { throw Error('Invalid prefix'); }
+    const _items = Dictionary.load(Dictionary.Keys.BigInt(257), dictValueParserPayoutItem(), sc_0);
+    const _count = sc_0.loadUintBig(8);
+    return { $$type: 'BatchPayoutWinners' as const, items: _items, count: _count };
+}
+
+export function loadTupleBatchPayoutWinners(source: TupleReader) {
+    const _items = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), dictValueParserPayoutItem(), source.readCellOpt());
+    const _count = source.readBigNumber();
+    return { $$type: 'BatchPayoutWinners' as const, items: _items, count: _count };
+}
+
+export function loadGetterTupleBatchPayoutWinners(source: TupleReader) {
+    const _items = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), dictValueParserPayoutItem(), source.readCellOpt());
+    const _count = source.readBigNumber();
+    return { $$type: 'BatchPayoutWinners' as const, items: _items, count: _count };
+}
+
+export function storeTupleBatchPayoutWinners(source: BatchPayoutWinners) {
+    const builder = new TupleBuilder();
+    builder.writeCell(source.items.size > 0 ? beginCell().storeDictDirect(source.items, Dictionary.Keys.BigInt(257), dictValueParserPayoutItem()).endCell() : null);
+    builder.writeNumber(source.count);
+    return builder.build();
+}
+
+export function dictValueParserBatchPayoutWinners(): DictionaryValue<BatchPayoutWinners> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeBatchPayoutWinners(src)).endCell());
+        },
+        parse: (src) => {
+            return loadBatchPayoutWinners(src.loadRef().beginParse());
         }
     }
 }
@@ -1410,7 +1538,7 @@ function initLeaguePayout_init_args(src: LeaguePayout_init_args) {
 }
 
 async function LeaguePayout_init() {
-    const __code = Cell.fromHex('b5ee9c7241021801000777000114ff00f4a413f4bcf2c80b01020162021604c6d001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019afa40f404f40455206c1396306d6df84259e204925f04e002d70d1ff2e0822182100d850c3dbae3022182105730951bbae30221821056b4e77fbae302218210a12dd911ba0307090c02fe31d401d001d431d33ffa0030f8416f243032249b9320d74a91d5e868f90400da1181265d288101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f47024c200923333e30d54443014700443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c90406019630816a205134be13f2f4727088280406552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb007f5805002e000000004c6561677565204372656174696f6e204665650098103512206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5401fe31d401d001d33f30f8416f245b814ab63224c705f2f4219b9320d74a91d5e868f90400da1181265d258101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f470702551354533050443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c9103508009412206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5401ea31d401d001d401d001fa0030f8416f243032249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f2581483c5189be18f2f4c85250cbff26cf16c9f9008200e41c2e8101012359f40d6fa192306ddf0a01fc206e92306d8e10d0fa40810101d700d20055206c136f03e26ef2f451687f028101015023c855205023ce810101cf00ca00c9103e4170206e953059f45a30944133f415e2541876c85520821061ac041c5004cb1f02c8ce12cd01c8cecd01fa02c9c88258c000000000000000000000000101cb67ccc970fb005034a045880b007c81010109c855405045ce02c8ce12cd810101cf00ca0001fa02c910344550206e953059f45a30944133f415e258c87f01ca0055205023cef400f400c9ed5403fae3022182100ba69751ba8ee131fa0030f8416f245b8168c93223c705f2f472708824553010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed54e0018210946a98b6bae3025f04f2c0820d141502fe31d401d001f404f404d307d33f30f8416f245b82008a343227c705f2f4249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f258200f27621c200f2f421998200ac8f27c000f2f4de5301b39327c2009170e2923730e30d700e1001a6305207a8812710a9045166a126c2008ebf7270882e040a552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009136e20f001c00000000436f6d6d697373696f6e02fc52088eef288101012259f40c6fa192306ddf810101545b0052404133f40c6fa19401d70030925b6de2c85280cbff22cf16c9f90081170e8101015612401359f40d6fa192306ddf206e92306d8e10d0fa40810101d700d20055206c136f03e26eb3f2f45280a8812710a90420c200915be30da4e430353535354430810101111301e8727088245134413310246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00545c22c85520821043bc92235004cb1f02c8ce12cdce01fa02c9c88258c000000000000000000000000101cb67ccc970fb0018a007120014000000005061796f757400ca505470c855405045ce02c8ce12cd810101cf00ca0001fa02c9103512206e953059f45a30944133f415e202c80182103a5ba86658cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed54001c000000005769746864726177616c00c2d33f30f84270804003c8018210aff90f5758cb1fcb3fc941305a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed540165a12885da89a1a4000335f481e809e808aa40d8272c60dadbf084b3c4aa05b678d86240dd2460db28de4ade0bc440dd2460dbbd170076810101019b9320d74a91d5e868f90400da11235959f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e23d3047e5');
+    const __code = Cell.fromHex('b5ee9c7241021e0100091a000114ff00f4a413f4bcf2c80b01020162021c04c6d001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019afa40f404f40455206c1396306d6df84259e204925f04e002d70d1ff2e082218210d68206e7bae3022182105730951bbae30221821056b4e77fbae302218210a12dd911ba03090b0e02f831d401d001d401d001d33ffa00fa0030f8416f243032269b9320d74a91d5e868f90400da1181265d2a8101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f4707026c200923025de25c2009225a0de048200f3e905be14f2f424c2009134e30d7023c20004060186327270882a0407552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00027f0105002e000000004c6561677565204372656174696f6e2046656501ea923335e30d2510450345150443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c9103512206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed540701fc30c85240cbff21cf16c9f9008200e41c2b8101012359f40d6fa192306ddf206e92306d8e10d0fa40810101d700d20055206c136f03e26ef2f453137f028101015023c855205023ce810101cf00ca00c9103c12206e953059f45a30944133f415e2545663c85520821061ac041c5004cb1f02c8ce12cd01c8cecd01fa02c9080034c88258c000000000000000000000000101cb67ccc970fb00104801fe31d401d001d33f30f8416f245b814ab63224c705f2f4219b9320d74a91d5e868f90400da1181265d258101012359f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26ef2f470702551354533050443138101015025c855405045ce02c8ce12cd810101cf00ca0001fa02c910350a009412206e953059f45a30944133f415e202c801821044f0392958cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0002c87f01ca0055205023cef400f400c9ed5401ea31d401d001d401d001fa0030f8416f243032249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f2581483c5189be18f2f4c85250cbff26cf16c9f9008200e41c2e8101012359f40d6fa192306ddf0c01fc206e92306d8e10d0fa40810101d700d20055206c136f03e26ef2f451687f028101015023c855205023ce810101cf00ca00c9103e4170206e953059f45a30944133f415e2541876c85520821061ac041c5004cb1f02c8ce12cd01c8cecd01fa02c9c88258c000000000000000000000000101cb67ccc970fb005034a045880d007c81010109c855405045ce02c8ce12cd810101cf00ca0001fa02c910344550206e953059f45a30944133f415e258c87f01ca0055205023cef400f400c9ed5404a28eb231d401d001f404f404d307d33f30f8416f245b82008a343227c705f2f41057db3cc87f01ca0055205023cef400f400c9ed54e02182102c578785bae3022182100ba69751bae302018210946a98b6ba100f191b01be31f404d30730f8416f245b82008a343224c705f2f470018eb2218101012259f40d6fa192306ddf206e92306d8e13d0d401d001f404f404d307d33f55406c156f05e26f255e35db3c04a413e45b02c87f01ca0055205023cef400f400c9ed541001f6249b9320d74a91d5e868f90400da11278101012259f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e26f258200f27621c200f2f421998200ac8f27c000f2f4de705302b39328c2009170e299315218a8812710a9049138e223c2009a375302a8812710a90407de53071104faa012a121c2008ec072708856110405552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009131e226c2009136e30d7052088ae430353535354430810101505470c855405045ce02c8ce12cd810101cf00ca0001fa02c910351212131518001c00000000436f6d6d697373696f6e017e72708827040a552010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0014002c0000000043726561746f7220436f6d6d697373696f6e01de288101012259f40c6fa192306ddf810101545b0052404133f40c6fa19401d70030925b6de2c85280cbff22cf16c9f90081170e8101015610401359f40d6fa192306ddf206e92306d8e10d0fa40810101d700d20055206c136f03e26eb3f2f45280a8812710a90420c200915be30da41601e8727088245134413310246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00545c22c85520821043bc92235004cb1f02c8ce12cdce01fa02c9c88258c000000000000000000000000101cb67ccc970fb0018a007170014000000005061796f7574006e206e953059f45a30944133f415e202c80182103a5ba86658cb1f01c8cecdc9c88258c000000000000000000000000101cb67ccc970fb0001c231fa0030f8416f245b8168c93223c705f2f472708824553010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed541a001c000000005769746864726177616c00d28e61d33f30f84270804003c8018210aff90f5758cb1fcb3fc941305a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205023cef400f400c9ed54e05f04f2c0820165a12885da89a1a4000335f481e809e808aa40d8272c60dadbf084b3c4aa05b678d86240dd2460db28de4ade0bc440dd2460dbbd1d0076810101019b9320d74a91d5e868f90400da11235959f40d6fa192306ddf206e92306d8e16d0fa40d401d001810101d700d200fa0055406c156f05e2548b4b25');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initLeaguePayout_init_args({ $$type: 'LeaguePayout_init_args' })(builder);
@@ -1460,11 +1588,11 @@ export const LeaguePayout_errors = {
     18492: { message: "Insufficient stake amount sent" },
     19126: { message: "Only owner can create public leagues" },
     26825: { message: "Only owner can withdraw" },
-    27168: { message: "Insufficient fee sent" },
     35380: { message: "Only owner can payout" },
     44175: { message: "Fee paid, no commission allowed" },
     58396: { message: "User already staked" },
     62070: { message: "No funds in league" },
+    62441: { message: "Insufficient value sent" },
 } as const
 
 export const LeaguePayout_errors_backward = {
@@ -1509,11 +1637,11 @@ export const LeaguePayout_errors_backward = {
     "Insufficient stake amount sent": 18492,
     "Only owner can create public leagues": 19126,
     "Only owner can withdraw": 26825,
-    "Insufficient fee sent": 27168,
     "Only owner can payout": 35380,
     "Fee paid, no commission allowed": 44175,
     "User already staked": 58396,
     "No funds in league": 62070,
+    "Insufficient value sent": 62441,
 } as const
 
 const LeaguePayout_types: ABIType[] = [
@@ -1529,10 +1657,12 @@ const LeaguePayout_types: ABIType[] = [
     {"name":"BasechainAddress","header":null,"fields":[{"name":"hash","type":{"kind":"simple","type":"int","optional":true,"format":257}}]},
     {"name":"Deploy","header":2490013878,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"DeployOk","header":2952335191,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
-    {"name":"CreateLeague","header":226823229,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"userId","type":{"kind":"simple","type":"string","optional":false}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"feeAmount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
+    {"name":"CreateLeague","header":3598845671,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"userId","type":{"kind":"simple","type":"string","optional":false}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"feeAmount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"initialStake","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"Stake","header":1454696319,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"userId","type":{"kind":"simple","type":"string","optional":false}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"CreatePublicLeague","header":1462801691,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"feeAmount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"PayoutWinners","header":2704136465,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"winningPercentages","type":{"kind":"dict","key":"int","value":"int"}},{"name":"winners","type":{"kind":"dict","key":"int","value":"address"}},{"name":"count","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
+    {"name":"PayoutItem","header":null,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"winningPercentages","type":{"kind":"dict","key":"int","value":"int"}},{"name":"winners","type":{"kind":"dict","key":"int","value":"address"}},{"name":"count","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"commissionPercentage","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
+    {"name":"BatchPayoutWinners","header":743933829,"fields":[{"name":"items","type":{"kind":"dict","key":"int","value":"PayoutItem","valueFormat":"ref"}},{"name":"count","type":{"kind":"simple","type":"uint","optional":false,"format":8}}]},
     {"name":"Withdraw","header":195467089,"fields":[{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"LeagueCreated","header":1156593961,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}}]},
     {"name":"StakeEvent","header":1638663196,"fields":[{"name":"leagueId","type":{"kind":"simple","type":"string","optional":false}},{"name":"userId","type":{"kind":"simple","type":"string","optional":false}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
@@ -1546,10 +1676,11 @@ const LeaguePayout_types: ABIType[] = [
 const LeaguePayout_opcodes = {
     "Deploy": 2490013878,
     "DeployOk": 2952335191,
-    "CreateLeague": 226823229,
+    "CreateLeague": 3598845671,
     "Stake": 1454696319,
     "CreatePublicLeague": 1462801691,
     "PayoutWinners": 2704136465,
+    "BatchPayoutWinners": 743933829,
     "Withdraw": 195467089,
     "LeagueCreated": 1156593961,
     "StakeEvent": 1638663196,
@@ -1570,6 +1701,7 @@ const LeaguePayout_receivers: ABIReceiver[] = [
     {"receiver":"internal","message":{"kind":"typed","type":"CreatePublicLeague"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Stake"}},
     {"receiver":"internal","message":{"kind":"typed","type":"PayoutWinners"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"BatchPayoutWinners"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Withdraw"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Deploy"}},
 ]
@@ -1609,7 +1741,7 @@ export class LeaguePayout implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: CreateLeague | CreatePublicLeague | Stake | PayoutWinners | Withdraw | Deploy) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: CreateLeague | CreatePublicLeague | Stake | PayoutWinners | BatchPayoutWinners | Withdraw | Deploy) {
         
         let body: Cell | null = null;
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'CreateLeague') {
@@ -1623,6 +1755,9 @@ export class LeaguePayout implements Contract {
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'PayoutWinners') {
             body = beginCell().store(storePayoutWinners(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'BatchPayoutWinners') {
+            body = beginCell().store(storeBatchPayoutWinners(message)).endCell();
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'Withdraw') {
             body = beginCell().store(storeWithdraw(message)).endCell();

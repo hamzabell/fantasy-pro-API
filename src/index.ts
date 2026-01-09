@@ -18,6 +18,7 @@ import prisma from './prisma.js';
 import { createEnvironment, defaultConfig } from './fp/infrastructure/Environment.js';
 import { createLogger } from './fp/infrastructure/Logger.js';
 import { payoutScheduler } from './features/webhooks/payout-scheduler.js';
+import payoutTriggerApp from './features/webhooks/payout-trigger-route.js';
 // import paymentApp from './features/payments/payment.routes.js';
 
 import { cors } from 'hono/cors';
@@ -66,6 +67,7 @@ if (process.env.NODE_ENV !== 'test') {
 app.route('/api/auth', authenticationApp);
 // app.route('/api/payment', paymentApp); // Mount payment webhook section
 app.route('/api/webhooks', gameweekWebhookApp); // Keep existing generic/gameweek webhook
+app.route('/api/webhooks', payoutTriggerApp); // Manual payout trigger endpoint
 // app.route('/api/webhooks/ton', tonWebhookApp); // Deprecated
 import verificationWebhookApp from './features/webhooks/verification-webhook-route.js';
 app.route('/api/webhooks', verificationWebhookApp);

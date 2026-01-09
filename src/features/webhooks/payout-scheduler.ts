@@ -1,4 +1,4 @@
-import { fetchGameweek, fetchFutureGameweeks } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchGameweek, fetchFutureGameweeks, invalidateBootstrapCache } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { calculateAllLeagueWinners } from './optimized-winner-calculator.js';
 
 class PayoutScheduler {
@@ -36,6 +36,10 @@ class PayoutScheduler {
     // We want the 'current' one. If it's finished, we check if we processed it?
     // Actually, we want to listen for the END of the current ACTIVE gameweek.
     try {
+        // CRITICAL: Force cache refresh to get latest gameweek status
+        console.log('[PayoutScheduler] Invalidating bootstrap cache to fetch fresh data...');
+        invalidateBootstrapCache();
+        
         const currentGameweek = await fetchGameweek('current');
         
         if (!currentGameweek) {
@@ -47,7 +51,7 @@ class PayoutScheduler {
             return;
         }
 
-        console.log(`[PayoutScheduler] Current Gameweek: ${currentGameweek.id}, Finished: ${currentGameweek.isFinished}`);
+        console.log(`[PayoutScheduler] Current Gameweek: ${currentGameweek.id}, Finished: ${currentGameweek.isFinished}, Name: ${currentGameweek.name}`);
 
         if (currentGameweek.isFinished) {
             // It's finished. 
@@ -143,6 +147,15 @@ class PayoutScheduler {
           console.log('[PayoutScheduler] Scheduling next cycle...');
           this.scheduleRetry(60 * 60 * 1000); // Check again in an hour (or next day)
       }
+  }
+
+  /**
+   * Manually trigger payout processing for a specific gameweek
+   * Useful for debugging or recovery scenarios
+   */
+  public async triggerManualPayout(gameweekId: number): Promise<void> {
+      console.log(`[PayoutScheduler] Manual payout trigger requested for GW ${gameweekId}`);
+      await this.triggerPayout(gameweekId);
   }
 }
 

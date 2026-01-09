@@ -32,6 +32,15 @@ builder $DeployOk$_store(builder build_0, (int) v) inline;
 ;; $DeployOk$_store_cell
 cell $DeployOk$_store_cell((int) v, builder b) inline;
 
+;; $PayoutItem$_load
+(slice, ((slice, cell, cell, int, int))) $PayoutItem$_load(slice sc_0) inline;
+
+;; $PayoutItem$_as_optional
+tuple $PayoutItem$_as_optional((slice, cell, cell, int, int) v) inline;
+
+;; $PayoutItem$_load_opt
+tuple $PayoutItem$_load_opt(cell cl) inline;
+
 ;; $LeagueCreated$_store
 builder $LeagueCreated$_store(builder build_0, (slice) v) inline;
 
@@ -92,6 +101,9 @@ builder $LeaguePayout$_store(builder build_0, (slice, cell, cell) v) inline;
 ;; $LeaguePayout$_load
 (slice, ((slice, cell, cell))) $LeaguePayout$_load(slice sc_0) inline;
 
+;; $PayoutItem$_not_null
+((slice, cell, cell, int, int)) $PayoutItem$_not_null(tuple v) inline;
+
 ;; $LeagueInfo$_not_null
 ((slice, slice, int, int, int)) $LeagueInfo$_not_null(tuple v) inline;
 
@@ -116,17 +128,23 @@ tuple $LeagueInfo$_to_opt_external(tuple v) inline;
 ;; $global_emit
 () $global_emit(cell $body) impure inline;
 
-;; $LeaguePayout$_fun_league
-((slice, cell, cell), tuple) $LeaguePayout$_fun_league((slice, cell, cell) $self, slice $id) impure inline_ref;
-
 ;; $SendParameters$_constructor_to_value_mode_bounce_body
 ((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce_body(slice $to, int $value, int $mode, int $bounce, cell $body) inline;
+
+;; $PayoutEvent$_constructor_leagueId_winner_amount
+((slice, slice, int)) $PayoutEvent$_constructor_leagueId_winner_amount(slice $leagueId, slice $winner, int $amount) inline;
 
 ;; $LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked
 ((slice, slice, int, int, int)) $LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked(slice $owner, slice $leagueId, int $commissionPercentage, int $feePaid, int $totalStaked) inline;
 
-;; $LeagueCreated$_constructor_leagueId
-((slice)) $LeagueCreated$_constructor_leagueId(slice $leagueId) inline;
+;; $PayoutCompletedEvent$_constructor_leagueId
+((slice)) $PayoutCompletedEvent$_constructor_leagueId(slice $leagueId) inline;
+
+;; $LeaguePayout$_fun__payoutLeague
+((slice, cell, cell), ()) $LeaguePayout$_fun__payoutLeague((slice, cell, cell) $self, slice $leagueId, cell $winningPercentages, cell $winners, int $count, int $commissionPercentage) impure inline_ref;
+
+;; $LeaguePayout$_fun_league
+((slice, cell, cell), tuple) $LeaguePayout$_fun_league((slice, cell, cell) $self, slice $id) impure inline_ref;
 
 ;; $StakeInfo$_constructor_user_amount_hasStaked
 ((slice, int, int)) $StakeInfo$_constructor_user_amount_hasStaked(slice $user, int $amount, int $hasStaked) inline;
@@ -134,11 +152,8 @@ tuple $LeagueInfo$_to_opt_external(tuple v) inline;
 ;; $StakeEvent$_constructor_leagueId_userId_amount
 ((slice, slice, int)) $StakeEvent$_constructor_leagueId_userId_amount(slice $leagueId, slice $userId, int $amount) inline;
 
-;; $PayoutEvent$_constructor_leagueId_winner_amount
-((slice, slice, int)) $PayoutEvent$_constructor_leagueId_winner_amount(slice $leagueId, slice $winner, int $amount) inline;
-
-;; $PayoutCompletedEvent$_constructor_leagueId
-((slice)) $PayoutCompletedEvent$_constructor_leagueId(slice $leagueId) inline;
+;; $LeagueCreated$_constructor_leagueId
+((slice)) $LeagueCreated$_constructor_leagueId(slice $leagueId) inline;
 
 ;; $SendParameters$_constructor_to_value_mode_body
 ((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline;
@@ -327,19 +342,24 @@ int $Cell$_fun_hash(cell $self) impure asm """
 """;
 
 ;; league_payout_LeaguePayout.constants.fc
-;; Cell Sp/4+Rz1/QCrBPtelRdli4gpJ4AFVjtUd+7YqP7soJE=
-cell __gen_cell_cell_4a9ff8f91cf5fd00ab04fb5e9517658b8829278005563b5477eed8a8feeca091() asm """
-    B{b5ee9c7241010101001900002e000000004c6561677565204372656174696f6e20466565b51e768c} B>boc PUSHREF
-""";
-
 ;; Cell CabplE29ODgB1Si65JqNVvixfWPOD4qR3M3balkh3DY=
 cell __gen_cell_cell_09a6e9944dbd383801d528bae49a8d56f8b17d63ce0f8a91dccddb6a5921dc36() asm """
     B{b5ee9c7241010101001000001c00000000436f6d6d697373696f6ee0c426cb} B>boc PUSHREF
 """;
 
+;; Cell /CvtMf/ed65P8JeoWxjx1BEG927xoKTBVZvGnsEX7GA=
+cell __gen_cell_cell_fc2bed31ffde77ae4ff097a85b18f1d41106f76ef1a0a4c1559bc69ec117ec60() asm """
+    B{b5ee9c7241010101001800002c0000000043726561746f7220436f6d6d697373696f6eeeb651b8} B>boc PUSHREF
+""";
+
 ;; Cell lZTQne01N/DtrHo86yAZsnIGiY3wdLhraFzqGXTlzFI=
 cell __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52() asm """
     B{b5ee9c7241010101000c000014000000005061796f75741931a62c} B>boc PUSHREF
+""";
+
+;; Cell Sp/4+Rz1/QCrBPtelRdli4gpJ4AFVjtUd+7YqP7soJE=
+cell __gen_cell_cell_4a9ff8f91cf5fd00ab04fb5e9517658b8829278005563b5477eed8a8feeca091() asm """
+    B{b5ee9c7241010101001900002e000000004c6561677565204372656174696f6e20466565b51e768c} B>boc PUSHREF
 """;
 
 ;; Cell PUbhb3vBPozKDI3CDKNVXoOAoEff7W8S0ZG9UiDTpMM=
@@ -380,6 +400,38 @@ cell $DeployOk$_store_cell((int) v, builder b) inline {
 
 ((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
     return ($queryId);
+}
+
+;;
+;; Type: PayoutItem
+;; TLB: _ leagueId:^string winningPercentages:dict<int, int> winners:dict<int, address> count:uint8 commissionPercentage:uint64 = PayoutItem
+;;
+
+(slice, ((slice, cell, cell, int, int))) $PayoutItem$_load(slice sc_0) inline {
+    var v'leagueId = sc_0~load_ref().begin_parse();
+    var v'winningPercentages = sc_0~load_dict();
+    var v'winners = sc_0~load_dict();
+    var v'count = sc_0~load_uint(8);
+    var v'commissionPercentage = sc_0~load_uint(64);
+    return (sc_0, (v'leagueId, v'winningPercentages, v'winners, v'count, v'commissionPercentage));
+}
+
+tuple $PayoutItem$_as_optional((slice, cell, cell, int, int) v) inline {
+    var (v'leagueId, v'winningPercentages, v'winners, v'count, v'commissionPercentage) = v;
+    return __tact_tuple_create_5(v'leagueId, v'winningPercentages, v'winners, v'count, v'commissionPercentage);
+}
+
+tuple $PayoutItem$_load_opt(cell cl) inline {
+    if (null?(cl)) {
+        return null();
+    }
+    var sc = cl.begin_parse();
+    return $PayoutItem$_as_optional(sc~$PayoutItem$_load());
+}
+
+((slice, cell, cell, int, int)) $PayoutItem$_not_null(tuple v) inline {
+    var (slice vvv'leagueId, cell vvv'winningPercentages, cell vvv'winners, int vvv'count, int vvv'commissionPercentage) = __tact_tuple_destroy_5(v);
+    return (vvv'leagueId, vvv'winningPercentages, vvv'winners, vvv'count, vvv'commissionPercentage);
 }
 
 ;;
@@ -628,6 +680,53 @@ builder $LeaguePayout$_store(builder build_0, (slice, cell, cell) v) inline {
     return ($self'owner, $self'leagues, $self'stakes);
 }
 
+((slice, cell, cell), ()) $LeaguePayout$_fun__payoutLeague((slice, cell, cell) $self, slice $leagueId, cell $winningPercentages, cell $winners, int $count, int $commissionPercentage) impure inline_ref {
+    var (($self'owner, $self'leagues, $self'stakes)) = $self;
+    int $leagueHash = __tact_sha256($leagueId);
+    var ($league'owner, $league'leagueId, $league'commissionPercentage, $league'feePaid, $league'totalStaked) = $LeagueInfo$_not_null($LeagueInfo$_load_opt(__tact_dict_get_int_cell($self'leagues, 257, $leagueHash)));
+    int $totalStaked = $league'totalStaked;
+    throw_unless(62070, ($totalStaked > 0));
+    if ($league'feePaid) {
+        throw_unless(44175, ($commissionPercentage == 0));
+    }
+    int $platComm = 0;
+    int $creatorComm = 0;
+    int $totalDeductions = 0;
+    int $distributableAmount = $totalStaked;
+    if (( ((~ $league'feePaid)) ? (($commissionPercentage > 0)) : (false) )) {
+        $platComm = (($totalStaked * $commissionPercentage) / 10000);
+    }
+    if (($league'commissionPercentage > 0)) {
+        $creatorComm = (($totalStaked * $league'commissionPercentage) / 10000);
+    }
+    $totalDeductions = ($platComm + $creatorComm);
+    $distributableAmount = ($totalStaked - $totalDeductions);
+    if (($platComm > 0)) {
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_body($self'owner, $platComm, 2, false, __gen_cell_cell_09a6e9944dbd383801d528bae49a8d56f8b17d63ce0f8a91dccddb6a5921dc36()));
+    }
+    if (($creatorComm > 0)) {
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_body($league'owner, $creatorComm, 2, false, __gen_cell_cell_fc2bed31ffde77ae4ff097a85b18f1d41106f76ef1a0a4c1559bc69ec117ec60()));
+    }
+    int $i = 0;
+    int $paidOut = 0;
+    repeat ($count) {
+        slice $winnerAddr = __tact_dict_get_int_slice($winners, 257, $i);
+        int $pct = __tact_dict_get_int_int($winningPercentages, 257, $i, 257);
+        int $stakeKey = $Cell$_fun_hash($Builder$_fun_endCell($Builder$_fun_storeAddress(store_uint($global_beginCell(), $leagueHash, 256), $winnerAddr)));
+        throw_unless(5902, (~ null?($StakeInfo$_load_opt(__tact_dict_get_int_cell($self'stakes, 257, $stakeKey)))));
+        int $amount = (($distributableAmount * $pct) / 10000);
+        if (($amount > 0)) {
+            $global_send($SendParameters$_constructor_to_value_mode_bounce_body($winnerAddr, $amount, 2, false, __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52()));
+            $global_emit($PayoutEvent$_store_cell($PayoutEvent$_constructor_leagueId_winner_amount($leagueId, $winnerAddr, $amount), begin_cell()));
+            $paidOut = ($paidOut + $amount);
+        }
+        $i = ($i + 1);
+    }
+    $self'leagues~__tact_dict_set_int_cell(257, $leagueHash, $LeagueInfo$_store_cell($LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked($league'owner, $league'leagueId, $league'commissionPercentage, $league'feePaid, 0), begin_cell()));
+    $global_emit($PayoutCompletedEvent$_store_cell($PayoutCompletedEvent$_constructor_leagueId($leagueId), begin_cell()));
+    return (($self'owner, $self'leagues, $self'stakes), ());
+}
+
 ((slice, cell, cell), tuple) $LeaguePayout$_fun_league((slice, cell, cell) $self, slice $id) impure inline_ref {
     var (($self'owner, $self'leagues, $self'stakes)) = $self;
     var $fresh$ret_0 = $LeagueInfo$_load_opt(__tact_dict_get_int_cell($self'leagues, 257, __tact_sha256($id)));
@@ -671,21 +770,38 @@ _ %league(slice $id) method_id(103490) {
     if (msg_bounced) { return (); }
     var op = in_msg~load_opcode_internal();
     ;; Receive CreateLeague message
-    if (op == 226823229) {
+    if (op == 3598845671) {
         var $msg'leagueId = in_msg~load_ref().begin_parse();
         var $msg'userId = in_msg~load_ref().begin_parse();
         var $msg'commissionPercentage = in_msg~load_uint(64);
         var $msg'feeAmount = in_msg~load_varuint16();
+        var $msg'initialStake = in_msg~load_varuint16();
         var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
         int $leagueHash = __tact_sha256($msg'leagueId);
         throw_unless(9821, null?($LeagueInfo$_load_opt(__tact_dict_get_int_cell($self'leagues, 257, $leagueHash))));
         int $feePaid = false;
+        int $requiredValue = 0;
         if (($msg'feeAmount > 0)) {
-            throw_unless(27168, ($ctx'value >= $msg'feeAmount));
+            $requiredValue = ($requiredValue + $msg'feeAmount);
+        }
+        if (($msg'initialStake > 0)) {
+            $requiredValue = ($requiredValue + $msg'initialStake);
+        }
+        throw_unless(62441, ($ctx'value >= $requiredValue));
+        if (($msg'feeAmount > 0)) {
             $global_send($SendParameters$_constructor_to_value_mode_bounce_body($self'owner, $msg'feeAmount, 2, false, __gen_cell_cell_4a9ff8f91cf5fd00ab04fb5e9517658b8829278005563b5477eed8a8feeca091()));
             $feePaid = true;
         }
-        var ($info'owner, $info'leagueId, $info'commissionPercentage, $info'feePaid, $info'totalStaked) = $LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked($ctx'sender, $msg'leagueId, $msg'commissionPercentage, $feePaid, 0);
+        int $stakedAmount = 0;
+        if (($msg'initialStake > 0)) {
+            $stakedAmount = $msg'initialStake;
+            int $stakeKey = $Cell$_fun_hash($Builder$_fun_endCell($Builder$_fun_storeAddress(store_uint($global_beginCell(), $leagueHash, 256), $ctx'sender)));
+            throw_unless(58396, null?($StakeInfo$_load_opt(__tact_dict_get_int_cell($self'stakes, 257, $stakeKey))));
+            var ($stakeInfo'user, $stakeInfo'amount, $stakeInfo'hasStaked) = $StakeInfo$_constructor_user_amount_hasStaked($ctx'sender, $stakedAmount, true);
+            $self'stakes~__tact_dict_set_int_cell(257, $stakeKey, $StakeInfo$_store_cell(($stakeInfo'user, $stakeInfo'amount, $stakeInfo'hasStaked), begin_cell()));
+            $global_emit($StakeEvent$_store_cell($StakeEvent$_constructor_leagueId_userId_amount($msg'leagueId, $msg'userId, $stakedAmount), begin_cell()));
+        }
+        var ($info'owner, $info'leagueId, $info'commissionPercentage, $info'feePaid, $info'totalStaked) = $LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked($ctx'sender, $msg'leagueId, $msg'commissionPercentage, $feePaid, $stakedAmount);
         $self'leagues~__tact_dict_set_int_cell(257, $leagueHash, $LeagueInfo$_store_cell(($info'owner, $info'leagueId, $info'commissionPercentage, $info'feePaid, $info'totalStaked), begin_cell()));
         $global_emit($LeagueCreated$_store_cell($LeagueCreated$_constructor_leagueId($msg'leagueId), begin_cell()));
         $LeaguePayout$_contract_store(($self'owner, $self'leagues, $self'stakes));
@@ -737,39 +853,23 @@ _ %league(slice $id) method_id(103490) {
         var $msg'commissionPercentage = in_msg~load_uint(64);
         var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
         throw_unless(35380, ( equal_slices_bits($ctx'sender, $self'owner) ));
-        int $leagueHash = __tact_sha256($msg'leagueId);
-        var ($league'owner, $league'leagueId, $league'commissionPercentage, $league'feePaid, $league'totalStaked) = $LeagueInfo$_not_null($LeagueInfo$_load_opt(__tact_dict_get_int_cell($self'leagues, 257, $leagueHash)));
-        int $totalStaked = $league'totalStaked;
-        throw_unless(62070, ($totalStaked > 0));
-        if ($league'feePaid) {
-            throw_unless(44175, ($msg'commissionPercentage == 0));
-        }
-        int $commAmount = 0;
-        int $distributableAmount = $totalStaked;
-        if (( ((~ $league'feePaid)) ? (($msg'commissionPercentage > 0)) : (false) )) {
-            $commAmount = (($totalStaked * $msg'commissionPercentage) / 10000);
-            $distributableAmount = ($totalStaked - $commAmount);
-            if (($commAmount > 0)) {
-                $global_send($SendParameters$_constructor_to_value_mode_bounce_body($self'owner, $commAmount, 2, false, __gen_cell_cell_09a6e9944dbd383801d528bae49a8d56f8b17d63ce0f8a91dccddb6a5921dc36()));
-            }
-        }
+        ($self'owner, $self'leagues, $self'stakes)~$LeaguePayout$_fun__payoutLeague($msg'leagueId, $msg'winningPercentages, $msg'winners, $msg'count, $msg'commissionPercentage);
+        $LeaguePayout$_contract_store(($self'owner, $self'leagues, $self'stakes));
+        return ();
+    }
+    
+    ;; Receive BatchPayoutWinners message
+    if (op == 743933829) {
+        var $msg'items = in_msg~load_dict();
+        var $msg'count = in_msg~load_uint(8);
+        var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+        throw_unless(35380, ( equal_slices_bits($ctx'sender, $self'owner) ));
         int $i = 0;
-        int $paidOut = 0;
         repeat ($msg'count) {
-            slice $winnerAddr = __tact_dict_get_int_slice($msg'winners, 257, $i);
-            int $pct = __tact_dict_get_int_int($msg'winningPercentages, 257, $i, 257);
-            int $stakeKey = $Cell$_fun_hash($Builder$_fun_endCell($Builder$_fun_storeAddress(store_uint($global_beginCell(), $leagueHash, 256), $winnerAddr)));
-            throw_unless(5902, (~ null?($StakeInfo$_load_opt(__tact_dict_get_int_cell($self'stakes, 257, $stakeKey)))));
-            int $amount = (($distributableAmount * $pct) / 10000);
-            if (($amount > 0)) {
-                $global_send($SendParameters$_constructor_to_value_mode_bounce_body($winnerAddr, $amount, 2, false, __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52()));
-                $global_emit($PayoutEvent$_store_cell($PayoutEvent$_constructor_leagueId_winner_amount($msg'leagueId, $winnerAddr, $amount), begin_cell()));
-                $paidOut = ($paidOut + $amount);
-            }
+            var ($item'leagueId, $item'winningPercentages, $item'winners, $item'count, $item'commissionPercentage) = $PayoutItem$_not_null($PayoutItem$_load_opt(__tact_dict_get_int_cell($msg'items, 257, $i)));
+            ($self'owner, $self'leagues, $self'stakes)~$LeaguePayout$_fun__payoutLeague($item'leagueId, $item'winningPercentages, $item'winners, $item'count, $item'commissionPercentage);
             $i = ($i + 1);
         }
-        $self'leagues~__tact_dict_set_int_cell(257, $leagueHash, $LeagueInfo$_store_cell($LeagueInfo$_constructor_owner_leagueId_commissionPercentage_feePaid_totalStaked($league'owner, $league'leagueId, $league'commissionPercentage, $league'feePaid, 0), begin_cell()));
-        $global_emit($PayoutCompletedEvent$_store_cell($PayoutCompletedEvent$_constructor_leagueId($msg'leagueId), begin_cell()));
         $LeaguePayout$_contract_store(($self'owner, $self'leagues, $self'stakes));
         return ();
     }

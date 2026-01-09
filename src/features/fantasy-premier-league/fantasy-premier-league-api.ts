@@ -11,12 +11,29 @@ const API_ENDPOINTS = {
 };
 
 let bootstrapDataCache: BootstrapData | null = null;
+let bootstrapCacheTimestamp: number = 0;
+const BOOTSTRAP_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const liveStatsCache = new Map<number, { data: any, timestamp: number }>();
 const CACHE_TTL = 30 * 1000; // 30 seconds
 
+/**
+ * Force refresh of bootstrap data cache
+ */
+export const invalidateBootstrapCache = (): void => {
+	bootstrapDataCache = null;
+	bootstrapCacheTimestamp = 0;
+	console.log('[FPL API] Bootstrap cache invalidated');
+};
+
 export const getBootstrapData = async (): Promise<BootstrapData> => {
-	if (!bootstrapDataCache) {
+	const now = Date.now();
+	const cacheAge = now - bootstrapCacheTimestamp;
+	
+	// Fetch fresh data if cache is empty or expired
+	if (!bootstrapDataCache || cacheAge > BOOTSTRAP_CACHE_TTL) {
+		console.log(`[FPL API] Fetching fresh bootstrap data (cache age: ${Math.round(cacheAge / 1000)}s)`);
 		bootstrapDataCache = await fetchJson<BootstrapData>(API_ENDPOINTS.BOOTSTRAP);
+		bootstrapCacheTimestamp = now;
 	}
 	return bootstrapDataCache;
 };
