@@ -51,7 +51,7 @@ app.use('*', async (c, next) => {
 app.use('/api/*', authMiddleware);
 
 // Start Automated Services
-env.publicLeagueService.startScheduler();
+// env.publicLeagueService.startScheduler(); // Removed
 if (process.env.NODE_ENV !== 'test') {
 	// env.blockchainService.listenForEvents(); // Removed in favor of Webhooks
     payoutScheduler.initializeScheduler(); // Start Payout Scheduler
@@ -75,10 +75,7 @@ app.route('/api/fantasy-leagues', fantasyLeaguesApp);
 app.route('/api/fantasy-teams', fantasyTeamsApp); // Restore Fantasy Teams
 app.route('/api/league-data', leagueIntegrationApp); // Generic endpoint
 // app.route('/api/fpl', fantasyPremierLeagueApp); // Restore FPL specific routes if needed
-import adminApp from './features/admin/admin-route.js';
-app.route('/api/admin', adminApp);
-import adminSeedingApp from './features/admin/admin-seeding.route.js';
-app.route('/api/admin/seeding', adminSeedingApp);
+// Admin and Seeding Apps removed
 app.doc('/doc', {
 	openapi: '3.0.0',
 	info: {

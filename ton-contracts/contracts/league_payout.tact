@@ -25,6 +25,7 @@ message CreateLeague {
     userId: String;
     commissionPercentage: Int as uint64;
     feeAmount: Int as coins;
+    initialStake: Int as coins;
 }
 
 message Stake {
@@ -111,8 +112,20 @@ contract LeaguePayout with Deployable {
         require(self.leagues.get(leagueHash) == null, "League already exists");
         
         let feePaid: Bool = false;
+        let requiredValue: Int = 0;
+
         if (msg.feeAmount > 0) {
-            require(ctx.value >= msg.feeAmount, "Insufficient fee sent");
+            requiredValue = requiredValue + msg.feeAmount;
+        }
+        
+        if (msg.initialStake > 0) {
+            requiredValue = requiredValue + msg.initialStake;
+        }
+
+        require(ctx.value >= requiredValue, "Insufficient value sent");
+
+        // Handle Fee
+        if (msg.feeAmount > 0) {
             // Fee logic: Send to owner/admin
             send(SendParameters{
                 to: self.owner,
@@ -123,13 +136,33 @@ contract LeaguePayout with Deployable {
             });
             feePaid = true;
         }
+        
+        // Handle Initial Stake
+        let stakedAmount: Int = 0;
+        if (msg.initialStake > 0) {
+            stakedAmount = msg.initialStake;
+            
+            // Record Stake
+            // Fix: Use hash of (leagueHash + userAddress) to avoid integer overflow from simple addition
+            // Note: ctx.sender is the user creating the league/stake
+            let stakeKey: Int = beginCell().storeUint(leagueHash, 256).storeAddress(ctx.sender).endCell().hash(); 
+            require(self.stakes.get(stakeKey) == null, "User already staked");
+
+            let stakeInfo: StakeInfo = StakeInfo{
+                user: ctx.sender,
+                amount: stakedAmount,
+                hasStaked: true
+            };
+            self.stakes.set(stakeKey, stakeInfo);
+            emit(StakeEvent{leagueId: msg.leagueId, userId: msg.userId, amount: stakedAmount}.toCell());
+        }
 
         let info: LeagueInfo = LeagueInfo{
             owner: ctx.sender,
             leagueId: msg.leagueId,
             commissionPercentage: msg.commissionPercentage,
             feePaid: feePaid,
-            totalStaked: 0
+            totalStaked: stakedAmount
         };
         
         self.leagues.set(leagueHash, info);

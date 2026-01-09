@@ -40,8 +40,13 @@ export const fetchTeams = async (): Promise<Team[]> => {
 export const fetchPlayerById = async (playerId: number): Promise<Player> => {
 	const playerMapper = createPlayerMapper(await getElementTypesFromBootstrap());
 	const players = await getPlayersFromBootstrap();
-	const element = find(propEq(playerId, 'id'), players);
-	if (!element) throw new Error(`Player with ID ${playerId} not found`);
+	// Debug Logging
+	console.log(`[FetchPlayerById] Searching for ID: ${playerId} (${typeof playerId})`);
+	const element = players.find(p => p.id == playerId);
+	if (!element) {
+		console.error(`[FetchPlayerById] Not found! First player ID: ${players[0]?.id} (${typeof players[0]?.id})`);
+		throw new Error(`Player with ID ${playerId} not found`);
+	}
 	return playerMapper(element);
 };
 
@@ -56,7 +61,7 @@ export const fetchPlayersByIds = async (playerIds: number[]): Promise<Player[]> 
 	
 	// Find all players by their IDs
 	const foundPlayers = playerIds.map(playerId => {
-		const element = find(propEq(playerId, 'id'), players);
+		const element = players.find(p => p.id === playerId);
 		if (!element) throw new Error(`Player with ID ${playerId} not found`);
 		return playerMapper(element);
 	});
@@ -67,7 +72,7 @@ export const fetchPlayersByIds = async (playerIds: number[]): Promise<Player[]> 
 export const fetchTeamById = async (teamId: number): Promise<Team> => {
 	const teamMapper = createTeamMapper();
 	const teams = await getTeamsFromBootstrap();
-	const team = find(propEq(teamId, 'id'), teams);
+	const team = teams.find(t => t.id === teamId);
 	if (!team) throw new Error(`Team with ID ${teamId} not found`);
 	return teamMapper(team);
 };

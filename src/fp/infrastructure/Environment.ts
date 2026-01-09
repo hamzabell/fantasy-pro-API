@@ -8,8 +8,7 @@ import type { BlockchainService } from '../../infrastructure/blockchain/blockcha
 import { createBlockchainService } from '../../infrastructure/blockchain/blockchain.service.js'
 import type { PaymentService } from '../../infrastructure/payment/payment.service.js'
 import { createPaymentService } from '../../infrastructure/payment/payment.service.js'
-import type { PublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
-import { createPublicLeagueService } from '../../features/fantasy-leagues/public-league-service.js'
+// publicLeagueService removed
 import type { TonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 import { createTonBlockchainService } from '../../infrastructure/blockchain/ton-blockchain.service.js';
 
@@ -25,7 +24,7 @@ export interface AppEnvironment {
 	blockchainService: BlockchainService
 	tonBlockchainService: TonBlockchainService
 	paymentService: PaymentService
-	publicLeagueService: PublicLeagueService
+	// publicLeagueService: PublicLeagueService // Removed
 	tonClient: TonClient
 }
 
@@ -68,7 +67,7 @@ export const createEnvironment = (
  
  	const walletService = createWalletService(walletRepo, blockchainService)
  	const paymentService = createPaymentService()
-	const publicLeagueService = createPublicLeagueService(prisma, walletService, tonBlockchainService)
+ 	// const publicLeagueService = createPublicLeagueService(prisma, walletService, tonBlockchainService) // Removed
 
 	const tonClient = new TonClient({
 		endpoint: tonEndpoint,
@@ -84,7 +83,7 @@ export const createEnvironment = (
 		blockchainService,
 		tonBlockchainService,
 		paymentService,
-		publicLeagueService,
+		// publicLeagueService, // Removed
 		tonClient
 	}
 }
