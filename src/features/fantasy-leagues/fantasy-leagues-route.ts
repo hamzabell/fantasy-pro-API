@@ -549,11 +549,21 @@ TE.chain((league) => {
         return TE.left(businessRuleError('LeagueClosed', 'Joining closes 24 hours before the gameweek starts.') as AppError);
     }
     
-    // Block joining if league is pending or failed
-    if (league.status === 'pending') return TE.left(businessRuleError('LeaguePending', 'League is still confirming on blockchain.') as AppError);
+    
+    // Block joining if league is pending or failed (except for DUELs which can be joined while pending)
+    if (league.gameMode !== 'DUEL' && league.status === 'pending') {
+        return TE.left(businessRuleError('LeaguePending', 'League is still confirming on blockchain.') as AppError);
+    }
     if (league.status === 'failed') return TE.left(businessRuleError('LeagueFailed', 'League creation failed.') as AppError);
     
-    if (league.status !== 'open' && league.status !== 'active') return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
+    // For non-DUEL leagues, must be open or active
+    if (league.gameMode !== 'DUEL' && league.status !== 'open' && league.status !== 'active') {
+        return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
+    }
+    // For DUELs, allow pending, open, or active
+    if (league.gameMode === 'DUEL' && league.status !== 'open' && league.status !== 'active' && league.status !== 'pending') {
+        return TE.left(businessRuleError('LeagueClosed', 'Duel not available for joining') as AppError);
+    }
     
     // Check Lock
     if (league.gameMode === 'DUEL' && league.lockedUntil && league.lockedUntil > now) {
