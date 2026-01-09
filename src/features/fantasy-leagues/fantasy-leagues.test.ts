@@ -2170,7 +2170,9 @@ describe("Fantasy Leagues", () => {
 				ownerId: owner.id,
 				leagueType: 'public',
 				limit: 10,
-                entryFeeUsd: new Prisma.Decimal(100)
+                entryFeeUsd: new Prisma.Decimal(100),
+                status: 'active',
+                gameMode: 'DUEL'
 			});
 			const savedLeague = await saveFantasyLeagueToDatabase(league);
 
@@ -2189,7 +2191,7 @@ describe("Fantasy Leagues", () => {
 			const response = await app.request('/api/fantasy-leagues/join', {
 				method: 'POST',
 				...createAuthHeaders(user.id),
-				...createBody({ code: savedLeague.code, teamName: 'My Team' })
+				...createBody({ code: savedLeague.code, teamName: 'My Team', lineup: [1] })
 			});
 
 			expect(response.status).toBe(200);

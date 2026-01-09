@@ -9,30 +9,25 @@ describe('League Cost Utils', () => {
       expect(calculateLeagueCreationCost(5)).toBe(0);
     });
 
-    it('given 6 to 10 players: it should be 10 MATIC', () => {
-      expect(calculateLeagueCreationCost(6)).toBe(10);
-      expect(calculateLeagueCreationCost(10)).toBe(10);
+    it('given 6 to 10 players: it should be 0.1 TON', () => {
+      expect(calculateLeagueCreationCost(6)).toBe(0.1);
+      expect(calculateLeagueCreationCost(10)).toBe(0.1);
     });
 
     it('given > 10 players: it should scale exponentially', () => {
-      // 12 players: 10 * 1.05^2 = 10 * 1.1025 = 11.025 -> 11.03
-      expect(calculateLeagueCreationCost(12)).toBe(11.03);
+      // 12 players: 0.1 * 1.01^2 = 0.1 * 1.0201 = 0.10201 -> 0.102
+      expect(calculateLeagueCreationCost(12)).toBe(0.102);
 
-      // 20 players: 10 * 1.05^10 = 10 * 1.62889... = 16.2889 -> 16.29
-      expect(calculateLeagueCreationCost(20)).toBe(16.29);
+      // 20 players: 0.1 * 1.01^10 = 0.1 * 1.10462... = 0.110462 -> 0.1105
+      expect(calculateLeagueCreationCost(20)).toBe(0.1105);
 
-      // 50 players: 10 * 1.05^40 = 10 * 7.0399... = 70.399 -> 70.40
-      expect(calculateLeagueCreationCost(50)).toBe(70.40);
-      
-      // 100 players: 10 * 1.05^90 = 10 * 80.73... -> ~807.30 (Wait. My math in plan said 811. checking...)
-      // 1.05 ^ 90 = 80.73
-      // 10 * 80.73 = 807.3
-      // Let's verify with code execution.
+      // 50 players: 0.1 * 1.01^40 = 0.1 * 1.48886... = 0.148886 -> 0.1489
+      expect(calculateLeagueCreationCost(50)).toBe(0.1489);
     });
 
     it('given large numbers: it should handle gracefully', () => {
         const cost = calculateLeagueCreationCost(100);
-        expect(cost).toBeGreaterThan(800);
+        expect(cost).toBeGreaterThan(0.2); // 0.1 * 1.01^90 = ~0.244
     });
   });
 });
