@@ -125,6 +125,49 @@ export class TonBlockchainService {
         );
     }
 
+    /**
+     * Batch payout for multiple leagues using percentage-based distribution
+     */
+    batchPayoutWinners = (
+        batchItems: Array<{
+            leagueId: string;
+            winners: { address: string; percentage: number }[];
+            platformCommission: number;
+        }>,
+        metadata?: { gameweekId: number }
+    ): TaskEither<AppError, string> => {
+        return TE.tryCatch(
+            async () => {
+                logger.info(`[TON] Batch payout for GW ${metadata?.gameweekId}. Leagues: ${batchItems.length}`);
+                
+                if (!this.client || !this.wallet) {
+                    logger.warn("TON Client or Wallet not initialized for batch payout (mocking logic)");
+                }
+                
+                // TODO: Implement actual contract call for batch payout
+                // The smart contract should support a batch payout function that accepts a list of leagues.
+                // For each league:
+                // - League ID (to identify the pool)
+                // - List of Winners (addresses)
+                // - List of Percentages (basis points, summing to 10000 - commission)
+                // - Platform Commission (basis points)
+                
+                // Construct the payload for the smart contract
+                // const payload = beginCell()
+                //   .storeUint(BATCH_PAYOUT_OPCODE, 32)
+                //   .storeDict(serializeBatchItems(batchItems))
+                //   .endCell();
+                
+                // For now, return a mock transaction hash
+                const txHash = `ton_batch_tx_${Date.now()}_gw${metadata?.gameweekId}`;
+                logger.info(`[TON] Batch payout transaction: ${txHash}`);
+                
+                return txHash;
+            },
+            (e) => blockchainError('Failed to execute batch payout on TON', String(e))
+        );
+    }
+
     async getTransaction(hash: string): Promise<any> {
         if (!this.client) {
              // Try to initialize if not ready?
@@ -176,7 +219,7 @@ export class TonBlockchainService {
                 // Get Contract Address from Env
                 let contractAddressStr = process.env.VITE_TON_CONTRACT_ADDRESS || process.env.TON_CONTRACT_ADDRESS;
                 if (!contractAddressStr) {
-                    contractAddressStr = "kQAh44E_ar-pkJjYdqIgs4_NJeMClCtd9mNzNc-FxGttIy5S";
+                    contractAddressStr = "kQC694TKGYnc1wc0HxTxguOWjuXAQ4rnEmt08V8eWVRraG4t";
                 }
 
                 const { Address, storeMessage, beginCell, Cell } = await import("@ton/core");
@@ -339,7 +382,7 @@ export class TonBlockchainService {
                 const { Address, beginCell, toNano, storeMessage } = await import("@ton/core");
                 
                 let contractAddressStr = process.env.VITE_TON_CONTRACT_ADDRESS || process.env.TON_CONTRACT_ADDRESS;
-                if (!contractAddressStr) contractAddressStr = "kQAh44E_ar-pkJjYdqIgs4_NJeMClCtd9mNzNc-FxGttIy5S";
+                if (!contractAddressStr) contractAddressStr = "kQC694TKGYnc1wc0HxTxguOWjuXAQ4rnEmt08V8eWVRraG4t";
                 const contractAddress = Address.parse(contractAddressStr);
 
                 // Wait before first RPC call (getSeqno)

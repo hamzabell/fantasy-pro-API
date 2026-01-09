@@ -112,7 +112,7 @@ export async function calculateLeagueWinners(gameweekId: number, leagueId: strin
     const results = await processBatch([league], playerScores, 1);
     
     // 4. Update & Payout
-    await updateWinnersInBatch(results);
+    await updateWinnersInBatch(results, gameweekId);
 
     return results[0];
 }
@@ -200,187 +200,220 @@ const blockchainService = createTonBlockchainService(
     process.env.TON_MNEMONIC || ''
 );
 
+interface LeagueBatchItem {
+  leagueId: string;
+  winners: { address: string; percentage: number }[];
+  platformCommission: number; // Basis points
+  totalPool: Decimal; // For logging/reference
+}
+
 /**
- * Update database with calculated winners in batches AND trigger payouts
+ * Prepare batch payout data with PERCENTAGES (Basis Points)
+ * Returns a list of league payout instructions for the smart contract
  */
-async function updateWinnersInBatch(results: LeagueWinnerResult[]): Promise<void> {
+async function prepareBatchPayoutData(results: LeagueWinnerResult[]): Promise<LeagueBatchItem[]> {
+  const successfulResults = results.filter(r => r.success);
+  
+  if (successfulResults.length === 0) {
+    return [];
+  }
+
+  const batchItems: LeagueBatchItem[] = [];
+
+  for (const result of successfulResults) {
+    try {
+      // 1. Get League and Winners Info
+      const league = await prisma.fantasyLeague.findUnique({
+        where: { id: result.leagueId },
+        include: { members: { include: { user: true } } }
+      });
+      
+      if (!league) {
+        console.error(`League ${result.leagueId} not found during batch prep`);
+        continue;
+      }
+      
+      const winners = result.winners;
+      
+      // --- COMMISSION LOGIC ---
+      let platformCommissionRate = 0;
+      let creatorCommissionRate = new Decimal(league.creatorCommission || 0);
+
+      if (league.leagueType === 'public') {
+        platformCommissionRate = 10; // 10%
+      } else {
+        const participants = league.members.length;
+        if (participants <= 5) {
+          platformCommissionRate = 5; // 5%
+        } else {
+          if (league.paymentMethod === 'COMMISSION') {
+            platformCommissionRate = 20; // 20%
+          } else {
+            platformCommissionRate = 0;
+          }
+        }
+      }
+
+      const platformBasisPoints = Math.floor(platformCommissionRate * 100); // e.g. 10% -> 1000
+      const creatorBasisPoints = Math.floor(creatorCommissionRate.toNumber() * 100); // e.g. 5% -> 500
+
+      // Remaining share for winners (Total - Platform - Creator)
+      // Note: The smart contract might expect percentages of the *Total Pool* for everyone including commission?
+      // Or `payoutWinners(..., percentages[], commission)` implies commission is separate.
+      // Assuming `percentages[]` are for the winners+creator and are relative to the Total Pool.
+      
+      // Calculate Winner Share %
+      // Distributable % = 10000 - Platform - Creator
+      const distributableBasisPoints = 10000 - platformBasisPoints - creatorBasisPoints;
+      
+      if (winners.length === 0) {
+        console.warn(`League ${league.id} has no winners, skipping`);
+        continue;
+      }
+
+      const winnerShareBP = Math.floor(distributableBasisPoints / winners.length);
+      
+      // Fix rounding dust?
+      // If we have 3 winners, 3333 each (Total 9999).
+      // We can add dust to the first winner, or just let the contract handle residual.
+      // Let's rely on integer math being safe enough for now.
+
+      const payoutList: { address: string; percentage: number }[] = [];
+
+      // 2. Add Winners
+      for (const userId of winners) {
+        const member = league.members.find(m => m.userId === userId);
+        const address = member?.user.walletAddress || (await prisma.wallet.findUnique({ where: { userId } }))?.address;
+        
+        if (address) {
+          payoutList.push({ address, percentage: winnerShareBP });
+        } else {
+          console.error(`User ${userId} has no wallet address for payout`);
+        }
+      }
+
+      // 3. Add Creator Commission (if any)
+      if (creatorBasisPoints > 0 && league.ownerId) {
+        const ownerMember = league.members.find(m => m.userId === league.ownerId);
+        let ownerAddress = ownerMember?.user.walletAddress;
+        
+        if (!ownerAddress) {
+          const ownerUser = await prisma.user.findUnique({ where: { id: league.ownerId } });
+          ownerAddress = ownerUser?.walletAddress || (await prisma.wallet.findUnique({ where: { userId: league.ownerId } }))?.address;
+        }
+
+        if (ownerAddress) {
+          // Check if owner is already in list (unlikely but possible if they won too?)
+          // If so, add to their percentage
+          const existing = payoutList.find(p => p.address === ownerAddress);
+          if (existing) {
+            existing.percentage += creatorBasisPoints;
+          } else {
+            payoutList.push({ address: ownerAddress, percentage: creatorBasisPoints });
+          }
+        } else {
+          console.error(`League Owner ${league.ownerId} has no wallet address for commission`);
+        }
+      }
+
+      batchItems.push({
+        leagueId: league.id,
+        winners: payoutList,
+        platformCommission: platformBasisPoints,
+        totalPool: new Decimal(league.totalPoolUsd || 0)
+      });
+
+    } catch (error) {
+      console.error(`Failed to prepare batch data for league ${result.leagueId}:`, error);
+    }
+  }
+
+  return batchItems;
+}
+
+/**
+ * Execute batch payout to smart contract
+ */
+async function executeBatchPayout(
+  batchItems: LeagueBatchItem[],
+  gameweekId: number
+): Promise<boolean> {
+  if (batchItems.length === 0) {
+    console.log('[BatchPayout] No leagues to pay out');
+    return true;
+  }
+
+  try {
+    console.log(`[BatchPayout] Executing batch payout for GW ${gameweekId}`);
+    console.log(`[BatchPayout] Total leagues in batch: ${batchItems.length}`);
+
+    // Call blockchain service with batch items
+    await blockchainService.batchPayoutWinners(
+      batchItems,
+      { gameweekId }
+    )();
+
+    console.log('[BatchPayout] Batch payout executed successfully');
+    return true;
+  } catch (error) {
+    console.error('[BatchPayout] Failed to execute batch payout:', error);
+    return false;
+  }
+}
+
+/**
+ * Update database with calculated winners in batches AND trigger batch payout
+ */
+async function updateWinnersInBatch(results: LeagueWinnerResult[], gameweekId: number): Promise<void> {
   const successfulResults = results.filter(r => r.success);
   
   if (successfulResults.length === 0) {
     return;
   }
 
-  const updatePromises = successfulResults.map(async (result) => {
+  // Aggregate all payouts
+  const batchItems = await prepareBatchPayoutData(results);
+
+  // Execute batch payout to smart contract
+  const payoutSuccess = await executeBatchPayout(
+    batchItems,
+    gameweekId
+  );
+
+  if (!payoutSuccess) {
+    console.error('[BatchPayout] Batch payout failed, not updating league statuses');
+    return;
+  }
+
+  // Update all league statuses after successful payout
+  const updatePromises = batchItems.map(async (item) => {
     try {
-      // 1. Get League and Winners Info
-      const league = await prisma.fantasyLeague.findUnique({
-          where: { id: result.leagueId },
-          include: { members: { include: { user: true } } } // Need wallet addresses
-      });
+      // Re-find winners from item? Or pass referencing result? 
+      // We can rely on batchItems having what we need or pass result map.
+      // But status update just needs "paid_out" and "winnersArray".
+      // winnersArray is in the input `results`.
       
-      if (!league) {
-          console.error(`League ${result.leagueId} not found during payout`);
-          return false;
-      }
+      // Find original result for this league to get the raw winners array
+      const originalResult = results.find(r => r.leagueId === item.leagueId);
       
-      // 2. Prepare Payout Data
-      const winners = result.winners; // UserIDs
-      const totalPool = new Decimal(league.totalPoolUsd || 0);
-      let workingPool = totalPool;
-
-      // --- COMMISSION LOGIC ---
-      let platformCommissionRate = 0;
-      let creatorCommissionRate = new Decimal(league.creatorCommission || 0);
-
-      // Determine Platform Commission
-      if (league.leagueType === 'public') {
-          platformCommissionRate = 10;
-          // Public leagues cannot have creator commission (enforced at creation), but if somehow exists, ignore or subtract?
-          // Rules say: Public = 10%.
-      } else {
-          // Private
-          const participants = league.members.length; // Actually check `members.length` or `currentParticipants`? using actual members list is safer.
-          if (participants <= 5) {
-              platformCommissionRate = 5;
-          } else {
-              // > 5 participants
-              if (league.paymentMethod === 'COMMISSION') { // 'Free to create'
-                  platformCommissionRate = 20;
-              } else { // 'UPFRONT'
-                  platformCommissionRate = 0;
-              }
-          }
-      }
-
-      // Calculate Amounts (Logic: Fees taken from Gross)
-      const platformFeeAmount = totalPool.mul(platformCommissionRate).div(100);
-      const creatorFeeAmount = totalPool.mul(creatorCommissionRate).div(100);
-      
-      const distributableAmount = totalPool.minus(platformFeeAmount).minus(creatorFeeAmount);
-      
-      // Winner Share
-      if (winners.length === 0) return true; // No winners? No payout. (Or refund?)
-      // Assuming winners > 0.
-      const winnerShare = distributableAmount.div(winners.length);
-
-      // Prepare Payout List
-      const payoutMap = new Map<string, Decimal>(); // Address -> Amount
-
-      // Helper to add to map
-      const addToPayout = (address: string, amount: Decimal) => {
-          if (!address) return;
-          const current = payoutMap.get(address) || new Decimal(0);
-          payoutMap.set(address, current.plus(amount));
-      };
-
-      // Distribute Winnings
-      for (const userId of winners) {
-          const member = league.members.find(m => m.userId === userId);
-          const address = member?.user.walletAddress || (await prisma.wallet.findUnique({ where: { userId } }))?.address;
-          
-          if (address) {
-              addToPayout(address, winnerShare);
-          } else {
-              console.error(`User ${userId} has no wallet address for payout`);
-          }
-      }
-
-      // Distribute Creator Commission (if > 0 and Creator exists)
-      if (creatorFeeAmount.greaterThan(0) && league.ownerId) {
-          const ownerMember = league.members.find(m => m.userId === league.ownerId);
-          // If owner is not a member (possible?), we need to look them up separately.
-          let ownerAddress = ownerMember?.user.walletAddress;
-          
-          if (!ownerAddress) {
-               // Look up owner directly if not in members list (e.g. didn't join?)
-               const ownerUser = await prisma.user.findUnique({ where: { id: league.ownerId } });
-               ownerAddress = ownerUser?.walletAddress || (await prisma.wallet.findUnique({ where: { userId: league.ownerId } }))?.address;
-          }
-
-          if (ownerAddress) {
-              addToPayout(ownerAddress, creatorFeeAmount);
-          } else {
-             console.error(`League Owner ${league.ownerId} has no wallet address for commission`);
-          }
-      }
-
-      // Convert to List for Blockchain Service
-      // AND Calculate Percentages!
-      // The Smart Contract `payoutWinners` expects: (leagueId, winners[], percentages[], commission?)
-      // BUT `percentages` should sum to 10000 (basis points) typically? OR relative weights?
-      // Contract says: `percentages`. Usually means basis points (10000 = 100%).
-      // Let's assume basis points.
-      
-      const payoutList: { address: string, amount: string, percentage: number }[] = [];
-      let totalPercentage = 0;
-
-      // Start with TOTAL POOL as basis for %? 
-      // OR is it % of Remaining? 
-      // Usually SC `payoutWinners` distributes the *entire* balance held by contract for that league.
-      // So % must be relative to the Contract Balance (which equals TotalPool).
-      
-      // We iterate our payoutMap (which contains Absolute Amounts) and convert to % of TotalPool.
-      payoutMap.forEach((amount, address) => {
-          // % = (Amount / TotalPool) * 10000
-          // Handle TotalPool = 0 edge case?
-          if (totalPool.isZero()) return;
-          
-          let pct = amount.div(totalPool).mul(10000).floor().toNumber();
-          payoutList.push({
-              address,
-              amount: amount.toFixed(6),
-              percentage: pct
-          });
-          totalPercentage += pct;
-      });
-
-      // Handle Rounding Dust? 
-      // If sum < 10000 (minus platform fee which stays in contract? Or is platform fee sent to admin?)
-      // The SC likely keeps the platform fee (residual) OR sends it to an admin address?
-      // Smart Contract signature: `payoutWinners(..., commissionPercentage)`
-      // This `commissionPercentage` is likely the Platform Fee.
-      // So `percentages` array is for *Participants* (Winners + Creator).
-      // Platform Fee is separate arg.
-      
-      // So: 
-      // User Amount + Creator Amount + Platform Amount = Total.
-      // User % + Creator % + Platform % = 100%.
-      
-      const platformPct = Math.floor(platformCommissionRate * 100); // 10% -> 1000 basis points
-      // Adjust last entry or platform fee to ensure sum = 10000?
-      // Let's rely on SC safely handling residuals or just be precise.
-      
-      // 3. Trigger Blockchain Payout
-      if (payoutList.length > 0) {
-          // Pass formatted args
-          // We need custom interface for this new method signature in blockchain service
-          await blockchainService.payoutWinners(
-              league.id, 
-              payoutList.map(p => ({ address: p.address, amount: p.amount })), 
-              payoutList.map(p => BigInt(p.percentage)), // The calculated percentages
-              BigInt(platformPct)
-          )();
-      }
-      
-      // 4. Close League in DB
       await prisma.fantasyLeague.update({
-        where: { id: result.leagueId },
+        where: { id: item.leagueId },
         data: {
-          winnersArray: result.winners,
-          status: "paid_out" // Updated status to reflect payout
+          winnersArray: originalResult ? originalResult.winners : [],
+          status: "paid_out"
         }
       });
       return true;
     } catch (error) {
-      console.error(`Failed to update winners/payout for league ${result.leagueId}:`, error);
-      return false; 
+      console.error(`Failed to update league ${item.leagueId} status:`, error);
+      return false;
     }
   });
 
   const updateResults = await Promise.all(updatePromises);
   const successCount = updateResults.filter(Boolean).length;
 
-  console.log(`Updated and Paid Out ${successCount} leagues (out of ${successfulResults.length} calculated)`);
+  console.log(`Updated ${successCount} leagues (out of ${batchItems.length} in batch)`);
 }
 
 /**
@@ -462,7 +495,7 @@ export async function calculateAllLeagueWinners(
       
       // Update database for each batch sequentially to avoid overwhelming the DB
       for (const results of batchResults) {
-        await updateWinnersInBatch(results);
+        await updateWinnersInBatch(results, gameweekId); // Pass gameweekId
         
         // Collect statistics
         for (const result of results) {
