@@ -1,5 +1,6 @@
 {
   "name": "fantasy-pro-ton-contracts",
+  "type": "module",
   "version": "0.1.0",
   "scripts": {
     "build": "tact --config tact.config.json",

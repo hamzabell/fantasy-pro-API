@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2015",
+    "target": "ES2020",
     "module": "NodeNext",
     "strict": true,
-    "lib": ["ES2015", "dom"],
-    "verbatimModuleSyntax": true,
+    "lib": ["ES2020", "dom"],
+    "verbatimModuleSyntax": false,
     
     "types": [
       "node"
