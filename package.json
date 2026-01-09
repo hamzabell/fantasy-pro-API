@@ -11,7 +11,6 @@
     "prisma:studio": "npx prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "create-test-user": "ts-node src/utils/create-test-user.ts",
-    "reseed-leagues": "tsx src/utils/reseed-public-leagues.ts",
     "get-auth-token": "tsx src/utils/get-auth-token.ts",
     "generate:api-key": "tsx scripts/generate-api-key.ts"
   },
