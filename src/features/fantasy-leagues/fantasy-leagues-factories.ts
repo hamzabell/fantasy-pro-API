@@ -24,7 +24,15 @@ export const createPopulatedFantasyLeague = ({
     paymentMethod = 'UPFRONT',
     commissionRate = new Prisma.Decimal(0),
     creatorCommission = new Prisma.Decimal(0),
-    verificationAttempts = 0
+    verificationAttempts = 0,
+    gameMode = 'BLITZ' as FantasyLeague['gameMode'],
+    blitzGameweekId = null as number | null,
+    lockedBy = null as string | null,
+    lockedUntil = null as Date | null,
+    duelCriteria = null as string | null,
+    creatorPlayerId = null as number | null,
+    challengerPlayerId = null as number | null,
+    bingoBoard = null as any
 } ={} ) => ({
 	name,
 	description,
@@ -47,6 +55,14 @@ export const createPopulatedFantasyLeague = ({
     paymentMethod,
     commissionRate,
     creatorCommission,
-    verificationAttempts
+    verificationAttempts,
+    gameMode,
+    blitzGameweekId,
+    lockedBy,
+    lockedUntil,
+    duelCriteria,
+    creatorPlayerId,
+    challengerPlayerId,
+    bingoBoard
 })
 

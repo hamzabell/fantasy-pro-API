@@ -429,7 +429,7 @@ fantasyLeaguesApp.openapi(createFantasyLeagueRoute, async (c) => {
                            });
                            await env.prisma.fantasyLeague.update({ where: { id: league.id }, data: { currentParticipants: { increment: 1 } } });
                            league.currentParticipants = 1;
-                           league.membershipStatus = 'PENDING';
+                            // league.membershipStatus = 'PENDING'; // membershipStatus is not a database field
                            console.log('[CreateLeague] Creator auto-joined successfully');
                        }
 
