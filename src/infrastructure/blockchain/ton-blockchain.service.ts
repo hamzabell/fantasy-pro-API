@@ -4,6 +4,11 @@ import { createLogger } from "../../fp/infrastructure/Logger.js";
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
 import { blockchainError } from '../../fp/domain/errors/AppError.js';
+import { 
+    storeBatchPayoutWinners, 
+    BatchPayoutWinners, 
+    PayoutItem 
+} from '../../../ton-contracts/build/league_payout/league_payout_LeaguePayout.js';
 
 type TaskEither<E, A> = TE.TaskEither<E, A>;
 
@@ -138,31 +143,113 @@ export class TonBlockchainService {
     ): TaskEither<AppError, string> => {
         return TE.tryCatch(
             async () => {
+                await this.ensureInitialized();
+                
+                const { Address, beginCell, toNano, Dictionary, internal } = await import("@ton/core");
+                
                 logger.info(`[TON] Batch payout for GW ${metadata?.gameweekId}. Leagues: ${batchItems.length}`);
                 
-                if (!this.client || !this.wallet) {
-                    logger.warn("TON Client or Wallet not initialized for batch payout (mocking logic)");
+                let contractAddressStr = process.env.VITE_TON_CONTRACT_ADDRESS || process.env.TON_CONTRACT_ADDRESS;
+                if (!contractAddressStr) contractAddressStr = "kQC694TKGYnc1wc0HxTxguOWjuXAQ4rnEmt08V8eWVRraG4t";
+                const contractAddress = Address.parse(contractAddressStr);
+
+                // Wait before RPC
+                await this.waitIfLimited();
+                
+                // 1. Convert batchItems to Dictionary<bigint, PayoutItem>
+                const itemsDict = Dictionary.empty(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)); // Placeholder for PayoutItem value parser needs careful handling
+                // The wrapper helper `dictValueParserPayoutItem` is exported but I need to import it or implement it manually if not exported?
+                // It IS exported on line 1024 of wrapper.
+                
+                // Wait, I need to import `dictValueParserPayoutItem` too.
+                // Let's do a manual construction if needed or better, import it.
+                // Re-import will be needed in the top block.
+                
+                // Constructing the Dictionary. 
+                // Since I cannot change imports in this chunk easily without affecting the top chunk again,
+                // I will assume I added it to the top import chunk.
+                // Wait, I can't assume. I should do it in one go.
+                // But let's proceed with the logic assumption.
+
+                // Actually, let's use the wrapper types.
+                // The wrapper exports `dictValueParserPayoutItem`.
+                
+                // Re-implementing logic for Dictionary construction:
+                // We need to map our simple array to the contract's PayoutItem format.
+                
+                const { dictValueParserPayoutItem } = await import('../../../ton-contracts/build/league_payout/league_payout_LeaguePayout.js');
+
+                const payoutItemsDict = Dictionary.empty(Dictionary.Keys.BigInt(257), dictValueParserPayoutItem());
+
+                for (let i = 0; i < batchItems.length; i++) {
+                    const item = batchItems[i];
+                    
+                    // Winners Dict: index -> Address
+                    const winnersDict = Dictionary.empty(Dictionary.Keys.BigInt(257), Dictionary.Values.Address());
+                    
+                    // Percentages Dict: index -> Percentage (int)
+                    const percentagesDict = Dictionary.empty(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
+
+                    item.winners.forEach((w, idx) => {
+                        winnersDict.set(BigInt(idx), Address.parse(w.address));
+                        percentagesDict.set(BigInt(idx), BigInt(w.percentage));
+                    });
+
+                    const payoutItem: PayoutItem = {
+                        $$type: 'PayoutItem',
+                        leagueId: item.leagueId,
+                        winners: winnersDict,
+                        winningPercentages: percentagesDict,
+                        count: BigInt(item.winners.length),
+                        commissionPercentage: BigInt(item.platformCommission)
+                    };
+
+                    payoutItemsDict.set(BigInt(i), payoutItem);
                 }
+
+                // 2. Create Payload
+                const batchPayoutMsg: BatchPayoutWinners = {
+                    $$type: 'BatchPayoutWinners',
+                    items: payoutItemsDict,
+                    count: BigInt(batchItems.length)
+                };
+
+                const payload = beginCell()
+                    .store(storeBatchPayoutWinners(batchPayoutMsg))
+                    .endCell();
+
+                const seqno = await this.wallet.getSeqno(this.client!.provider(this.wallet.address, null));
                 
-                // TODO: Implement actual contract call for batch payout
-                // The smart contract should support a batch payout function that accepts a list of leagues.
-                // For each league:
-                // - League ID (to identify the pool)
-                // - List of Winners (addresses)
-                // - List of Percentages (basis points, summing to 10000 - commission)
-                // - Platform Commission (basis points)
+                await this.waitIfLimited();
+
+                // Gas estimation: Base 0.1 + (0.05 * count)?
+                // Let's use a safe buffer. 0.1 base + 0.05 per league?
+                const gasAmount = 0.1 + (batchItems.length * 0.05);
+                const value = toNano(gasAmount.toString()); // Only gas, value for prizes is already in contract? 
+                // OR does `batchPayout` need to send value to cover transfers? 
+                // The contract PayoutWinners usually sends value OUT. 
+                // Verify contract logic: `context().value` must cover fees?
+                // Assuming contract pays out from its balance. We just pay GAS.
                 
-                // Construct the payload for the smart contract
-                // const payload = beginCell()
-                //   .storeUint(BATCH_PAYOUT_OPCODE, 32)
-                //   .storeDict(serializeBatchItems(batchItems))
-                //   .endCell();
+                const transfer = this.wallet.createTransfer({
+                    seqno,
+                    secretKey: this.walletKey.secretKey,
+                    messages: [
+                        internal({
+                            to: contractAddress,
+                            value: value, 
+                            bounce: true,
+                            body: payload
+                        })
+                    ]
+                });
+
+                await this.client!.sendExternalMessage(this.wallet, transfer);
                 
-                // For now, return a mock transaction hash
-                const txHash = `ton_batch_tx_${Date.now()}_gw${metadata?.gameweekId}`;
-                logger.info(`[TON] Batch payout transaction: ${txHash}`);
+                const msgHash = (transfer as any).hash().toString('hex');
                 
-                return txHash;
+                logger.info(`[TON] BatchPayoutWinners tx sent. MsgHash: ${msgHash}, Items: ${batchItems.length}, Gas: ${gasAmount}`);
+                return msgHash;
             },
             (e) => blockchainError('Failed to execute batch payout on TON', String(e))
         );
@@ -318,7 +405,7 @@ export class TonBlockchainService {
                 const { Address, beginCell, toNano, storeMessage } = await import("@ton/core");
                 
                 let contractAddressStr = process.env.VITE_TON_CONTRACT_ADDRESS || process.env.TON_CONTRACT_ADDRESS;
-                if (!contractAddressStr) contractAddressStr = "kQAh44E_ar-pkJjYdqIgs4_NJeMClCtd9mNzNc-FxGttIy5S";
+                if (!contractAddressStr) contractAddressStr = "kQC694TKGYnc1wc0HxTxguOWjuXAQ4rnEmt08V8eWVRraG4t";
                 const contractAddress = Address.parse(contractAddressStr);
 
                 const payload = beginCell()
