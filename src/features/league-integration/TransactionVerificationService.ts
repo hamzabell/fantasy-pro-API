@@ -121,6 +121,11 @@ export class TransactionVerificationService {
                 where: { id: membershipId },
                 data: { status: 'active' }
             });
+            // Increment league participant count
+            await this.prisma.fantasyLeague.update({
+                where: { id: membership.leagueId },
+                data: { currentParticipants: { increment: 1 } }
+            });
             verificationEvents.emit('membership_status_update', { membershipId, status: 'active' });
             return true;
         }
@@ -135,6 +140,11 @@ export class TransactionVerificationService {
             await this.prisma.fantasyLeagueMembership.update({
                 where: { id: membershipId },
                 data: { status: 'active' }
+            });
+            // Increment league participant count
+            await this.prisma.fantasyLeague.update({
+                where: { id: membership.leagueId },
+                data: { currentParticipants: { increment: 1 } }
             });
             verificationEvents.emit('membership_status_update', { membershipId, status: 'active' });
             return true;
