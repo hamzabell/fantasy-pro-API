@@ -529,51 +529,65 @@ fantasyLeaguesApp.openapi(joinFantasyLeagueRoute, async (c) => {
 ),
 TE.chain((league) => {
     if (!league) return TE.left(businessRuleError('LeagueNotFound', 'League not found') as AppError);
-    
-    // Validate Lineup based on GameMode
-    if (league.gameMode === 'BLITZ' && league.leagueMode !== 'DUEL') {
-        if (!lineup || lineup.length !== 5) return TE.left(businessRuleError('InvalidLineup', 'Blitz lineup must have exactly 5 players'));
-    } else if (league.gameMode === 'DUEL' || league.leagueMode === 'DUEL') {
-        if (!lineup || lineup.length !== 1) return TE.left(businessRuleError('InvalidLineup', 'Duel lineup must have exactly 1 player'));
-    }
 
-    // Block joining if list is full
-    if (league._count.members >= league.limit) return TE.left(businessRuleError('LeagueFull', 'League is full') as AppError);
+    return pipe(
+        // Fetch actual member count (excluding failed transactions)
+        safePrisma(
+            () => env.prisma.fantasyLeagueMembership.count({
+                where: { 
+                    leagueId: league.id, 
+                    status: { not: 'failed' } 
+                }
+            }),
+            'countActiveMembers'
+        ),
+        TE.chain((activeCount) => {
+            // Validate Lineup based on GameMode
+            if (league.gameMode === 'BLITZ' && league.leagueMode !== 'DUEL') {
+                if (!lineup || lineup.length !== 5) return TE.left(businessRuleError('InvalidLineup', 'Blitz lineup must have exactly 5 players'));
+            } else if (league.gameMode === 'DUEL' || league.leagueMode === 'DUEL') {
+                if (!lineup || lineup.length !== 1) return TE.left(businessRuleError('InvalidLineup', 'Duel lineup must have exactly 1 player'));
+            }
 
-    // Block joining if within 24 hours of gameweek start
-    const deadline = new Date(league.gameweek.deadline);
-    const bufferTime = new Date(deadline.getTime() - 24 * 60 * 60 * 1000); // 24 hours before
-    const now = new Date();
+            // Block joining if list is full using actual count
+            if (activeCount >= league.limit) return TE.left(businessRuleError('LeagueFull', 'League is full') as AppError);
 
-    if (now > bufferTime) {
-        return TE.left(businessRuleError('LeagueClosed', 'Joining closes 24 hours before the gameweek starts.') as AppError);
-    }
-    
-    
-    // Block joining if league is pending or failed (except for DUELs which can be joined while pending)
-    const isDuel = league.gameMode === 'DUEL' || league.leagueMode === 'DUEL';
-    if (!isDuel && league.status === 'pending') {
-        return TE.left(businessRuleError('LeaguePending', 'League is still confirming on blockchain.') as AppError);
-    }
-    if (league.status === 'failed') return TE.left(businessRuleError('LeagueFailed', 'League creation failed.') as AppError);
-    
-    // For non-DUEL leagues, must be open or active
-    if (!isDuel && league.status !== 'open' && league.status !== 'active') {
-        return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
-    }
-    // For DUELs, allow pending, open, or active
-    if (isDuel && league.status !== 'open' && league.status !== 'active' && league.status !== 'pending') {
-        return TE.left(businessRuleError('LeagueClosed', 'Duel not available for joining') as AppError);
-    }
-    
-    // Check Lock
-    if (isDuel && league.lockedUntil && league.lockedUntil > now) {
-         if (league.lockedBy !== user.id) {
-             return TE.left(businessRuleError('Locked', 'Duel is locked by another user') as AppError);
-         }
-    }
+            // Block joining if within 24 hours of gameweek start
+            const deadline = new Date(league.gameweek.deadline);
+            const bufferTime = new Date(deadline.getTime() - 24 * 60 * 60 * 1000); // 24 hours before
+            const now = new Date();
 
-    return TE.right(league);
+            if (now > bufferTime) {
+                return TE.left(businessRuleError('LeagueClosed', 'Joining closes 24 hours before the gameweek starts.') as AppError);
+            }
+            
+            
+            // Block joining if league is pending or failed (except for DUELs which can be joined while pending)
+            const isDuel = league.gameMode === 'DUEL' || league.leagueMode === 'DUEL';
+            if (!isDuel && league.status === 'pending') {
+                return TE.left(businessRuleError('LeaguePending', 'League is still confirming on blockchain.') as AppError);
+            }
+            if (league.status === 'failed') return TE.left(businessRuleError('LeagueFailed', 'League creation failed.') as AppError);
+            
+            // For non-DUEL leagues, must be open or active
+            if (!isDuel && league.status !== 'open' && league.status !== 'active') {
+                return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
+            }
+            // For DUELs, allow pending, open, or active
+            if (isDuel && league.status !== 'open' && league.status !== 'active' && league.status !== 'pending') {
+                return TE.left(businessRuleError('LeagueClosed', 'Duel not available for joining') as AppError);
+            }
+            
+            // Check Lock
+            if (isDuel && league.lockedUntil && league.lockedUntil > now) {
+                 if (league.lockedBy !== user.id) {
+                     return TE.left(businessRuleError('Locked', 'Duel is locked by another user') as AppError);
+                 }
+            }
+
+            return TE.right(league);
+        })
+    );
 }),
     // 2. Check Existing Membership
     TE.bindTo('league'),
