@@ -219,7 +219,7 @@ const createFantasyLeagueRoute = createRoute({
            schema: z.object({
              code: z.string().min(1, "Code cannot be empty"),
              teamName: z.string().min(1, "Team name cannot be empty"),
-             lineup: z.array(z.number()).optional(), // Blitz (5) or Duel (1) player IDs
+             lineup: z.array(z.coerce.number()).optional(), // Blitz (5) or Duel (1) player IDs
              transactionHash: z.string().optional(),
              dryRun: z.boolean().optional(),
              userWalletAddress: z.string().optional()
