@@ -531,9 +531,9 @@ TE.chain((league) => {
     if (!league) return TE.left(businessRuleError('LeagueNotFound', 'League not found') as AppError);
     
     // Validate Lineup based on GameMode
-    if (league.gameMode === 'BLITZ') {
+    if (league.gameMode === 'BLITZ' && league.leagueMode !== 'DUEL') {
         if (!lineup || lineup.length !== 5) return TE.left(businessRuleError('InvalidLineup', 'Blitz lineup must have exactly 5 players'));
-    } else if (league.gameMode === 'DUEL') {
+    } else if (league.gameMode === 'DUEL' || league.leagueMode === 'DUEL') {
         if (!lineup || lineup.length !== 1) return TE.left(businessRuleError('InvalidLineup', 'Duel lineup must have exactly 1 player'));
     }
 
@@ -551,22 +551,23 @@ TE.chain((league) => {
     
     
     // Block joining if league is pending or failed (except for DUELs which can be joined while pending)
-    if (league.gameMode !== 'DUEL' && league.status === 'pending') {
+    const isDuel = league.gameMode === 'DUEL' || league.leagueMode === 'DUEL';
+    if (!isDuel && league.status === 'pending') {
         return TE.left(businessRuleError('LeaguePending', 'League is still confirming on blockchain.') as AppError);
     }
     if (league.status === 'failed') return TE.left(businessRuleError('LeagueFailed', 'League creation failed.') as AppError);
     
     // For non-DUEL leagues, must be open or active
-    if (league.gameMode !== 'DUEL' && league.status !== 'open' && league.status !== 'active') {
+    if (!isDuel && league.status !== 'open' && league.status !== 'active') {
         return TE.left(businessRuleError('LeagueClosed', 'League not open for joining') as AppError);
     }
     // For DUELs, allow pending, open, or active
-    if (league.gameMode === 'DUEL' && league.status !== 'open' && league.status !== 'active' && league.status !== 'pending') {
+    if (isDuel && league.status !== 'open' && league.status !== 'active' && league.status !== 'pending') {
         return TE.left(businessRuleError('LeagueClosed', 'Duel not available for joining') as AppError);
     }
     
     // Check Lock
-    if (league.gameMode === 'DUEL' && league.lockedUntil && league.lockedUntil > now) {
+    if (isDuel && league.lockedUntil && league.lockedUntil > now) {
          if (league.lockedBy !== user.id) {
              return TE.left(businessRuleError('Locked', 'Duel is locked by another user') as AppError);
          }
@@ -739,7 +740,7 @@ fantasyLeaguesApp.openapi(lockDuelRoute, async (c) => {
     ),
     TE.chain((league) => {
         if (!league) return TE.left(businessRuleError('NotFound', 'League not found'));
-        if (league.gameMode !== 'DUEL') return TE.left(businessRuleError('InvalidMode', 'Only Duels can be locked'));
+        if (league.gameMode !== 'DUEL' && league.leagueMode !== 'DUEL') return TE.left(businessRuleError('InvalidMode', 'Only Duels can be locked'));
         // Allow PENDING duels to be joined (creator's transaction is still verifying)
         if (league.status !== 'active' && league.status !== 'open' && league.status !== 'pending') {
             return TE.left(businessRuleError('LeagueClosed', 'League is not open'));
