@@ -11,7 +11,7 @@ import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';
 import { insufficientBalanceError, businessRuleError, databaseError } from '../../fp/domain/errors/AppError.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
-import { fetchGameweek, fetchFutureGameweeks, fetchGameweekLiveStats } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchGameweek, fetchFutureGameweeks, fetchGameweekLiveStats, fetchPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateUserTeamStats } from './player-stats-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
@@ -64,6 +64,9 @@ const FantasyLeagueSchema = z.object({
   duelCriteria: z.string().optional(),
   creatorPlayerId: z.coerce.number().optional(),
   challengerPlayerId: z.coerce.number().optional(),
+  creatorPlayerName: z.string().optional(),
+  creatorPlayerTeam: z.string().optional(),
+  creatorPlayerPosition: z.string().optional(),
 });
 
 /**
@@ -1000,31 +1003,69 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
           },
           'getAllLeagues'
       ),
-      TE.map((leagues) => {
-           // Map to response format (Preserving original logic)
-           return leagues.map((l: any) => {
-              const prizeDist = Array.isArray(l.prizeDistribution) 
-                ? l.prizeDistribution 
-                : calculatePrizeDistribution(l.winners);
-
-              // Find membership status for current user if they are a member
-              let membershipStatus = undefined;
-              if (user && l.members) {
-                  const memberRecord = l.members.find((m: any) => m.userId === user.id);
-                  if (memberRecord) {
-                      membershipStatus = memberRecord.status;
-                  }
-              }
-
-              return {
-                  ...mapToLeagueResponse(l),
-                  owner: l.owner ? { id: l.owner.id, email: l.owner.email } : { id: 'SYSTEM', email: 'FantasyPro App' },
-                  teamsCount: l._count ? l._count.members : 0,
-                  prizeDistribution: prizeDist,
-                  membershipStatus
-              };
-          });
-      })
+      TE.chain((leagues) => 
+        TE.tryCatch(
+          async () => {
+             // Batch Fetch Players for efficient lookup
+             const allPlayers = await fetchPlayers();
+             const playerMap = new Map(allPlayers.map(p => [p.id, p]));
+  
+             // Map to response format (Preserving original logic)
+             return leagues.map((l: any) => {
+                const prizeDist = Array.isArray(l.prizeDistribution) 
+                  ? l.prizeDistribution 
+                  : calculatePrizeDistribution(l.winners);
+  
+                // Find membership status for current user if they are a member
+                let membershipStatus = undefined;
+                if (user && l.members) {
+                    const memberRecord = l.members.find((m: any) => m.userId === user.id);
+                    if (memberRecord) {
+                        membershipStatus = memberRecord.status;
+                    }
+                }
+  
+                // Duel Specific: Populate Creator Player Details
+                let creatorPlayerName = l.creatorPlayerName;
+                let creatorPlayerTeam = l.creatorPlayerTeam;
+                let creatorPlayerPosition = undefined;
+  
+                if (l.creatorPlayerId) {
+                    const p = playerMap.get(Number(l.creatorPlayerId));
+                    if (p) {
+                        creatorPlayerName = p.web_name;
+                        creatorPlayerTeam = p.team?.name || ''; 
+                        
+                        // For position: element_type to string
+                        // 1=GK, 2=DEF, 3=MID, 4=FWD
+                        const typeMap: any = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+                        // Coerce to number to be safe
+                        const elementType = Number(p.element_type);
+                        creatorPlayerPosition = typeMap[elementType] || 'UNK';
+                        
+                        // Determine Team Name if not present on player object directly (it might be an ID)
+                        // If p.team is a string/object, use it.
+                        if (p.team && typeof p.team === 'object' && 'name' in p.team) {
+                            creatorPlayerTeam = (p.team as any).name;
+                        }
+                    }
+                }
+  
+                return {
+                    ...mapToLeagueResponse(l),
+                    owner: l.owner ? { id: l.owner.id, email: l.owner.email } : { id: 'SYSTEM', email: 'FantasyPro App' },
+                    teamsCount: l._count ? l._count.members : 0,
+                    prizeDistribution: prizeDist,
+                    membershipStatus,
+                    creatorPlayerName,
+                    creatorPlayerTeam,
+                    creatorPlayerPosition
+                };
+             });
+          },
+          (reason) => businessRuleError(reason as string)
+        )
+      )
   )();
 
   if (E.isLeft(result)) {
