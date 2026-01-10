@@ -11,7 +11,7 @@ import { toErrorResponse } from '../../fp/domain/errors/ErrorResponse.js';
 import { safePrisma, validateZod } from '../../fp/utils/fp-utils.js';
 import { insufficientBalanceError, businessRuleError, databaseError } from '../../fp/domain/errors/AppError.js';
 import type { AppError } from '../../fp/domain/errors/AppError.js';
-import { fetchGameweek, fetchFutureGameweeks, fetchGameweekLiveStats, fetchPlayers } from '../fantasy-premier-league/fantasy-premier-league-api.js';
+import { fetchGameweek, fetchFutureGameweeks, fetchGameweekLiveStats, fetchPlayers, getBootstrapData } from '../fantasy-premier-league/fantasy-premier-league-api.js';
 import { calculatePrizeDistribution } from './prize-distribution-utils.js';
 import { calculateUserTeamStats } from './player-stats-utils.js';
 import { calculateLeaguePosition } from './league-position-utils.js';
@@ -856,7 +856,7 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
   const { stake, isMember, sortBy, sortOrder, search, leagueType, realLifeLeague } = c.req.valid('query');
 
   const result = await pipe(
-      safePrisma(
+      TE.tryCatch(
           async () => {
               const where: any = {
                   status: { in: ['open', 'active'] }, // Only show open/active leagues to users
@@ -1001,14 +1001,15 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
                   include: commonInclude
               });
           },
-          'getAllLeagues'
+          (error) => businessRuleError('DatabaseError', String(error))
       ),
       TE.chain((leagues) => 
         TE.tryCatch(
           async () => {
-             // Batch Fetch Players for efficient lookup
-             const allPlayers = await fetchPlayers();
-             const playerMap = new Map(allPlayers.map(p => [p.id, p]));
+             // Batch Fetch Players for efficient lookup using getBootstrapData
+             const bootstrapData = await getBootstrapData();
+             const playerMap = new Map(bootstrapData.elements.map(p => [p.id, p]));
+             const teamMap = new Map(bootstrapData.teams.map(t => [t.id, t]));
   
              // Map to response format (Preserving original logic)
              return leagues.map((l: any) => {
@@ -1034,20 +1035,15 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
                     const p = playerMap.get(Number(l.creatorPlayerId));
                     if (p) {
                         creatorPlayerName = p.web_name;
-                        creatorPlayerTeam = p.team?.name || ''; 
+                        
+                        // Get team name from team map
+                        const team = teamMap.get(p.team);
+                        creatorPlayerTeam = team?.name || ''; 
                         
                         // For position: element_type to string
                         // 1=GK, 2=DEF, 3=MID, 4=FWD
                         const typeMap: any = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
-                        // Coerce to number to be safe
-                        const elementType = Number(p.element_type);
-                        creatorPlayerPosition = typeMap[elementType] || 'UNK';
-                        
-                        // Determine Team Name if not present on player object directly (it might be an ID)
-                        // If p.team is a string/object, use it.
-                        if (p.team && typeof p.team === 'object' && 'name' in p.team) {
-                            creatorPlayerTeam = (p.team as any).name;
-                        }
+                        creatorPlayerPosition = typeMap[p.element_type] || 'UNK';
                     }
                 }
   
@@ -1063,7 +1059,7 @@ fantasyLeaguesApp.openapi(getAllFantasyLeaguesRoute, async (c) => {
                 };
              });
           },
-          (reason) => businessRuleError(reason as string)
+          (reason) => businessRuleError('FetchFailed', String(reason))
         )
       )
   )();
