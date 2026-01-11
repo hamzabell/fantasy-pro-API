@@ -1255,11 +1255,43 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
   const league = result.right;
   let membershipStatus = undefined;
   let currentTeamName = undefined;
+  let currentUserTeam = undefined;
+
   if (user && league.members) {
       const memberRecord = league.members.find(m => m.userId === user.id);
       if (memberRecord) {
           membershipStatus = memberRecord.status;
           currentTeamName = memberRecord.teamName;
+
+          // Populate User Team
+          if (memberRecord.lineup && Array.isArray(memberRecord.lineup) && memberRecord.lineup.length > 0) {
+             try {
+                 const bootstrapData = await getBootstrapData();
+                 const playerMap = new Map(bootstrapData.elements.map(p => [p.id, p]));
+                 const teamMap = new Map(bootstrapData.teams.map(t => [t.id, t]));
+
+                 currentUserTeam = memberRecord.lineup.map((pid: any) => {
+                     const p = playerMap.get(Number(pid));
+                     if (!p) return null;
+                     const team = teamMap.get(p.team);
+                     
+                     // Helper for position map
+                     const typeMap: any = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+                     
+                     return {
+                         id: p.id,
+                         name: p.web_name,
+                         team: team?.name || 'UNK',
+                         position: typeMap[p.element_type] || 'UNK',
+                         cost: p.now_cost / 10,
+                         isEmpty: false
+                     };
+                 }).filter(p => p !== null);
+                 
+             } catch (e) {
+                 console.error('Failed to populate user team', e);
+             }
+          }
       }
   }
 
@@ -1268,7 +1300,8 @@ fantasyLeaguesApp.openapi(getFantasyLeagueByIdRoute, async (c) => {
       league: {
           ...mapToLeagueResponse(league),
           membershipStatus,
-          currentTeamName
+          currentTeamName,
+          currentUserTeam
       }
   }, 200);
 });
