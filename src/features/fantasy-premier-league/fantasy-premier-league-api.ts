@@ -1,4 +1,4 @@
-import { map, find, propEq, } from 'ramda';
+
 
 import { fetchJson } from '../../utils/api.js';
 import { createPlayerMapper, createTeamMapper } from './fantasy-premier-league-factories.js';
@@ -45,13 +45,15 @@ const getElementTypesFromBootstrap = async () => (await getBootstrapData()).elem
 export const fetchPlayers = async (): Promise<Player[]> => {
 	const playerMapper = createPlayerMapper(await getElementTypesFromBootstrap());
 	const players = await getPlayersFromBootstrap();
-	return map(playerMapper, players);
+	// Use native map instead of Ramda map
+	return players.map(playerMapper);
 };
 
 export const fetchTeams = async (): Promise<Team[]> => {
 	const teamMapper = createTeamMapper();
 	const teams = await getTeamsFromBootstrap();
-	return map(teamMapper, teams);
+	// Use native map instead of Ramda map
+	return teams.map(teamMapper);
 };
 
 export const fetchPlayerById = async (playerId: number): Promise<Player> => {
