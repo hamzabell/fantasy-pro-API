@@ -312,19 +312,21 @@ export const signupWithWallet = (
                 const isValid = await verifyTonProof(address, proof);
                 if (!isValid) throw new Error('Invalid wallet proof');
                 
-                // Check if username/address exists
+                // Check if user exists with this wallet address
                 const existing = await prisma.user.findFirst({
-                    where: { 
-                        OR: [
-                            { walletAddress: address },
-                            { username: data.username }
-                        ]
-                    }
+                    where: { walletAddress: address }
                 });
+
                 if (existing) {
-                    if (existing.walletAddress === address) throw new Error('Wallet already registered');
-                    if (existing.username === data.username) throw new Error('Username taken');
+                    if (existing.username === data.username) {
+                        // Idempotent success: User exists with same wallet & username -> Return user (Login)
+                        return existing;
+                    } 
+                    // Wallet exists but username differs -> Block
+                    throw new Error('Wallet already registered');
                 }
+
+                // Note: We allow duplicate usernames now, so no check for `username` existence globally.
 
                 // Prepare User Data
                 let name = data.name;
@@ -365,7 +367,6 @@ export const signupWithWallet = (
             },
             (e: any): AppError => {
                 const msg = e.message || String(e);
-                if (msg.includes('Username taken')) return conflictError('Username already taken', 'username', data.username);
                 if (msg.includes('Wallet already registered')) return conflictError('Wallet already registered', 'walletAddress', address);
                 return internalError('Signup failed', e);
             }
